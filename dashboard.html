@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YieldGuard AI • Uganda • Auth</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #f4f4f5; margin: 0; min-height: 100vh; }
+    .glass-effect { background: rgba(24, 24, 27, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(39, 39, 42, 0.5); }
+    .auth-toggle-active { background: #10b981; color: black; font-weight: 600; }
+    .auth-toggle-inactive { background: transparent; color: #a1a1aa; border: 1px solid #3f3f46; }
+    .auth-toggle-inactive:hover { background: #27272a; color: white; }
+    .input-field { background: #18181b; border: 1px solid #3f3f46; transition: 0.2s; }
+    .input-field:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
+    .card-hover { transition: all 0.25s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+  </style>
+</head>
+<body class="flex items-center justify-center p-5" style="background: #0a0a0a; background-image: radial-gradient(circle at 25% 0%, #1f2e1f 0%, #0a0a0a 40%);">
+
+  <!-- subtle backdrop (just for atmosphere) -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-20 left-10 w-72 h-72 bg-emerald-900/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-10 right-10 w-96 h-96 bg-amber-900/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- main auth card - combined signup/login -->
+  <div class="relative z-10 w-full max-w-md">
+    <!-- tiny logo / context -->
+    <div class="flex justify-center mb-6">
+      <div class="flex items-center gap-2 bg-black/40 backdrop-blur-sm px-5 py-2.5 rounded-full border border-zinc-800">
+        <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-xl">🌾</div>
+        <span class="font-semibold text-white">YieldGuard AI</span>
+        <span class="text-emerald-400 text-xs ml-1">Uganda</span>
+      </div>
+    </div>
+
+    <!-- main auth box -->
+    <div class="glass-effect rounded-3xl p-7 md:p-8 shadow-2xl card-hover">
+      
+      <!-- toggle: Sign In / Sign Up -->
+      <div class="flex bg-zinc-900/70 p-1 rounded-2xl mb-8 border border-zinc-800">
+        <button id="toggle-signin" class="auth-toggle-active flex-1 py-3.5 rounded-xl text-sm font-medium transition-all">Sign In</button>
+        <button id="toggle-signup" class="auth-toggle-inactive flex-1 py-3.5 rounded-xl text-sm font-medium transition-all">Sign Up</button>
+      </div>
+
+      <!-- SIGN IN FORM (visible by default) -->
+      <div id="signin-form" class="space-y-5">
+        <div>
+          <label class="text-xs text-zinc-400 uppercase tracking-wider block mb-2">Email</label>
+          <input type="email" placeholder="amina@farmer.ug" class="input-field w-full px-5 py-4 rounded-2xl text-white placeholder-zinc-500 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 uppercase tracking-wider block mb-2">Password</label>
+          <input type="password" placeholder="••••••••" class="input-field w-full px-5 py-4 rounded-2xl text-white placeholder-zinc-500 text-sm">
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center gap-2 text-zinc-400">
+            <input type="checkbox" class="accent-emerald-500"> <span>Remember</span>
+          </label>
+          <a href="#" class="text-emerald-400 hover:underline">Forgot?</a>
+        </div>
+        <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-2xl transition-all mt-2 flex items-center justify-center gap-2 text-base">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+        </button>
+        <!-- demo hint -->
+        <!-- <p class="text-center text-zinc-500 text-xs pt-3">Demo: any email / 123456</p> -->
+      </div>
+
+      <!-- SIGN UP FORM (hidden initially) -->
+      <div id="signup-form" class="space-y-5 hidden">
+        <div>
+          <label class="text-xs text-zinc-400 uppercase tracking-wider block mb-2">Full name</label>
+          <input type="text" placeholder="Amina Nakato" class="input-field w-full px-5 py-4 rounded-2xl text-white placeholder-zinc-500 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 uppercase tracking-wider block mb-2">Email</label>
+          <input type="email" placeholder="amina@farmer.ug" class="input-field w-full px-5 py-4 rounded-2xl text-white placeholder-zinc-500 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-zinc-400 uppercase tracking-wider block mb-2">District</label>
+            <select class="input-field w-full px-4 py-4 rounded-2xl text-white text-sm appearance-none">
+              <option>Mubende</option>
+              <option>Masaka</option>
+              <option>Kapchorwa</option>
+              <option>Jinja</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-zinc-400 uppercase tracking-wider block mb-2">Crop</label>
+            <select class="input-field w-full px-4 py-4 rounded-2xl text-white text-sm">
+              <option>Matooke</option>
+              <option>Maize</option>
+              <option>Beans</option>
+              <option>Cassava</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 uppercase tracking-wider block mb-2">Password</label>
+          <input type="password" placeholder="min 8 characters" class="input-field w-full px-5 py-4 rounded-2xl text-white placeholder-zinc-500 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 uppercase tracking-wider block mb-2">Confirm password</label>
+          <input type="password" placeholder="••••••••" class="input-field w-full px-5 py-4 rounded-2xl text-white placeholder-zinc-500 text-sm">
+        </div>
+        <div class="flex items-start gap-3 text-zinc-400 text-xs">
+          <input type="checkbox" class="accent-emerald-500 mt-1"> 
+          <span>I agree to the <a href="#" class="text-emerald-400 hover:underline">Terms</a> and <a href="#" class="text-emerald-400 hover:underline">Privacy</a>.</span>
+        </div>
+        <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-2xl transition-all mt-1 flex items-center justify-center gap-2 text-base">
+          <i class="fa-solid fa-user-plus"></i> Create Account
+        </button>
+        <p class="text-center text-zinc-500 text-xs pt-2">Join 180+ farmers</p>
+      </div>
+
+      <!-- extra divider (optional) -->
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-zinc-800"></div>
+        </div>
+        <div class="relative flex justify-center text-xs">
+          <span class="px-3 bg-zinc-900/50 text-zinc-500 rounded-full">or continue with</span>
+        </div>
+      </div>
+
+      <!-- social / demo buttons (keep light) -->
+      <div class="grid grid-cols-2 gap-4">
+        <button class="flex items-center justify-center gap-3 bg-zinc-800/80 hover:bg-zinc-700 py-3.5 rounded-2xl border border-zinc-700 transition">
+          <i class="fa-brands fa-google text-red-400"></i> <span class="text-sm">Google</span>
+        </button>
+        <button onclick="simulateFarmerSMS()" class="flex items-center justify-center gap-3 bg-zinc-800/80 hover:bg-zinc-700 py-3.5 rounded-2xl border border-zinc-700 transition">
+          <i class="fa-solid fa-message text-emerald-400"></i> <span class="text-sm">SMS demo</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- hint / return to dashboard -->
+    <div class="text-center mt-8">
+      <a href="#" onclick="goToDashboardHint()" class="text-zinc-500 hover:text-emerald-400 text-sm transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-arrow-left"></i> Back to dashboard preview
+      </a>
+    </div>
+  </div>
+
+  <!-- tiny floating status (just for fun) -->
+  <div class="fixed bottom-5 left-5 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full border border-zinc-800 text-xs flex items-center gap-2">
+    <div class="w-2 h-2 bg-emerald-500 rounded-full status-dot"></div>
+    <span class="text-emerald-400">Agent ready • Uganda</span>
+  </div>
+
+  <style>
+    .status-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  </style>
+
+  <script>
+    // toggle between sign in & sign up
+    const signInBtn = document.getElementById('toggle-signin');
+    const signUpBtn = document.getElementById('toggle-signup');
+    const signInForm = document.getElementById('signin-form');
+    const signUpForm = document.getElementById('signup-form');
+
+    function setActiveTab(isSignIn) {
+      if (isSignIn) {
+        signInBtn.classList.remove('auth-toggle-inactive');
+        signInBtn.classList.add('auth-toggle-active');
+        signUpBtn.classList.remove('auth-toggle-active');
+        signUpBtn.classList.add('auth-toggle-inactive');
+        signInForm.classList.remove('hidden');
+        signUpForm.classList.add('hidden');
+      } else {
+        signUpBtn.classList.remove('auth-toggle-inactive');
+        signUpBtn.classList.add('auth-toggle-active');
+        signInBtn.classList.remove('auth-toggle-active');
+        signInBtn.classList.add('auth-toggle-inactive');
+        signUpForm.classList.remove('hidden');
+        signInForm.classList.add('hidden');
+      }
+    }
+
+    signInBtn.addEventListener('click', () => setActiveTab(true));
+    signUpBtn.addEventListener('click', () => setActiveTab(false));
+
+    // optional demo sim SMS (like previous simulateSMS but for auth page)
+    window.simulateFarmerSMS = function() {
+      alert("📩 Demo: 'Register via SMS? We'll text you a secure link.' (simulated)");
+    };
+
+    // go back to dashboard hint (just an alert – you can replace with actual link)
+    window.goToDashboardHint = function() {
+      alert("✨ This would return to the main dashboard (your previous interface). In a real app you'd redirect.");
+      // you could also do window.location.href = '#' or similar
+    };
+
+    // simple prefill for demo (optional)
+    // set default values for signin to make it friendlier
+    window.addEventListener('load', function() {
+      // just to show demo data
+      const emailInputs = document.querySelectorAll('input[type="email"]');
+      emailInputs.forEach(inp => inp.value = 'amina@farm.ug');
+      const pwdInputs = document.querySelectorAll('input[type="password"]');
+      if (pwdInputs.length) pwdInputs[0].value = '123456';
+    });
+  </script>
+
+  <!-- small extra note: the auth form is fully self-contained, can be added to existing project -->
+</body>
+</html>
