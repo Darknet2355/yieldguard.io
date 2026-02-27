@@ -207,29 +207,13 @@
       if (pwdInputs.length) pwdInputs[0].value = '123456';
     });
 
-    // Store user data after signup
-function handleSignup(event) {
-  event.preventDefault();
-  const userData = {
-    name: document.querySelector('input[placeholder="Amina Nakato"]').value,
-    email: document.querySelector('input[type="email"]').value,
-    district: document.querySelector('select').value,
-    // Don't store raw passwords in localStorage! Use session only
-  };
-  localStorage.setItem('yieldguard_user', JSON.stringify(userData));
-  localStorage.setItem('isLoggedIn', 'true');
-  window.location.href = 'dashboard.html'; // Redirect to dashboard
-}
-
-// Check login on dashboard page
-window.addEventListener('load', function() {
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  if (!isLoggedIn) {
-    window.location.href = 'index.html'; // Redirect to login
+ 
+  // Simple auth check
+  if (!localStorage.getItem('isLoggedIn') && 
+      !window.location.pathname.includes('index.html')) {
+    window.location.href = 'index.html';
   }
-  const userData = JSON.parse(localStorage.getItem('yieldguard_user'));
-  // Display personalized greeting
-});
+
   </script>
 
   <!-- small extra note: the auth form is fully self-contained, can be added to existing project -->
