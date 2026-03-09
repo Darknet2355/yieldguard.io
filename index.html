@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
+  
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body {
@@ -62,7 +62,7 @@
       width: 0;
       height: 0;
       border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
+      border-right: 6px transparent;
       border-top: 6px solid #10b981;
     }
 
@@ -312,6 +312,15 @@
       justify-content: center;
       font-size: 20px;
       font-weight: bold;
+    }
+
+    /* Typing indicator animation */
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+    }
+    .animate-bounce {
+        animation: bounce 1s infinite;
     }
   </style>
 </head>
@@ -765,7 +774,14 @@
   </div>
 
   <script>
-    // Data Arrays
+    // ===========================================
+    // 🔑 PASTE YOUR GEMINI API KEY HERE
+    // ===========================================
+    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"; // <-- REPLACE THIS WITH YOUR ACTUAL API KEY
+    
+    // ===========================================
+    // DATA ARRAYS
+    // ===========================================
     const riskData = [
       { farmer: "Amina Nakato", crop: "Matooke", district: "Mubende", days: 18, risk: "High", action: "Sell today" },
       { farmer: "John Mugisha", crop: "Maize", district: "Masaka", days: 42, risk: "Medium", action: "Dry immediately" },
@@ -806,7 +822,223 @@
       { metric: "Avg Response Time", thisWeek: "4.2h", lastWeek: "5.1h", change: "-18%", status: "positive" }
     ];
 
-    // Populate Risk Table
+    // ===========================================
+    // SIMPLE AI AGENT - NO EXTERNAL API NEEDED
+    // ===========================================
+    // This works immediately without any API keys or CORS issues
+    
+    function getAIResponse(message) {
+        const lowerMsg = message.toLowerCase();
+        
+        // Get current context from dashboard data
+        const highRiskCount = riskData.filter(r => r.risk === "High").length;
+        const highRiskFarmers = riskData.filter(r => r.risk === "High").map(r => r.farmer).join(', ');
+        const rainyDistricts = districts.filter(d => d.weather.includes('Rain')).map(d => d.name).join(', ');
+        
+        // MATOOKE/BANANA queries
+        if (lowerMsg.includes('matooke') || lowerMsg.includes('banana') || lowerMsg.includes('plantain')) {
+            return "🍌 **Matooke Advice:**\n" +
+                   "• Current price: UGX 1,490/kg (↑12% this week)\n" +
+                   "• Storage: Keep in cool, dry place\n" +
+                   "• Warning: High humidity (82%) in Mubende - sell within 48hrs if stored\n" +
+                   "• Farmers with matooke: Amina Nakato (18 days stored - HIGH RISK), Grace Akello (15 days stored)";
+        }
+        
+        // MAIZE queries
+        else if (lowerMsg.includes('maize') || lowerMsg.includes('corn')) {
+            return "🌽 **Maize Advice:**\n" +
+                   "• Current price: UGX 1,200/kg\n" +
+                   "• Moisture: Must be below 18% for storage\n" +
+                   "• Recommendation: Solar drying today (rain expected in 2 days)\n" +
+                   "• Farmers: John Mugisha (42 days - needs drying), Robert Ssekitoleko (ready for harvest)";
+        }
+        
+        // BEANS queries
+        else if (lowerMsg.includes('bean') || lowerMsg.includes('beans')) {
+            return "🫘 **Beans Advice:**\n" +
+                   "• Current price: UGX 2,800/kg\n" +
+                   "• Storage: Must be fully dried\n" +
+                   "• Pest control: Solar treatment prevents weevils\n" +
+                   "• Urgent: Sarah Nansubuga (Kapchorwa) - contact buyer immediately (9 days stored)";
+        }
+        
+        // CASSAVA queries
+        else if (lowerMsg.includes('cassava') || lowerMsg.includes('muhogo')) {
+            return "🌱 **Cassava Advice:**\n" +
+                   "• Can stay in ground until ready\n" +
+                   "• After harvest: Process within 48 hours\n" +
+                   "• Best for: Flour production\n" +
+                   "• Farmer: David Okello (31 days stored - LOW RISK)";
+        }
+        
+        // WEATHER queries
+        else if (lowerMsg.includes('weather') || lowerMsg.includes('rain') || lowerMsg.includes('sun')) {
+            if (rainyDistricts) {
+                return `🌧️ **Weather Alert:**\nRain expected in ${rainyDistricts} within 48 hours. Farmers in these areas should harvest or cover produce. Current temperature: 28°C, Humidity: 82% in Mubende.`;
+            } else {
+                return "☀️ **Weather Update:**\nClear skies across most districts. Good conditions for drying and harvesting. No rain expected in the next 48 hours.";
+            }
+        }
+        
+        // RISK/ALERT queries
+        else if (lowerMsg.includes('risk') || lowerMsg.includes('danger') || lowerMsg.includes('alert') || lowerMsg.includes('problem')) {
+            const highRisk = riskData.filter(r => r.risk === "High");
+            if (highRisk.length > 0) {
+                return `⚠️ **HIGH RISK ALERT:**\n${highRisk.length} farms need urgent attention:\n` +
+                       highRisk.map(r => `• ${r.farmer} (${r.crop} in ${r.district}): ${r.action}`).join('\n');
+            } else {
+                return "✅ No high risk farms at the moment. All farms within safe parameters.";
+            }
+        }
+        
+        // PRICE/MARKET queries
+        else if (lowerMsg.includes('price') || lowerMsg.includes('sell') || lowerMsg.includes('market') || lowerMsg.includes('ugx')) {
+            return "💰 **Market Prices (UGX/kg):**\n" +
+                   "• Matooke: 1,490 ↑ (Kampala)\n" +
+                   "• Maize: 1,200 →\n" +
+                   "• Beans: 2,800 →\n" +
+                   "• Best market: Kampala currently offering highest prices\n" +
+                   "• Tip: Prices expected to rise further this week";
+        }
+        
+        // FARMER queries
+        else if (lowerMsg.includes('farmer') || lowerMsg.includes('who')) {
+            return "👨‍🌾 **Registered Farmers:**\n" +
+                   farmers.map(f => `• ${f.name} (${f.district}): ${f.crop}, ${f.acres} acres - ${f.status}`).join('\n') +
+                   "\n\nTotal: 184 farmers across 12 districts";
+        }
+        
+        // DISTRICT queries
+        else if (lowerMsg.includes('district') || lowerMsg.includes('where')) {
+            return "🗺️ **Districts Summary:**\n" +
+                   districts.map(d => `• ${d.name}: ${d.risk} risk, ${d.farms} farms, ${d.weather}`).join('\n');
+        }
+        
+        // GREETINGS
+        else if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
+            return `👋 **Hello! I'm YieldGuard AI Agent**\n\nI'm monitoring ${riskData.length} farms across ${districts.length} districts. Currently ${highRiskCount} farms need urgent attention. How can I help you today?\n\nTry asking about:\n• Specific crops (matooke, maize, beans, cassava)\n• Weather forecasts\n• Risk alerts\n• Market prices\n• Specific farmers or districts`;
+        }
+        
+        // HELP
+        else if (lowerMsg.includes('help') || lowerMsg.includes('what can you')) {
+            return "🤖 **I can help with:**\n" +
+                   "• Crop storage advice (matooke, maize, beans, cassava)\n" +
+                   "• Weather forecasts & alerts\n" +
+                   "• Risk assessment for farms\n" +
+                   "• Market prices in Uganda\n" +
+                   "• Farmer information\n" +
+                   "• District-wise risk maps\n\n" +
+                   "What would you like to know?";
+        }
+        
+        // THANK YOU
+        else if (lowerMsg.includes('thank')) {
+            return "🙏 You're welcome! Happy to help with your farming needs. Any other questions?";
+        }
+        
+        // DEFAULT RESPONSE
+        else {
+            return `🤔 I'm not sure about that. I can help with:\n\n` +
+                   `• Crop advice (try "matooke", "maize", "beans", or "cassava")\n` +
+                   `• Weather (try "weather in Mubende")\n` +
+                   `• Risk alerts (try "show risks")\n` +
+                   `• Market prices (try "prices")\n` +
+                   `• Farmers (try "list farmers")\n\n` +
+                   `Currently monitoring ${riskData.length} farms with ${highRiskCount} at high risk.`;
+        }
+    }
+
+    // ===========================================
+    // CHAT FUNCTIONS
+    // ===========================================
+    function openChat() {
+      document.getElementById('chat-panel').classList.remove('hidden');
+      document.getElementById('chat-input').focus();
+      const chatWindow = document.getElementById('chat-window');
+      if (!chatWindow.hasChildNodes()) {
+        addChatMessage("👋 **Hello! I'm your YieldGuard AI Agent**\n\nI can help with crop advice, weather forecasts, market prices, and risk assessment for your farms. What would you like to know?", true);
+      }
+    }
+
+    function closeChat() {
+      document.getElementById('chat-panel').classList.add('hidden');
+    }
+
+    function addChatMessage(text, isAI = true) {
+      const chat = document.getElementById('chat-window');
+      const msg = document.createElement('div');
+      msg.className = `flex ${isAI ? '' : 'justify-end'}`;
+      
+      // Convert markdown-style bold to HTML
+      const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      
+      msg.innerHTML = `
+        <div class="${isAI ? 'bg-zinc-800 px-5 py-3.5 rounded-2xl max-w-[82%]' : 'bg-emerald-600/30 text-white px-5 py-3.5 rounded-2xl max-w-[75%]'}">
+          ${formattedText}
+        </div>
+      `;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // Typing indicator
+    function addTypingIndicator() {
+        const chat = document.getElementById('chat-window');
+        const indicator = document.createElement('div');
+        indicator.className = 'typing-indicator flex items-center gap-1 bg-zinc-800 px-4 py-2 rounded-2xl w-16';
+        indicator.innerHTML = '<span class="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"></span><span class="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:0.2s"></span><span class="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:0.4s"></span>';
+        chat.appendChild(indicator);
+        chat.scrollTop = chat.scrollHeight;
+        return indicator;
+    }
+
+    function removeTypingIndicator(indicator) {
+        if (indicator && indicator.parentNode) {
+            indicator.parentNode.removeChild(indicator);
+        }
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      // Add user message
+      addChatMessage(text, false);
+      input.value = '';
+      
+      // Show typing indicator
+      const typingIndicator = addTypingIndicator();
+      
+      // Simulate AI thinking time
+      setTimeout(() => {
+          // Get AI response from our local function (no API needed)
+          const aiResponse = getAIResponse(text);
+          
+          // Remove typing indicator and add response
+          removeTypingIndicator(typingIndicator);
+          addChatMessage(aiResponse, true);
+      }, 1000); // 1 second delay for realism
+    }
+
+    function simulateSMS() {
+      alert("📩 Simulated SMS from farmer:\n\n“My matooke has been stored 18 days. Sell now?”");
+      
+      // Optional: Open chat with this context
+      openChat();
+      setTimeout(() => {
+        addChatMessage("📱 **Simulated SMS received:**\n\n“My matooke has been stored 18 days. Sell now?”", true);
+        addChatMessage("Can you advise on this?", false);
+        
+        setTimeout(() => {
+          addChatMessage(getAIResponse("matooke 18 days"), true);
+        }, 1500);
+      }, 500);
+    }
+
+    // ===========================================
+    // POPULATE FUNCTIONS
+    // ===========================================
     function populateRiskTable() {
       const tbody = document.getElementById('risk-table');
       if (!tbody) return;
@@ -836,7 +1068,6 @@
       });
     }
 
-    // Populate Recommendations
     function populateRecommendations() {
       const container = document.getElementById('recommendations');
       if (!container) return;
@@ -855,7 +1086,6 @@
       });
     }
 
-    // Populate Farmers List
     function populateFarmers() {
       const container = document.getElementById('farmers-list');
       if (!container) return;
@@ -885,7 +1115,6 @@
       });
     }
 
-    // Populate Risk Map
     function populateRiskMap() {
       const container = document.getElementById('risk-map');
       if (!container) return;
@@ -911,7 +1140,6 @@
       });
     }
 
-    // Populate Reports Table
     function populateReportsTable() {
       const tbody = document.getElementById('reports-table');
       if (!tbody) return;
@@ -934,7 +1162,6 @@
       });
     }
 
-    // Create Price Chart
     function createPriceChart() {
       const ctx = document.getElementById('priceChart');
       if (!ctx) return;
@@ -1003,7 +1230,6 @@
       if (tabIndex === 3) populateReportsTable();
     }
 
-    // Set Active Nav Item
     function setActiveNav(index) {
       const navItems = document.querySelectorAll('.nav-item');
       navItems.forEach((item, i) => {
@@ -1015,55 +1241,9 @@
       });
     }
 
-    // Chat Functions
-    function openChat() {
-      document.getElementById('chat-panel').classList.remove('hidden');
-      document.getElementById('chat-input').focus();
-      if (!document.getElementById('chat-window').hasChildNodes()) {
-        addChatMessage("Hello! I'm your YieldGuard AI Agent. How can I help today?", true);
-      }
-    }
-
-    function closeChat() {
-      document.getElementById('chat-panel').classList.add('hidden');
-    }
-
-    function addChatMessage(text, isAI = true) {
-      const chat = document.getElementById('chat-window');
-      const msg = document.createElement('div');
-      msg.className = `flex ${isAI ? '' : 'justify-end'}`;
-      msg.innerHTML = `
-        <div class="${isAI ? 'bg-zinc-800 px-5 py-3.5 rounded-2xl max-w-[82%]' : 'bg-emerald-600/30 text-white px-5 py-3.5 rounded-2xl max-w-[75%]'}">
-          ${text}
-        </div>
-      `;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function sendChatMessage() {
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text) return;
-      addChatMessage(text, false);
-      input.value = '';
-      setTimeout(() => {
-        const replies = [
-          "Checking current conditions...",
-          "Humidity is high (82%) — recommend selling matooke soon.",
-          "Kampala prices are trending up — good moment to act.",
-          "I can help you with that! Which district are you in?",
-          "Based on weather data, you should harvest within 3 days."
-        ];
-        addChatMessage(replies[Math.floor(Math.random() * replies.length)], true);
-      }, 900);
-    }
-
-    function simulateSMS() {
-      alert("📩 Simulated SMS from farmer:\n\n“My matooke has been stored 18 days. Sell now?”");
-    }
-
-    // Initialize on Load
+    // ===========================================
+    // INITIALIZE ON PAGE LOAD
+    // ===========================================
     window.addEventListener('load', () => {
       populateRiskTable();
       populateRecommendations();
@@ -1072,6 +1252,9 @@
       populateReportsTable();
       createPriceChart();
       setActiveNav(0);
+      
+      console.log("✅ YieldGuard AI loaded successfully!");
+      console.log("ℹ️ Using local AI agent (no API key needed)");
     });
   </script>
 </body>
