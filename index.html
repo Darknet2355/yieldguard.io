@@ -3,1259 +3,440 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YieldGuard AI • Uganda</title>
+  <title>YieldGuard AI • Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background-color: #0a0a0a;
-      color: #f4f4f5;
-      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
       min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
-    .tail-container { max-width: 1400px; margin: 0 auto; }
-    .card-hover {
-      transition: all 0.25s ease;
+    
+    .auth-card {
+      background: rgba(24, 24, 27, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 32px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transition: transform 0.3s ease;
     }
-    .card-hover:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+    
+    .auth-card:hover {
+      transform: translateY(-5px);
     }
-    .status-dot {
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    /* Bottom nav tooltip */
-    .nav-tooltip {
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1a1a1a;
+    
+    .input-field {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      transition: all 0.2s ease;
       color: white;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: all 0.2s ease;
-      border: 1px solid #10b981;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      z-index: 100;
     }
-
-    .nav-tooltip::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px transparent;
-      border-top: 6px solid #10b981;
+    
+    .input-field:focus {
+      border-color: #10b981;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
     }
-
-    .nav-item {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    
+    .auth-toggle {
       transition: all 0.2s ease;
-      padding: 8px 12px;
-      border-radius: 12px;
+      cursor: pointer;
+    }
+    
+    .auth-toggle.active {
+      background: #10b981;
+      color: black;
+    }
+    
+    .auth-toggle.inactive {
+      background: transparent;
       color: #a1a1aa;
-    }
-
-    .nav-item:hover {
-      background: rgba(16, 185, 129, 0.15);
-    }
-
-    .nav-item:hover .nav-tooltip {
-      opacity: 1;
-      top: -45px;
-    }
-
-    .nav-item.active {
-      color: #10b981;
-    }
-
-    /* Chat icon specific styling */
-    .nav-item.chat-icon {
-      color: #10b981 !important;
-    }
-
-    .nav-item.chat-icon i {
-      color: #10b981 !important;
-      filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
-    }
-
-    .nav-item.chat-icon:hover {
-      background: rgba(16, 185, 129, 0.25);
-      transform: scale(1.1);
-    }
-
-    /* Mobile bottom nav */
-    .mobile-bottom-nav {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.95);
-      backdrop-filter: blur(10px);
-      border-top: 2px solid #10b981;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-      padding: 8px 4px;
-      z-index: 1000;
-    }
-
-    /* Desktop navbar */
-    .desktop-navbar {
-      display: block;
-      background: rgba(0, 0, 0, 0.95);
-      border-bottom: 2px solid #10b981;
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
-
-    /* Logo styling */
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-icon {
-      width: 45px;
-      height: 45px;
-      background: #10b981;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-
-    /* Content sections - hide/show based on active tab */
-    .content-section {
-      display: none;
+      border: 1px solid #3f3f46;
     }
     
-    .content-section.active {
-      display: block;
-    }
-
-    /* Map styling */
-    .risk-map-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    
-    .district-card {
-      background: #18181b;
-      border-radius: 16px;
-      padding: 16px;
-      border-left: 4px solid;
-    }
-    
-    .district-card.high-risk {
-      border-left-color: #ef4444;
-    }
-    
-    .district-card.medium-risk {
-      border-left-color: #f59e0b;
-    }
-    
-    .district-card.low-risk {
-      border-left-color: #10b981;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 767px) {
-      .desktop-navbar .desktop-only {
-        display: none;
-      }
-      
-      .mobile-bottom-nav {
-        display: flex !important;
-      }
-      
-      body {
-        padding-bottom: 80px;
-      }
-      
-      .logo-text h1 {
-        font-size: 1.25rem;
-      }
-      
-      .risk-map-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (min-width: 768px) {
-      .mobile-bottom-nav {
-        display: none !important;
-      }
-      
-      .logo-text h1 {
-        font-size: 1.875rem;
-      }
-    }
-
-    /* Header styling */
-    .main-header {
-      background: rgba(0, 0, 0, 0.95);
-      border-bottom: 2px solid #10b981;
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      padding: 12px 0;
-    }
-
-    /* Chat button styling */
-    .chat-button {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid #10b981;
-      color: #10b981;
-      padding: 10px 20px;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-
-    .chat-button:hover {
-      background: #10b981;
-      color: black;
-      transform: scale(1.05);
-    }
-
-    .chat-button i {
-      font-size: 1.2rem;
-    }
-
-    /* Simulate button */
-    .simulate-button {
-      background: #10b981;
-      color: black;
-      padding: 10px 20px;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-
-    .simulate-button:hover {
-      background: #0d9668;
-      transform: scale(1.05);
-    }
-
-    /* Progress bar for reports */
-    .progress-bar {
-      height: 8px;
+    .auth-toggle.inactive:hover {
       background: #27272a;
-      border-radius: 4px;
-      overflow: hidden;
+      color: white;
     }
     
-    .progress-fill {
-      height: 100%;
+    .btn-primary {
       background: #10b981;
-      border-radius: 4px;
-    }
-    
-    /* Farmer card */
-    .farmer-card {
-      background: #18181b;
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
       transition: all 0.2s ease;
     }
     
-    .farmer-card:hover {
-      transform: translateX(4px);
-      background: #1f1f23;
+    .btn-primary:hover {
+      background: #059669;
+      transform: scale(1.02);
     }
     
-    .farmer-avatar {
-      width: 48px;
-      height: 48px;
-      background: #10b981;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      font-weight: bold;
+    .social-btn {
+      background: #27272a;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
-
-    /* Typing indicator animation */
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-4px); }
+    
+    .social-btn:hover {
+      background: #3f3f46;
+      transform: scale(1.02);
     }
-    .animate-bounce {
-        animation: bounce 1s infinite;
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-container {
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .error-message {
+      color: #ef4444;
+      font-size: 0.75rem;
+      margin-top: 4px;
+      display: none;
+    }
+    
+    .success-message {
+      color: #10b981;
+      font-size: 0.75rem;
+      margin-top: 4px;
+      display: none;
     }
   </style>
 </head>
 <body>
-
-  <!-- ─── UNIFIED HEADER WITH LOGO ─── -->
-  <header class="main-header">
-    <div class="tail-container px-5 sm:px-6">
-      <div class="flex items-center justify-between">
-        <!-- Logo -->
-        <div class="logo-container">
-          <div class="logo-icon">🌾</div>
-          <div class="logo-text">
-            <h1 class="font-bold tracking-tight text-white">YieldGuard</h1>
-            <p class="text-emerald-400 text-xs">AI Agent • Uganda</p>
-          </div>
-        </div>
-
-        <!-- Desktop Navigation + Controls -->
-        <div class="desktop-only hidden md:flex items-center gap-8">
-          <!-- Navigation Links -->
-          <div class="flex items-center gap-6 text-sm font-medium">
-            <a href="#" onclick="switchTab(0)" class="tab-link text-emerald-400 hover:text-emerald-300 transition-colors">Dashboard</a>
-            <a href="#" onclick="switchTab(1)" class="tab-link text-zinc-400 hover:text-zinc-200 transition-colors">Farmers</a>
-            <a href="#" onclick="switchTab(2)" class="tab-link text-zinc-400 hover:text-zinc-200 transition-colors">Risk Map</a>
-            <a href="#" onclick="switchTab(3)" class="tab-link text-zinc-400 hover:text-zinc-200 transition-colors">Reports</a>
-          </div>
-
-          <!-- Right Controls -->
-          <div class="flex items-center gap-4">
-            <!-- Agent Status -->
-            <div class="flex items-center gap-2 bg-zinc-900/70 px-4 py-2 rounded-full border border-zinc-700/60">
-              <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full status-dot"></div>
-              <span class="text-emerald-400 text-sm">Agent Online</span>
-            </div>
-            
-            <!-- Chat Button -->
-            <button onclick="openChat()" class="chat-button">
-              <i class="fa-solid fa-message-dots"></i>
-              <span>Chat with Agent</span>
-            </button>
-            
-            <!-- Simulate SMS -->
-            <button onclick="simulateSMS()" class="simulate-button">
-              <i class="fa-solid fa-paper-plane"></i>
-              <span>Simulate</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Mobile Header Controls -->
-        <div class="md:hidden flex items-center gap-3">
-          <!-- Agent Status Dot -->
-          <div class="flex items-center gap-2 bg-zinc-900/70 px-3 py-1.5 rounded-full border border-zinc-700/60">
-            <div class="w-2 h-2 bg-emerald-500 rounded-full status-dot"></div>
-            <span class="text-emerald-400 text-xs">Online</span>
-          </div>
-          
-          <!-- Simulate SMS (icon only) -->
-          <button onclick="simulateSMS()" class="bg-emerald-600 hover:bg-emerald-700 w-9 h-9 rounded-full flex items-center justify-center transition">
-            <i class="fa-solid fa-paper-plane text-sm"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- ─── PAGE TITLE (dynamic based on active tab) ─── -->
-  <div class="page-title">
-    <div class="tail-container px-5 sm:px-6 py-5 md:py-6">
-      <h1 id="page-title" class="text-3xl md:text-5xl font-bold tracking-tight">Dashboard</h1>
-      <p id="page-subtitle" class="text-zinc-400 mt-1 text-sm md:text-base">
-        Yield Optimization & Food Security AI Agent • Uganda
-      </p>
-    </div>
-  </div>
-
-  <!-- ─── MAIN CONTENT ────────────────────────────────────────────────────────── -->
-  <div class="tail-container px-5 sm:px-6 pt-4 pb-28 md:pb-12">
-
-    <!-- DASHBOARD SECTION (Tab 0) -->
-    <div id="dashboard-section" class="content-section active">
-      <!-- KPI cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6 mb-10 md:mb-12">
-        <div class="bg-zinc-900 rounded-3xl p-6 md:p-8 card-hover">
-          <div class="text-emerald-400 text-xs md:text-sm tracking-widest uppercase">Farms</div>
-          <div class="text-4xl md:text-6xl font-bold mt-2">184</div>
-          <div class="mt-3 md:mt-4 text-xs md:text-sm text-emerald-400">↑ 12 this week</div>
-        </div>
-        <div class="bg-zinc-900 rounded-3xl p-6 md:p-8 card-hover">
-          <div class="text-amber-400 text-xs md:text-sm tracking-widest uppercase">Yield Saved</div>
-          <div class="text-4xl md:text-6xl font-bold mt-2">4.8T</div>
-          <div class="mt-3 md:mt-4 text-xs md:text-sm text-zinc-400">≈ 2,400 bunches</div>
-        </div>
-        <div class="bg-zinc-900 rounded-3xl p-6 md:p-8 card-hover">
-          <div class="text-red-400 text-xs md:text-sm tracking-widest uppercase">High Risk</div>
-          <div class="text-4xl md:text-6xl font-bold mt-2">23</div>
-          <div class="mt-3 md:mt-4 text-xs md:text-sm text-red-400">≤72h action</div>
-        </div>
-        <div class="bg-zinc-900 rounded-3xl p-6 md:p-8 card-hover">
-          <div class="text-sky-400 text-xs md:text-sm tracking-widest uppercase">Alerts Today</div>
-          <div class="text-4xl md:text-6xl font-bold mt-2">41</div>
-          <div class="mt-3 md:mt-4 text-xs md:text-sm text-sky-400">98% delivered</div>
-        </div>
-      </div>
-
-      <!-- TWO COLUMN LAYOUT -->
-      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8 mb-10 md:mb-12">
-        <!-- Produce at Risk Table -->
-        <div class="xl:col-span-7 bg-zinc-900 rounded-3xl p-6 md:p-8">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-5 md:mb-6 gap-3">
-            <div class="font-semibold text-lg">Produce at Risk (Next 7 Days)</div>
-            <span class="bg-red-500/10 text-red-400 px-4 py-1 rounded-3xl text-xs font-medium inline-block">23 farms</span>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[580px]">
-              <thead>
-                <tr class="border-b border-zinc-800 text-xs text-zinc-400">
-                  <th class="py-4 text-left">Farmer / Crop</th>
-                  <th class="py-4 text-left">District</th>
-                  <th class="py-4 text-center">Days</th>
-                  <th class="py-4 text-center">Risk</th>
-                  <th class="py-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="risk-table" class="text-sm"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Recommendations -->
-        <div class="xl:col-span-5 bg-zinc-900 rounded-3xl p-6 md:p-8">
-          <div class="font-semibold text-lg mb-5 md:mb-6 flex items-center gap-2">
-            <i class="fa-solid fa-lightbulb text-amber-400"></i>
-            AI Recommendations
-          </div>
-          <div id="recommendations" class="space-y-4"></div>
-        </div>
-      </div>
-
-      <!-- Weather + Price chart row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-        <!-- Weather -->
-        <div class="bg-zinc-900 rounded-3xl p-6 md:p-8">
-          <div class="flex flex-col sm:flex-row justify-between mb-5 md:mb-6 gap-3">
-            <div class="font-semibold">Live Weather Impact</div>
-            <div class="text-xs px-4 py-1.5 bg-zinc-800 rounded-3xl">Mubende</div>
-          </div>
-          <div class="flex items-center gap-6 md:gap-8">
-            <div class="text-6xl md:text-7xl">⛅</div>
-            <div>
-              <div class="text-4xl md:text-5xl font-light">28°C</div>
-              <div class="text-emerald-400 mt-1">Humidity 82% • Rain in 2 days</div>
-              <div class="mt-4 md:mt-6 text-xs md:text-sm leading-relaxed text-zinc-300">
-                High humidity detected.<br class="sm:hidden">
-                <span class="text-amber-400 font-medium">Recommend immediate drying</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Price Chart -->
-        <div class="bg-zinc-900 rounded-3xl p-6 md:p-8">
-          <div class="font-semibold mb-5 md:mb-6">Market Price Trends (UGX/kg)</div>
-          <canvas id="priceChart" height="140"></canvas>
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center gap-3 bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full border border-zinc-800">
+        <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">🌾</div>
+        <div class="text-left">
+          <span class="text-xl font-bold text-white">YieldGuard</span>
+          <p class="text-emerald-400 text-xs">AI Agent • Uganda</p>
         </div>
       </div>
     </div>
 
-    <!-- FARMERS SECTION (Tab 1) -->
-    <div id="farmers-section" class="content-section">
-      <!-- Farmers Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="text-emerald-400 text-sm uppercase mb-2">Total Farmers</div>
-          <div class="text-4xl font-bold">184</div>
-          <div class="text-zinc-400 text-sm mt-2">Across 12 districts</div>
-        </div>
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="text-amber-400 text-sm uppercase mb-2">Active This Month</div>
-          <div class="text-4xl font-bold">156</div>
-          <div class="text-zinc-400 text-sm mt-2">85% engagement rate</div>
-        </div>
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="text-sky-400 text-sm uppercase mb-2">New This Week</div>
-          <div class="text-4xl font-bold">12</div>
-          <div class="text-zinc-400 text-sm mt-2">↑ 3 from last week</div>
-        </div>
+    <!-- Main Auth Card -->
+    <div class="auth-card p-8">
+      <!-- Toggle Buttons -->
+      <div class="flex gap-3 mb-8">
+        <button id="signin-toggle" class="auth-toggle active flex-1 py-3 rounded-xl font-semibold transition">Sign In</button>
+        <button id="signup-toggle" class="auth-toggle inactive flex-1 py-3 rounded-xl font-semibold transition">Sign Up</button>
       </div>
 
-      <!-- Farmers List -->
-      <div class="bg-zinc-900 rounded-3xl p-6 md:p-8">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="font-semibold text-lg">Registered Farmers</h2>
-          <div class="flex gap-2">
-            <button class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-full text-sm flex items-center gap-2">
-              <i class="fa-solid fa-filter"></i> Filter
-            </button>
-            <button class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-full text-sm flex items-center gap-2">
-              <i class="fa-solid fa-plus"></i> Add Farmer
-            </button>
-          </div>
-        </div>
-
-        <div class="space-y-4" id="farmers-list">
-          <!-- Farmers will be populated by JavaScript -->
-        </div>
-      </div>
-    </div>
-
-    <!-- RISK MAP SECTION (Tab 2) -->
-    <div id="riskmap-section" class="content-section">
-      <!-- Risk Overview -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="text-red-400 text-sm uppercase mb-2">High Risk</div>
-          <div class="text-4xl font-bold">23</div>
-          <div class="text-zinc-400 text-sm mt-2">Districts: 4</div>
-        </div>
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="text-amber-400 text-sm uppercase mb-2">Medium Risk</div>
-          <div class="text-4xl font-bold">47</div>
-          <div class="text-zinc-400 text-sm mt-2">Districts: 6</div>
-        </div>
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="text-emerald-400 text-sm uppercase mb-2">Low Risk</div>
-          <div class="text-4xl font-bold">114</div>
-          <div class="text-zinc-400 text-sm mt-2">Districts: 8</div>
-        </div>
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="text-sky-400 text-sm uppercase mb-2">Weather Alert</div>
-          <div class="text-4xl font-bold">3</div>
-          <div class="text-zinc-400 text-sm mt-2">Districts affected</div>
-        </div>
-      </div>
-
-      <!-- Map Visualization (Grid of districts) -->
-      <div class="bg-zinc-900 rounded-3xl p-6 md:p-8 mb-8">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="font-semibold text-lg">Uganda Risk Map</h2>
-          <div class="flex gap-4 text-xs">
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span> High Risk</div>
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Medium Risk</div>
-            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Low Risk</div>
-          </div>
-        </div>
-
-        <div class="risk-map-grid" id="risk-map">
-          <!-- Districts will be populated by JavaScript -->
-        </div>
-      </div>
-
-      <!-- Risk Factors -->
-      <div class="bg-zinc-900 rounded-3xl p-6 md:p-8">
-        <h2 class="font-semibold text-lg mb-4">Current Risk Factors</h2>
-        <div class="space-y-4">
-          <div class="flex items-center justify-between p-4 bg-zinc-800 rounded-2xl">
-            <div class="flex items-center gap-3">
-              <i class="fa-solid fa-droplet text-sky-400"></i>
-              <span>High Humidity (Mubende, Masaka)</span>
-            </div>
-            <span class="text-amber-400 font-medium">82%</span>
-          </div>
-          <div class="flex items-center justify-between p-4 bg-zinc-800 rounded-2xl">
-            <div class="flex items-center gap-3">
-              <i class="fa-solid fa-temperature-high text-red-400"></i>
-              <span>Extended Storage (>18 days)</span>
-            </div>
-            <span class="text-red-400 font-medium">23 farms</span>
-          </div>
-          <div class="flex items-center justify-between p-4 bg-zinc-800 rounded-2xl">
-            <div class="flex items-center gap-3">
-              <i class="fa-solid fa-cloud-rain text-emerald-400"></i>
-              <span>Rain Forecast (next 48h)</span>
-            </div>
-            <span class="text-emerald-400 font-medium">5 districts</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- REPORTS SECTION (Tab 3) -->
-    <div id="reports-section" class="content-section">
-      <!-- Reports Header -->
-      <div class="flex items-center justify-between mb-8">
-        <h2 class="text-2xl font-semibold">Analytics & Reports</h2>
-        <button class="bg-emerald-600 hover:bg-emerald-700 px-6 py-3 rounded-full text-sm flex items-center gap-2">
-          <i class="fa-solid fa-download"></i> Download Report
-        </button>
-      </div>
-
-      <!-- Report Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <!-- Yield Report -->
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-semibold">Yield Summary</h3>
-            <i class="fa-solid fa-chart-simple text-emerald-400 text-xl"></i>
-          </div>
-          <div class="space-y-4">
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span>Total Yield Saved</span>
-                <span class="text-emerald-400">4.8 tons</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 78%"></div>
-              </div>
-            </div>
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span>Target Achievement</span>
-                <span class="text-emerald-400">78%</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 78%"></div>
-              </div>
-            </div>
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span>Farmer Satisfaction</span>
-                <span class="text-emerald-400">92%</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 92%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Alert Report -->
-        <div class="bg-zinc-900 rounded-3xl p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-semibold">Alert Performance</h3>
-            <i class="fa-solid fa-bell text-amber-400 text-xl"></i>
-          </div>
-          <div class="space-y-4">
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span>Delivery Rate</span>
-                <span class="text-emerald-400">98%</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 98%"></div>
-              </div>
-            </div>
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span>Response Rate</span>
-                <span class="text-amber-400">67%</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 67%; background: #f59e0b;"></div>
-              </div>
-            </div>
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span>Action Taken</span>
-                <span class="text-emerald-400">83%</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 83%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Detailed Reports Table -->
-      <div class="bg-zinc-900 rounded-3xl p-6 md:p-8">
-        <h3 class="font-semibold text-lg mb-6">Weekly Performance Report</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[600px]">
-            <thead>
-              <tr class="border-b border-zinc-800 text-xs text-zinc-400">
-                <th class="py-4 text-left">Metric</th>
-                <th class="py-4 text-center">This Week</th>
-                <th class="py-4 text-center">Last Week</th>
-                <th class="py-4 text-center">Change</th>
-                <th class="py-4 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody class="text-sm" id="reports-table">
-              <!-- Populated by JavaScript -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ─── MOBILE BOTTOM NAV ───────────────── -->
-  <nav class="mobile-bottom-nav">
-    <div class="flex justify-around items-center w-full max-w-lg mx-auto px-2">
-      
-      <!-- Dashboard -->
-      <button onclick="switchTab(0)" class="nav-item active" id="nav-dashboard">
-        <i class="fa-solid fa-house text-2xl"></i>
-        <span class="nav-tooltip">Dashboard</span>
-      </button>
-
-      <!-- Farmers -->
-      <button onclick="switchTab(1)" class="nav-item" id="nav-farmers">
-        <i class="fa-solid fa-users text-2xl"></i>
-        <span class="nav-tooltip">Farmers</span>
-      </button>
-
-      <!-- Risk Map -->
-      <button onclick="switchTab(2)" class="nav-item" id="nav-riskmap">
-        <i class="fa-solid fa-map-location-dot text-2xl"></i>
-        <span class="nav-tooltip">Risk Map</span>
-      </button>
-
-      <!-- Reports -->
-      <button onclick="switchTab(3)" class="nav-item" id="nav-reports">
-        <i class="fa-solid fa-chart-line text-2xl"></i>
-        <span class="nav-tooltip">Reports</span>
-      </button>
-
-      <!-- Chat with Agent -->
-      <button onclick="openChat()" class="nav-item chat-icon" id="nav-chat">
-        <i class="fa-solid fa-message-dots text-2xl"></i>
-        <span class="nav-tooltip">Chat with Agent</span>
-      </button>
-
-    </div>
-  </nav>
-
-  <!-- ─── CHAT PANEL ──────────────────────────────────────────────────────────── -->
-  <div id="chat-panel" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-zinc-900 rounded-2xl w-full max-w-2xl h-[85vh] flex flex-col border border-zinc-700 overflow-hidden">
-      <div class="bg-zinc-800 px-6 py-4 flex items-center justify-between border-b border-zinc-700">
-        <div class="flex items-center gap-4">
-          <div class="w-11 h-11 bg-emerald-600 rounded-xl flex items-center justify-center text-2xl shadow">🤖</div>
+      <!-- Sign In Form -->
+      <div id="signin-form" class="form-container">
+        <div class="space-y-5">
           <div>
-            <div class="font-semibold text-lg">YieldGuard AI Agent</div>
-            <div class="text-sm text-emerald-400">Ask anything about your farm</div>
+            <label class="text-xs text-zinc-400 uppercase font-semibold block mb-2">Email Address</label>
+            <input type="email" id="login-email" class="input-field w-full px-5 py-3 rounded-xl text-sm" placeholder="farmer@example.com">
+            <div id="login-email-error" class="error-message"></div>
           </div>
+          <div>
+            <label class="text-xs text-zinc-400 uppercase font-semibold block mb-2">Password</label>
+            <input type="password" id="login-password" class="input-field w-full px-5 py-3 rounded-xl text-sm" placeholder="••••••••">
+            <div id="login-password-error" class="error-message"></div>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <label class="flex items-center gap-2 text-zinc-400 cursor-pointer">
+              <input type="checkbox" id="remember-me" class="accent-emerald-500"> <span>Remember me</span>
+            </label>
+            <a href="#" class="text-emerald-400 hover:underline text-sm">Forgot password?</a>
+          </div>
+          <button onclick="handleLogin()" class="btn-primary w-full py-3 rounded-xl font-semibold text-black transition">Sign In</button>
+          <p class="text-center text-zinc-500 text-xs pt-2">Demo: any email / password "demo123"</p>
         </div>
-        <button onclick="closeChat()" class="text-3xl text-zinc-400 hover:text-white">×</button>
       </div>
-      <div id="chat-window" class="flex-1 p-6 overflow-y-auto space-y-6 text-sm leading-relaxed"></div>
-      <div class="p-5 border-t border-zinc-700 bg-zinc-950 flex gap-3">
-        <input id="chat-input" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-full px-6 py-3.5 focus:outline-none focus:border-emerald-500 transition" placeholder="Ask me anything..." onkeypress="if(event.key==='Enter') sendChatMessage()"/>
-        <button onclick="sendChatMessage()" class="bg-emerald-600 hover:bg-emerald-700 w-14 h-14 rounded-full flex items-center justify-center transition">
-          <i class="fa-solid fa-paper-plane text-lg"></i>
+
+      <!-- Sign Up Form -->
+      <div id="signup-form" class="form-container" style="display: none;">
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-zinc-400 uppercase font-semibold block mb-2">Full Name</label>
+            <input type="text" id="signup-name" class="input-field w-full px-5 py-3 rounded-xl text-sm" placeholder="Amina Nakato">
+            <div id="signup-name-error" class="error-message"></div>
+          </div>
+          <div>
+            <label class="text-xs text-zinc-400 uppercase font-semibold block mb-2">Email Address</label>
+            <input type="email" id="signup-email" class="input-field w-full px-5 py-3 rounded-xl text-sm" placeholder="farmer@example.com">
+            <div id="signup-email-error" class="error-message"></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-zinc-400 uppercase font-semibold block mb-2">District</label>
+              <select id="signup-district" class="input-field w-full px-4 py-3 rounded-xl text-sm">
+                <option value="Mubende">Mubende</option>
+                <option value="Masaka">Masaka</option>
+                <option value="Kapchorwa">Kapchorwa</option>
+                <option value="Jinja">Jinja</option>
+                <option value="Gulu">Gulu</option>
+                <option value="Mbale">Mbale</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-zinc-400 uppercase font-semibold block mb-2">Main Crop</label>
+              <select id="signup-crop" class="input-field w-full px-4 py-3 rounded-xl text-sm">
+                <option value="Matooke">Matooke</option>
+                <option value="Maize">Maize</option>
+                <option value="Beans">Beans</option>
+                <option value="Cassava">Cassava</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-zinc-400 uppercase font-semibold block mb-2">Password</label>
+            <input type="password" id="signup-password" class="input-field w-full px-5 py-3 rounded-xl text-sm" placeholder="Min. 6 characters">
+            <div id="signup-password-error" class="error-message"></div>
+          </div>
+          <div>
+            <label class="text-xs text-zinc-400 uppercase font-semibold block mb-2">Confirm Password</label>
+            <input type="password" id="signup-confirm" class="input-field w-full px-5 py-3 rounded-xl text-sm" placeholder="Confirm password">
+            <div id="signup-confirm-error" class="error-message"></div>
+          </div>
+          <div class="flex items-start gap-3 text-xs text-zinc-400">
+            <input type="checkbox" id="signup-terms" class="accent-emerald-500 mt-0.5">
+            <span>I agree to the <a href="#" class="text-emerald-400 hover:underline">Terms</a> and <a href="#" class="text-emerald-400 hover:underline">Privacy Policy</a></span>
+          </div>
+          <button onclick="handleSignup()" class="btn-primary w-full py-3 rounded-xl font-semibold text-black transition">Create Account</button>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-zinc-800"></div></div>
+        <div class="relative flex justify-center"><span class="px-3 bg-zinc-900 text-zinc-500 text-xs rounded-full">or continue with</span></div>
+      </div>
+
+      <!-- Social Login -->
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="socialLogin('google')" class="social-btn flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium">
+          <i class="fa-brands fa-google text-red-400"></i> Google
+        </button>
+        <button onclick="socialLogin('demo')" class="social-btn flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium">
+          <i class="fa-solid fa-leaf text-emerald-400"></i> Demo Mode
         </button>
       </div>
     </div>
+
+    <p class="text-center text-zinc-600 text-xs mt-6">© 2024 YieldGuard AI. Empowering Ugandan farmers.</p>
   </div>
 
   <script>
-    // ===========================================
-    // 🔑 PASTE YOUR GEMINI API KEY HERE
-    // ===========================================
-    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"; // <-- REPLACE THIS WITH YOUR ACTUAL API KEY
-    
-    // ===========================================
-    // DATA ARRAYS
-    // ===========================================
-    const riskData = [
-      { farmer: "Amina Nakato", crop: "Matooke", district: "Mubende", days: 18, risk: "High", action: "Sell today" },
-      { farmer: "John Mugisha", crop: "Maize", district: "Masaka", days: 42, risk: "Medium", action: "Dry immediately" },
-      { farmer: "Sarah Nansubuga", crop: "Beans", district: "Kapchorwa", days: 9, risk: "High", action: "Contact buyer" },
-      { farmer: "David Okello", crop: "Cassava", district: "Mubende", days: 31, risk: "Low", action: "Store 5 more days" },
-      { farmer: "Grace Akello", crop: "Matooke", district: "Jinja", days: 15, risk: "Medium", action: "Monitor humidity" },
-      { farmer: "Robert Ssekitoleko", crop: "Maize", district: "Mubende", days: 28, risk: "Low", action: "Ready for harvest" }
-    ];
+    // Toggle between Sign In and Sign Up
+    const signinToggle = document.getElementById('signin-toggle');
+    const signupToggle = document.getElementById('signup-toggle');
+    const signinForm = document.getElementById('signin-form');
+    const signupForm = document.getElementById('signup-form');
 
-    const recs = [
-      { crop: "Matooke – Amina", text: "Sell within 48 hrs. Kampala price rising 12% this week.", emoji: "📤" },
-      { crop: "Maize – John", text: "Apply solar drying today. Humidity will spike tomorrow.", emoji: "☀️" }
-    ];
+    signinToggle.addEventListener('click', () => {
+      signinToggle.classList.add('active');
+      signinToggle.classList.remove('inactive');
+      signupToggle.classList.add('inactive');
+      signupToggle.classList.remove('active');
+      signinForm.style.display = 'block';
+      signupForm.style.display = 'none';
+    });
 
-    const farmers = [
-      { name: "Amina Nakato", district: "Mubende", crop: "Matooke", acres: 3.5, status: "Active", lastActive: "Today" },
-      { name: "John Mugisha", district: "Masaka", crop: "Maize", acres: 5.0, status: "Active", lastActive: "Yesterday" },
-      { name: "Sarah Nansubuga", district: "Kapchorwa", crop: "Beans", acres: 2.0, status: "At Risk", lastActive: "2 days ago" },
-      { name: "David Okello", district: "Mubende", crop: "Cassava", acres: 4.2, status: "Active", lastActive: "Today" },
-      { name: "Grace Akello", district: "Jinja", crop: "Matooke", acres: 3.0, status: "Active", lastActive: "Today" },
-      { name: "Robert Ssekitoleko", district: "Mubende", crop: "Maize", acres: 6.5, status: "Inactive", lastActive: "5 days ago" }
-    ];
+    signupToggle.addEventListener('click', () => {
+      signupToggle.classList.add('active');
+      signupToggle.classList.remove('inactive');
+      signinToggle.classList.add('inactive');
+      signinToggle.classList.remove('active');
+      signupForm.style.display = 'block';
+      signinForm.style.display = 'none';
+    });
 
-    const districts = [
-      { name: "Mubende", risk: "High", farms: 45, weather: "Humid" },
-      { name: "Masaka", risk: "Medium", farms: 38, weather: "Rain expected" },
-      { name: "Kapchorwa", risk: "High", farms: 22, weather: "Dry" },
-      { name: "Jinja", risk: "Low", farms: 31, weather: "Sunny" },
-      { name: "Gulu", risk: "Low", farms: 28, weather: "Clear" },
-      { name: "Mbale", risk: "Medium", farms: 20, weather: "Cloudy" }
-    ];
-
-    const reportData = [
-      { metric: "Farms Monitored", thisWeek: "184", lastWeek: "172", change: "+7%", status: "positive" },
-      { metric: "Alerts Sent", thisWeek: "41", lastWeek: "35", change: "+17%", status: "positive" },
-      { metric: "Risk Events", thisWeek: "23", lastWeek: "28", change: "-18%", status: "positive" },
-      { metric: "Response Rate", thisWeek: "67%", lastWeek: "62%", change: "+5%", status: "positive" },
-      { metric: "Avg Response Time", thisWeek: "4.2h", lastWeek: "5.1h", change: "-18%", status: "positive" }
-    ];
-
-    // ===========================================
-    // SIMPLE AI AGENT - NO EXTERNAL API NEEDED
-    // ===========================================
-    // This works immediately without any API keys or CORS issues
-    
-    function getAIResponse(message) {
-        const lowerMsg = message.toLowerCase();
-        
-        // Get current context from dashboard data
-        const highRiskCount = riskData.filter(r => r.risk === "High").length;
-        const highRiskFarmers = riskData.filter(r => r.risk === "High").map(r => r.farmer).join(', ');
-        const rainyDistricts = districts.filter(d => d.weather.includes('Rain')).map(d => d.name).join(', ');
-        
-        // MATOOKE/BANANA queries
-        if (lowerMsg.includes('matooke') || lowerMsg.includes('banana') || lowerMsg.includes('plantain')) {
-            return "🍌 **Matooke Advice:**\n" +
-                   "• Current price: UGX 1,490/kg (↑12% this week)\n" +
-                   "• Storage: Keep in cool, dry place\n" +
-                   "• Warning: High humidity (82%) in Mubende - sell within 48hrs if stored\n" +
-                   "• Farmers with matooke: Amina Nakato (18 days stored - HIGH RISK), Grace Akello (15 days stored)";
-        }
-        
-        // MAIZE queries
-        else if (lowerMsg.includes('maize') || lowerMsg.includes('corn')) {
-            return "🌽 **Maize Advice:**\n" +
-                   "• Current price: UGX 1,200/kg\n" +
-                   "• Moisture: Must be below 18% for storage\n" +
-                   "• Recommendation: Solar drying today (rain expected in 2 days)\n" +
-                   "• Farmers: John Mugisha (42 days - needs drying), Robert Ssekitoleko (ready for harvest)";
-        }
-        
-        // BEANS queries
-        else if (lowerMsg.includes('bean') || lowerMsg.includes('beans')) {
-            return "🫘 **Beans Advice:**\n" +
-                   "• Current price: UGX 2,800/kg\n" +
-                   "• Storage: Must be fully dried\n" +
-                   "• Pest control: Solar treatment prevents weevils\n" +
-                   "• Urgent: Sarah Nansubuga (Kapchorwa) - contact buyer immediately (9 days stored)";
-        }
-        
-        // CASSAVA queries
-        else if (lowerMsg.includes('cassava') || lowerMsg.includes('muhogo')) {
-            return "🌱 **Cassava Advice:**\n" +
-                   "• Can stay in ground until ready\n" +
-                   "• After harvest: Process within 48 hours\n" +
-                   "• Best for: Flour production\n" +
-                   "• Farmer: David Okello (31 days stored - LOW RISK)";
-        }
-        
-        // WEATHER queries
-        else if (lowerMsg.includes('weather') || lowerMsg.includes('rain') || lowerMsg.includes('sun')) {
-            if (rainyDistricts) {
-                return `🌧️ **Weather Alert:**\nRain expected in ${rainyDistricts} within 48 hours. Farmers in these areas should harvest or cover produce. Current temperature: 28°C, Humidity: 82% in Mubende.`;
-            } else {
-                return "☀️ **Weather Update:**\nClear skies across most districts. Good conditions for drying and harvesting. No rain expected in the next 48 hours.";
-            }
-        }
-        
-        // RISK/ALERT queries
-        else if (lowerMsg.includes('risk') || lowerMsg.includes('danger') || lowerMsg.includes('alert') || lowerMsg.includes('problem')) {
-            const highRisk = riskData.filter(r => r.risk === "High");
-            if (highRisk.length > 0) {
-                return `⚠️ **HIGH RISK ALERT:**\n${highRisk.length} farms need urgent attention:\n` +
-                       highRisk.map(r => `• ${r.farmer} (${r.crop} in ${r.district}): ${r.action}`).join('\n');
-            } else {
-                return "✅ No high risk farms at the moment. All farms within safe parameters.";
-            }
-        }
-        
-        // PRICE/MARKET queries
-        else if (lowerMsg.includes('price') || lowerMsg.includes('sell') || lowerMsg.includes('market') || lowerMsg.includes('ugx')) {
-            return "💰 **Market Prices (UGX/kg):**\n" +
-                   "• Matooke: 1,490 ↑ (Kampala)\n" +
-                   "• Maize: 1,200 →\n" +
-                   "• Beans: 2,800 →\n" +
-                   "• Best market: Kampala currently offering highest prices\n" +
-                   "• Tip: Prices expected to rise further this week";
-        }
-        
-        // FARMER queries
-        else if (lowerMsg.includes('farmer') || lowerMsg.includes('who')) {
-            return "👨‍🌾 **Registered Farmers:**\n" +
-                   farmers.map(f => `• ${f.name} (${f.district}): ${f.crop}, ${f.acres} acres - ${f.status}`).join('\n') +
-                   "\n\nTotal: 184 farmers across 12 districts";
-        }
-        
-        // DISTRICT queries
-        else if (lowerMsg.includes('district') || lowerMsg.includes('where')) {
-            return "🗺️ **Districts Summary:**\n" +
-                   districts.map(d => `• ${d.name}: ${d.risk} risk, ${d.farms} farms, ${d.weather}`).join('\n');
-        }
-        
-        // GREETINGS
-        else if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
-            return `👋 **Hello! I'm YieldGuard AI Agent**\n\nI'm monitoring ${riskData.length} farms across ${districts.length} districts. Currently ${highRiskCount} farms need urgent attention. How can I help you today?\n\nTry asking about:\n• Specific crops (matooke, maize, beans, cassava)\n• Weather forecasts\n• Risk alerts\n• Market prices\n• Specific farmers or districts`;
-        }
-        
-        // HELP
-        else if (lowerMsg.includes('help') || lowerMsg.includes('what can you')) {
-            return "🤖 **I can help with:**\n" +
-                   "• Crop storage advice (matooke, maize, beans, cassava)\n" +
-                   "• Weather forecasts & alerts\n" +
-                   "• Risk assessment for farms\n" +
-                   "• Market prices in Uganda\n" +
-                   "• Farmer information\n" +
-                   "• District-wise risk maps\n\n" +
-                   "What would you like to know?";
-        }
-        
-        // THANK YOU
-        else if (lowerMsg.includes('thank')) {
-            return "🙏 You're welcome! Happy to help with your farming needs. Any other questions?";
-        }
-        
-        // DEFAULT RESPONSE
-        else {
-            return `🤔 I'm not sure about that. I can help with:\n\n` +
-                   `• Crop advice (try "matooke", "maize", "beans", or "cassava")\n` +
-                   `• Weather (try "weather in Mubende")\n` +
-                   `• Risk alerts (try "show risks")\n` +
-                   `• Market prices (try "prices")\n` +
-                   `• Farmers (try "list farmers")\n\n` +
-                   `Currently monitoring ${riskData.length} farms with ${highRiskCount} at high risk.`;
-        }
+    // Clear error messages
+    function clearErrors() {
+      document.querySelectorAll('.error-message').forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+      });
+      document.querySelectorAll('.success-message').forEach(el => {
+        el.style.display = 'none';
+      });
     }
 
-    // ===========================================
-    // CHAT FUNCTIONS
-    // ===========================================
-    function openChat() {
-      document.getElementById('chat-panel').classList.remove('hidden');
-      document.getElementById('chat-input').focus();
-      const chatWindow = document.getElementById('chat-window');
-      if (!chatWindow.hasChildNodes()) {
-        addChatMessage("👋 **Hello! I'm your YieldGuard AI Agent**\n\nI can help with crop advice, weather forecasts, market prices, and risk assessment for your farms. What would you like to know?", true);
+    function showError(elementId, message) {
+      const errorEl = document.getElementById(elementId);
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
       }
     }
 
-    function closeChat() {
-      document.getElementById('chat-panel').classList.add('hidden');
-    }
-
-    function addChatMessage(text, isAI = true) {
-      const chat = document.getElementById('chat-window');
-      const msg = document.createElement('div');
-      msg.className = `flex ${isAI ? '' : 'justify-end'}`;
+    // Handle Login
+    function handleLogin() {
+      clearErrors();
       
-      // Convert markdown-style bold to HTML
-      const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const rememberMe = document.getElementById('remember-me').checked;
       
-      msg.innerHTML = `
-        <div class="${isAI ? 'bg-zinc-800 px-5 py-3.5 rounded-2xl max-w-[82%]' : 'bg-emerald-600/30 text-white px-5 py-3.5 rounded-2xl max-w-[75%]'}">
-          ${formattedText}
-        </div>
-      `;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    // Typing indicator
-    function addTypingIndicator() {
-        const chat = document.getElementById('chat-window');
-        const indicator = document.createElement('div');
-        indicator.className = 'typing-indicator flex items-center gap-1 bg-zinc-800 px-4 py-2 rounded-2xl w-16';
-        indicator.innerHTML = '<span class="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"></span><span class="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:0.2s"></span><span class="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:0.4s"></span>';
-        chat.appendChild(indicator);
-        chat.scrollTop = chat.scrollHeight;
-        return indicator;
-    }
-
-    function removeTypingIndicator(indicator) {
-        if (indicator && indicator.parentNode) {
-            indicator.parentNode.removeChild(indicator);
-        }
-    }
-
-    function sendChatMessage() {
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text) return;
+      let isValid = true;
       
-      // Add user message
-      addChatMessage(text, false);
-      input.value = '';
+      if (!email) {
+        showError('login-email-error', 'Email is required');
+        isValid = false;
+      } else if (!email.includes('@')) {
+        showError('login-email-error', 'Enter a valid email');
+        isValid = false;
+      }
       
-      // Show typing indicator
-      const typingIndicator = addTypingIndicator();
+      if (!password) {
+        showError('login-password-error', 'Password is required');
+        isValid = false;
+      } else if (password.length < 3) {
+        showError('login-password-error', 'Password must be at least 3 characters');
+        isValid = false;
+      }
       
-      // Simulate AI thinking time
-      setTimeout(() => {
-          // Get AI response from our local function (no API needed)
-          const aiResponse = getAIResponse(text);
-          
-          // Remove typing indicator and add response
-          removeTypingIndicator(typingIndicator);
-          addChatMessage(aiResponse, true);
-      }, 1000); // 1 second delay for realism
-    }
-
-    function simulateSMS() {
-      alert("📩 Simulated SMS from farmer:\n\n“My matooke has been stored 18 days. Sell now?”");
+      if (!isValid) return;
       
-      // Optional: Open chat with this context
-      openChat();
-      setTimeout(() => {
-        addChatMessage("📱 **Simulated SMS received:**\n\n“My matooke has been stored 18 days. Sell now?”", true);
-        addChatMessage("Can you advise on this?", false);
+      // Demo login - accept any email with password "demo123"
+      // Also check if user exists in localStorage
+      const users = JSON.parse(localStorage.getItem('yieldguard_users') || '[]');
+      const user = users.find(u => u.email === email && u.password === password);
+      
+      if (password === 'demo123' || user) {
+        // Store session
+        const sessionUser = user || { name: email.split('@')[0], email: email, district: 'Mubende', crop: 'Matooke' };
+        localStorage.setItem('yieldguard_session', JSON.stringify({
+          user: sessionUser,
+          loggedIn: true,
+          loginTime: new Date().toISOString()
+        }));
         
-        setTimeout(() => {
-          addChatMessage(getAIResponse("matooke 18 days"), true);
-        }, 1500);
-      }, 500);
-    }
-
-    // ===========================================
-    // POPULATE FUNCTIONS
-    // ===========================================
-    function populateRiskTable() {
-      const tbody = document.getElementById('risk-table');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      riskData.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-b border-zinc-800 last:border-none hover:bg-zinc-800/50';
-        tr.innerHTML = `
-          <td class="py-5 md:py-6">
-            <div class="font-medium">${item.farmer}</div>
-            <div class="text-xs text-zinc-400">${item.crop}</div>
-          </td>
-          <td class="py-5 md:py-6 text-sm">${item.district}</td>
-          <td class="py-5 md:py-6 text-center text-sm">${item.days}</td>
-          <td class="py-5 md:py-6 text-center">
-            <span class="px-4 md:px-5 py-1 rounded-3xl text-xs font-medium ${item.risk === 'High' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}">
-              ${item.risk}
-            </span>
-          </td>
-          <td class="py-5 md:py-6 text-right">
-            <button class="bg-white/10 hover:bg-white/20 px-4 md:px-6 py-2 rounded-3xl text-xs font-medium">
-              ${item.action}
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function populateRecommendations() {
-      const container = document.getElementById('recommendations');
-      if (!container) return;
-      container.innerHTML = '';
-      recs.forEach(rec => {
-        const div = document.createElement('div');
-        div.className = 'bg-zinc-800 rounded-3xl p-4 md:p-5 flex gap-3 md:gap-4 items-start';
-        div.innerHTML = `
-          <div class="text-3xl md:text-4xl">${rec.emoji}</div>
-          <div>
-            <div class="font-medium">${rec.crop}</div>
-            <div class="text-xs md:text-sm text-zinc-300 mt-1">${rec.text}</div>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function populateFarmers() {
-      const container = document.getElementById('farmers-list');
-      if (!container) return;
-      container.innerHTML = '';
-      farmers.forEach(farmer => {
-        const div = document.createElement('div');
-        div.className = 'farmer-card';
-        const initials = farmer.name.split(' ').map(n => n[0]).join('');
-        div.innerHTML = `
-          <div class="farmer-avatar">${initials}</div>
-          <div class="flex-1">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-medium">${farmer.name}</div>
-                <div class="text-xs text-zinc-400">${farmer.district} • ${farmer.crop} • ${farmer.acres} acres</div>
-              </div>
-              <div class="text-right">
-                <span class="text-xs px-3 py-1 rounded-full ${farmer.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400' : farmer.status === 'At Risk' ? 'bg-red-500/10 text-red-400' : 'bg-zinc-500/10 text-zinc-400'}">
-                  ${farmer.status}
-                </span>
-                <div class="text-xs text-zinc-500 mt-1">${farmer.lastActive}</div>
-              </div>
-            </div>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function populateRiskMap() {
-      const container = document.getElementById('risk-map');
-      if (!container) return;
-      container.innerHTML = '';
-      districts.forEach(district => {
-        const div = document.createElement('div');
-        const riskClass = district.risk === 'High' ? 'high-risk' : district.risk === 'Medium' ? 'medium-risk' : 'low-risk';
-        div.className = `district-card ${riskClass}`;
-        div.innerHTML = `
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="font-semibold">${district.name}</h3>
-            <span class="text-xs px-2 py-1 rounded-full ${district.risk === 'High' ? 'bg-red-500/10 text-red-400' : district.risk === 'Medium' ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'}">
-              ${district.risk}
-            </span>
-          </div>
-          <div class="text-xs text-zinc-400 mb-2">${district.farms} farms</div>
-          <div class="flex items-center gap-2 text-xs">
-            <i class="fa-solid fa-cloud ${district.weather === 'Rain expected' ? 'text-sky-400' : 'text-zinc-400'}"></i>
-            <span>${district.weather}</span>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function populateReportsTable() {
-      const tbody = document.getElementById('reports-table');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      reportData.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-b border-zinc-800 last:border-none';
-        tr.innerHTML = `
-          <td class="py-4 text-left">${item.metric}</td>
-          <td class="py-4 text-center">${item.thisWeek}</td>
-          <td class="py-4 text-center">${item.lastWeek}</td>
-          <td class="py-4 text-center ${item.status === 'positive' ? 'text-emerald-400' : 'text-red-400'}">${item.change}</td>
-          <td class="py-4 text-right">
-            <span class="px-3 py-1 rounded-full text-xs ${item.status === 'positive' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}">
-              ${item.status === 'positive' ? '↑ Improving' : '↓ Needs attention'}
-            </span>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function createPriceChart() {
-      const ctx = document.getElementById('priceChart');
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['Feb 21','Feb 22','Feb 23','Feb 24','Feb 25','Feb 26','Feb 27'],
-          datasets: [{
-            label: 'Matooke (UGX/kg)',
-            data: [1200, 1180, 1250, 1380, 1420, 1350, 1490],
-            borderColor: '#10b981',
-            tension: 0.4,
-            borderWidth: 3,
-            pointRadius: 0
-          }]
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { grid: { color: '#27272a' } },
-            x: { grid: { color: '#27272a' } }
-          }
+        if (rememberMe) {
+          localStorage.setItem('yieldguard_remember', email);
         }
-      });
+        
+        // Redirect to dashboard
+        window.location.href = 'dashboard.html';
+      } else {
+        showError('login-password-error', 'Invalid credentials. Try "demo123" as password');
+      }
     }
-
-    // Tab Switching Function
-    function switchTab(tabIndex) {
-      // Hide all sections
-      document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.remove('active');
-      });
+    
+    // Handle Signup
+    function handleSignup() {
+      clearErrors();
       
-      // Show selected section
-      const sections = ['dashboard-section', 'farmers-section', 'riskmap-section', 'reports-section'];
-      document.getElementById(sections[tabIndex]).classList.add('active');
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const district = document.getElementById('signup-district').value;
+      const crop = document.getElementById('signup-crop').value;
+      const password = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-confirm').value;
+      const terms = document.getElementById('signup-terms').checked;
       
-      // Update page title
-      const titles = ['Dashboard', 'Farmers', 'Risk Map', 'Reports'];
-      const subtitles = [
-        'Yield Optimization & Food Security AI Agent • Uganda',
-        'Farmer Management & Engagement Dashboard',
-        'Real-time Risk Assessment by District',
-        'Performance Analytics & Insights'
-      ];
-      document.getElementById('page-title').textContent = titles[tabIndex];
-      document.getElementById('page-subtitle').textContent = subtitles[tabIndex];
+      let isValid = true;
       
-      // Update nav links (desktop)
-      document.querySelectorAll('.tab-link').forEach((link, index) => {
-        if (index === tabIndex) {
-          link.classList.add('text-emerald-400');
-          link.classList.remove('text-zinc-400');
-        } else {
-          link.classList.remove('text-emerald-400');
-          link.classList.add('text-zinc-400');
-        }
-      });
+      if (!name) {
+        showError('signup-name-error', 'Full name is required');
+        isValid = false;
+      } else if (name.length < 3) {
+        showError('signup-name-error', 'Name must be at least 3 characters');
+        isValid = false;
+      }
       
-      // Update mobile nav active states
-      setActiveNav(tabIndex);
+      if (!email) {
+        showError('signup-email-error', 'Email is required');
+        isValid = false;
+      } else if (!email.includes('@')) {
+        showError('signup-email-error', 'Enter a valid email');
+        isValid = false;
+      }
       
-      // Repopulate data when switching to specific tabs
-      if (tabIndex === 1) populateFarmers();
-      if (tabIndex === 2) populateRiskMap();
-      if (tabIndex === 3) populateReportsTable();
+      if (!password) {
+        showError('signup-password-error', 'Password is required');
+        isValid = false;
+      } else if (password.length < 6) {
+        showError('signup-password-error', 'Password must be at least 6 characters');
+        isValid = false;
+      }
+      
+      if (password !== confirm) {
+        showError('signup-confirm-error', 'Passwords do not match');
+        isValid = false;
+      }
+      
+      if (!terms) {
+        alert('Please agree to the Terms and Privacy Policy');
+        isValid = false;
+      }
+      
+      if (!isValid) return;
+      
+      // Check if user already exists
+      const users = JSON.parse(localStorage.getItem('yieldguard_users') || '[]');
+      if (users.some(u => u.email === email)) {
+        showError('signup-email-error', 'Email already registered. Please sign in.');
+        return;
+      }
+      
+      // Create new user
+      const newUser = {
+        id: Date.now(),
+        name: name,
+        email: email,
+        district: district,
+        crop: crop,
+        password: password,
+        registeredAt: new Date().toISOString()
+      };
+      
+      users.push(newUser);
+      localStorage.setItem('yieldguard_users', JSON.stringify(users));
+      
+      // Auto-login after signup
+      localStorage.setItem('yieldguard_session', JSON.stringify({
+        user: newUser,
+        loggedIn: true,
+        loginTime: new Date().toISOString()
+      }));
+      
+      // Show success and redirect
+      alert('Account created successfully! Welcome to YieldGuard AI.');
+      window.location.href = 'dashboard.html';
     }
-
-    function setActiveNav(index) {
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach((item, i) => {
-        if (i === index) {
-          item.classList.add('active');
-        } else {
-          item.classList.remove('active');
-        }
-      });
+    
+    // Social login
+    function socialLogin(type) {
+      if (type === 'demo') {
+        localStorage.setItem('yieldguard_session', JSON.stringify({
+          user: { name: 'Demo Farmer', email: 'demo@yieldguard.ug', district: 'Mubende', crop: 'Matooke' },
+          loggedIn: true,
+          loginTime: new Date().toISOString()
+        }));
+        window.location.href = 'dashboard.html';
+      } else if (type === 'google') {
+        alert('Google login demo - In production, this would integrate with Google OAuth');
+      }
     }
-
-    // ===========================================
-    // INITIALIZE ON PAGE LOAD
-    // ===========================================
-    window.addEventListener('load', () => {
-      populateRiskTable();
-      populateRecommendations();
-      populateFarmers();
-      populateRiskMap();
-      populateReportsTable();
-      createPriceChart();
-      setActiveNav(0);
-      
-      console.log("✅ YieldGuard AI loaded successfully!");
-      console.log("ℹ️ Using local AI agent (no API key needed)");
-    });
+    
+    // Check if already logged in
+    const session = JSON.parse(localStorage.getItem('yieldguard_session') || '{}');
+    if (session.loggedIn) {
+      window.location.href = 'dashboard.html';
+    }
+    
+    // Pre-fill demo credentials
+    const rememberedEmail = localStorage.getItem('yieldguard_remember');
+    if (rememberedEmail) {
+      document.getElementById('login-email').value = rememberedEmail;
+      document.getElementById('remember-me').checked = true;
+    }
   </script>
 </body>
 </html>
