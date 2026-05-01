@@ -347,6 +347,7 @@
             <a href="#" onclick="switchTab(1)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Farmers</a>
             <a href="#" onclick="switchTab(2)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Risk Map</a>
             <a href="#" onclick="switchTab(3)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Analytics</a>
+            <a href="#" onclick="switchTab(4)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors" style="display:flex;align-items:center;gap:5px">SMS Inbox <span id="sms-badge" style="background:#ef4444;color:white;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:20px">3</span></a>
           </div>
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-900/60 bg-emerald-950/30">
@@ -667,6 +668,73 @@
       </div>
     </div>
 
+    <!-- ====================== SMS INBOX ====================== -->
+    <div id="sms-section" class="content-section">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 scroll-reveal">
+        <div class="kpi-card"><div class="text-red-400 text-xs font-bold uppercase mb-1">Unread</div><div class="text-4xl font-bold num" id="sms-stat-unread">3</div><div class="text-zinc-500 text-sm mt-1">Need reply</div></div>
+        <div class="kpi-card"><div class="text-emerald-400 text-xs font-bold uppercase mb-1">Replied</div><div class="text-4xl font-bold num" id="sms-stat-replied">0</div><div class="text-zinc-500 text-sm mt-1">This session</div></div>
+        <div class="kpi-card"><div class="text-amber-400 text-xs font-bold uppercase mb-1">Total Messages</div><div class="text-4xl font-bold num" id="sms-stat-total">8</div><div class="text-zinc-500 text-sm mt-1">All farmers</div></div>
+        <div class="kpi-card"><div class="text-sky-400 text-xs font-bold uppercase mb-1">AI Drafted</div><div class="text-4xl font-bold num" id="sms-stat-ai">0</div><div class="text-zinc-500 text-sm mt-1">Replies drafted</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;min-height:580px" id="sms-grid">
+        <!-- LEFT: LIST -->
+        <div class="glass-card" style="display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <div style="font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-comments" style="color:var(--green)"></i> Conversations</div>
+            <div style="display:flex;gap:5px">
+              <button onclick="filterSMS('all')" id="sms-filter-all" style="padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600;cursor:pointer;background:var(--green);color:#050a05;border:none;transition:all .2s">All</button>
+              <button onclick="filterSMS('unread')" id="sms-filter-unread" style="padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.06);color:#9ca3af;border:1px solid rgba(255,255,255,0.1);transition:all .2s">Unread</button>
+            </div>
+          </div>
+          <div id="sms-conversation-list" style="flex:1;overflow-y:auto;padding:6px"></div>
+        </div>
+
+        <!-- RIGHT: THREAD -->
+        <div class="glass-card" style="display:flex;flex-direction:column;overflow:hidden">
+          <div id="sms-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#4b5563;gap:12px;padding:40px;text-align:center">
+            <i class="fa-solid fa-comment-sms" style="font-size:3rem;opacity:.25"></i>
+            <div style="font-weight:600">Select a conversation</div>
+            <div style="font-size:.78rem">Click a farmer on the left to read their messages and send a reply</div>
+          </div>
+          <div id="sms-thread-content" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+            <div id="sms-thread-header" style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(16,185,129,0.05);flex-shrink:0"></div>
+            <div id="sms-thread-messages" style="flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px;font-size:.84rem"></div>
+            <!-- AI bar -->
+            <div id="sms-ai-bar" style="padding:10px 16px;background:rgba(56,189,248,0.07);border-top:1px solid rgba(56,189,248,0.15);display:none;align-items:flex-start;gap:10px;flex-shrink:0">
+              <i class="fa-solid fa-robot" style="color:#38bdf8;font-size:.85rem;margin-top:3px;flex-shrink:0"></i>
+              <div style="flex:1"><div style="font-size:.68rem;color:#38bdf8;font-weight:700;margin-bottom:3px">AI SUGGESTED REPLY</div><div id="sms-ai-suggestion" style="font-size:.78rem;color:#cbd5e1;line-height:1.55"></div></div>
+              <button onclick="useAISuggestion()" style="background:#38bdf8;color:#050a05;font-weight:700;font-size:.72rem;padding:6px 12px;border-radius:8px;cursor:pointer;border:none;white-space:nowrap;flex-shrink:0;transition:all .2s" onmouseover="this.style.background='#7dd3fc'" onmouseout="this.style.background='#38bdf8'">Use this ↓</button>
+            </div>
+            <!-- Reply box -->
+            <div style="padding:12px 16px;border-top:1px solid var(--border);background:rgba(0,0,0,0.25);flex-shrink:0">
+              <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+                <button onclick="generateAIReply()" style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid rgba(56,189,248,0.25);padding:5px 11px;border-radius:20px;font-size:.7rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .2s"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Draft</button>
+                <button onclick="insertTemplate('price')" class="tpl-btn">💰 Price</button>
+                <button onclick="insertTemplate('weather')" class="tpl-btn">🌧️ Weather</button>
+                <button onclick="insertTemplate('sell')" class="tpl-btn">📦 Sell Now</button>
+                <button onclick="insertTemplate('storage')" class="tpl-btn">🏚️ Storage</button>
+              </div>
+              <div style="display:flex;gap:8px;align-items:flex-end">
+                <textarea id="sms-reply-input" rows="2" placeholder="Type reply... will be sent as SMS to farmer's phone" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 14px;color:white;font-family:inherit;font-size:.82rem;outline:none;resize:none;line-height:1.5;transition:border-color .2s" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" oninput="updateSMSCharCount(this)"></textarea>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+                  <span id="sms-char-count" style="font-size:.62rem;color:#6b7280;font-family:'JetBrains Mono',monospace">0/160</span>
+                  <button onclick="sendSMSReply()" style="width:42px;height:42px;border-radius:12px;background:var(--green);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;transition:all .2s" onmouseover="this.style.background='#34d399'" onmouseout="this.style.background='var(--green)'"><i class="fa-solid fa-paper-plane" style="color:#050a05"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOBILE RESPONSIVE: stack on small screens -->
+      <style>
+        .tpl-btn{background:rgba(255,255,255,0.05);color:#9ca3af;border:1px solid rgba(255,255,255,0.1);padding:5px 10px;border-radius:20px;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s}
+        .tpl-btn:hover{background:rgba(255,255,255,0.1);color:#e5e7eb}
+        @media(max-width:767px){#sms-grid{grid-template-columns:1fr !important} #sms-grid > div:first-child{max-height:220px}}
+      </style>
+    </div>
+
   </div>
 
   <!-- MOBILE BOTTOM NAV -->
@@ -676,7 +744,7 @@
       <button onclick="switchTab(1)" class="nav-item"><i class="fa-solid fa-users text-xl"></i><span class="nav-tooltip">Farmers</span></button>
       <button onclick="switchTab(2)" class="nav-item"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="nav-tooltip">Risk Map</span></button>
       <button onclick="switchTab(3)" class="nav-item"><i class="fa-solid fa-chart-line text-xl"></i><span class="nav-tooltip">Analytics</span></button>
-      <button onclick="openChat()" class="nav-item" style="color:var(--green)"><i class="fa-solid fa-robot text-xl"></i><span class="nav-tooltip">AI Agent</span></button>
+      <button onclick="switchTab(4)" class="nav-item" style="position:relative"><i class="fa-solid fa-comments text-xl"></i><span id="sms-badge-mob" style="position:absolute;top:2px;right:8px;background:#ef4444;color:white;font-size:.55rem;font-weight:700;padding:1px 5px;border-radius:20px">3</span><span class="nav-tooltip">SMS Inbox</span></button>
     </div>
   </nav>
 
@@ -1339,14 +1407,15 @@
   // ============================================================
   function switchTab(tabIndex) {
     document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
-    const sections = ['dashboard-section','farmers-section','riskmap-section','reports-section'];
+    const sections = ['dashboard-section','farmers-section','riskmap-section','reports-section','sms-section'];
     document.getElementById(sections[tabIndex]).classList.add('active');
-    const titles = ['Dashboard','Farmers','Risk Map','Analytics'];
+    const titles = ['Dashboard','Farmers','Risk Map','Analytics','SMS Inbox'];
     const subtitles = [
       'Yield Optimization & Food Security AI • Uganda',
       'Farmer Management & Engagement Dashboard',
       'Real-time Risk Assessment by District',
-      'Performance Analytics & Insights'
+      'Performance Analytics & Insights',
+      'Farmer Messages & AI-Powered Reply Centre'
     ];
     document.getElementById('page-title').textContent = titles[tabIndex];
     document.getElementById('page-subtitle').textContent = subtitles[tabIndex];
@@ -1359,7 +1428,322 @@
     if (tabIndex===1) { populateFarmers(); buildFilterChips(); }
     if (tabIndex===2) { populateRiskMap(); populateRiskFactors(); }
     if (tabIndex===3) populateReportsTable();
+    if (tabIndex===4) { buildSMSInbox(); }
     window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  // ============================================================
+  // SMS INBOX
+  // ============================================================
+  let smsConversations = [
+    {
+      id:1, farmer:'Amina Nakato', phone:'+256 123 456 789', district:'Mubende', crop:'Matooke',
+      unread:true, time:'5 min ago',
+      messages:[
+        { from:'farmer', text:'Musawo, matooke yangu esula. Nsale kaakano oba ngoberera?', time:'5 min ago', translated:'Doctor, my matooke is ripening. Should I sell now or wait?' },
+        { from:'farmer', text:'18 days now in store. Weather very hot here.', time:'4 min ago' },
+      ]
+    },
+    {
+      id:2, farmer:'John Mugisha', phone:'+256 234 567 890', district:'Masaka', crop:'Maize',
+      unread:true, time:'23 min ago',
+      messages:[
+        { from:'farmer', text:'My maize has white powder on the leaves. What disease is this?', time:'23 min ago' },
+      ]
+    },
+    {
+      id:3, farmer:'Sarah Nansubuga', phone:'+256 345 678 901', district:'Kapchorwa', crop:'Beans',
+      unread:true, time:'1 hr ago',
+      messages:[
+        { from:'farmer', text:'URGENT - something eating my beans at night. Small green caterpillars everywhere!', time:'1 hr ago' },
+        { from:'farmer', text:'I lost half of row 3 already. Please help fast.', time:'58 min ago' },
+      ]
+    },
+    {
+      id:4, farmer:'Robert Ssekitoleko', phone:'+256 678 901 234', district:'Mubende', crop:'Maize',
+      unread:false, time:'2 hrs ago',
+      messages:[
+        { from:'farmer', text:'Good morning. Rain is coming they say. My maize is ready but I have not harvested. What should I do?', time:'2 hrs ago' },
+        { from:'system', text:'YieldGuard Alert: Rain forecast in Mubende in 48hrs. Recommend harvesting mature maize before Thursday. Market price currently 1,200 UGX/kg.', time:'1 hr 50 min ago' },
+        { from:'farmer', text:'Thank you. I will harvest tomorrow morning.', time:'1 hr 30 min ago' },
+      ]
+    },
+    {
+      id:5, farmer:'Florence Apio', phone:'+256 789 012 345', district:'Gulu', crop:'Sorghum',
+      unread:false, time:'3 hrs ago',
+      messages:[
+        { from:'farmer', text:'When is the best time to plant sorghum in Gulu? Soil is very dry now.', time:'3 hrs ago' },
+        { from:'system', text:'Hello Florence! In Gulu, best planting is at start of rains (March-April or August). Current dry conditions not ideal. Wait for first rains then plant within 2 weeks. Use early maturing varieties like SESO 3.', time:'2 hrs 45 min ago' },
+        { from:'farmer', text:'OK thank you. I will wait.', time:'2 hrs ago' },
+      ]
+    },
+    {
+      id:6, farmer:'Charles Byarugaba', phone:'+256 890 123 456', district:'Kabale', crop:'Irish Potatoes',
+      unread:false, time:'Yesterday',
+      messages:[
+        { from:'farmer', text:'My potatoes in storage are going soft and smelling bad. What do I do?', time:'Yesterday 4pm' },
+        { from:'system', text:'Hi Charles! This sounds like bacterial soft rot. Remove all affected potatoes immediately. Store in cool dry place with good air flow. Do not wash before storage. Treat remaining with wood ash. Sell good stock soon.', time:'Yesterday 4:15pm' },
+      ]
+    },
+    {
+      id:7, farmer:'Emmanuel Odongo', phone:'+256 012 345 678', district:'Lira', crop:'Groundnuts',
+      unread:false, time:'Yesterday',
+      messages:[
+        { from:'farmer', text:'3 weeks no rain. My groundnuts are wilting badly. Can anything be saved?', time:'Yesterday 9am' },
+        { from:'system', text:'Emmanuel, sorry to hear. For wilting groundnuts: 1) Mulch around plants to retain soil moisture 2) If you have water, irrigate early morning only 3) Remove worst affected plants to save others 4) Contact extension worker in Lira for emergency support.', time:'Yesterday 9:30am' },
+        { from:'farmer', text:'I will try the mulching today. Thank you.', time:'Yesterday 10am' },
+      ]
+    },
+    {
+      id:8, farmer:'Phionah Nakabugo', phone:'+256 901 234 567', district:'Mbale', crop:'Coffee',
+      unread:false, time:'2 days ago',
+      messages:[
+        { from:'farmer', text:'I have 200kg Grade A coffee. Is price good now to sell?', time:'2 days ago' },
+        { from:'system', text:'Hello Phionah! Coffee prices in Mbale are currently 9,500 UGX/kg, up 8% this week. This is a good time to sell. Prices expected to stay strong through month end. Would you like buyer contacts in Mbale?', time:'2 days ago' },
+        { from:'farmer', text:'Yes please send buyer contacts.', time:'2 days ago' },
+        { from:'system', text:'Buyer contacts Mbale: 1) Sipi Coffee - 0772 345 678 2) Mt Elgon Co-op - 0701 234 567 3) Kawacom Uganda - 0414 256 789. Call before delivering.', time:'2 days ago' },
+      ]
+    },
+  ];
+
+  let activeSMSId = null;
+  let smsFilter = 'all';
+  let repliedCount = 0;
+  let aiDraftedCount = 0;
+
+  function buildSMSInbox() {
+    updateSMSStats();
+    renderConversationList();
+  }
+
+  function updateSMSStats() {
+    const unread = smsConversations.filter(c=>c.unread).length;
+    const setEl = (id,v)=>{ const el=document.getElementById(id); if(el)el.textContent=v; };
+    setEl('sms-stat-unread', unread);
+    setEl('sms-stat-replied', repliedCount);
+    setEl('sms-stat-total', smsConversations.reduce((s,c)=>s+c.messages.length, 0));
+    setEl('sms-stat-ai', aiDraftedCount);
+    setEl('sms-badge', unread > 0 ? unread : '');
+    setEl('sms-badge-mob', unread > 0 ? unread : '');
+    ['sms-badge','sms-badge-mob'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.style.display = unread>0?'inline':'none';
+    });
+  }
+
+  function filterSMS(type) {
+    smsFilter = type;
+    ['all','unread'].forEach(t=>{
+      const btn=document.getElementById('sms-filter-'+t);
+      if(!btn) return;
+      if(t===type){ btn.style.background='var(--green)';btn.style.color='#050a05';btn.style.border='none'; }
+      else{ btn.style.background='rgba(255,255,255,0.06)';btn.style.color='#9ca3af';btn.style.border='1px solid rgba(255,255,255,0.1)'; }
+    });
+    renderConversationList();
+  }
+
+  function renderConversationList() {
+    const container = document.getElementById('sms-conversation-list');
+    if (!container) return;
+    let list = smsFilter==='unread' ? smsConversations.filter(c=>c.unread) : smsConversations;
+    container.innerHTML = '';
+    list.forEach(conv => {
+      const lastMsg = conv.messages[conv.messages.length-1];
+      const isActive = activeSMSId === conv.id;
+      const div = document.createElement('div');
+      div.style.cssText = `padding:12px 14px;border-radius:12px;cursor:pointer;margin-bottom:4px;transition:all .2s;background:${isActive?'rgba(16,185,129,0.12)':conv.unread?'rgba(239,68,68,0.06)':'transparent'};border:1px solid ${isActive?'var(--green)':conv.unread?'rgba(239,68,68,0.2)':'transparent'}`;
+      div.onmouseover = () => { if(!isActive) div.style.background='rgba(255,255,255,0.04)'; };
+      div.onmouseout = () => { if(!isActive) div.style.background=conv.unread?'rgba(239,68,68,0.06)':'transparent'; };
+      const cropObj = CROPS_CATALOG.find(c=>c.name===conv.crop);
+      const initials = conv.farmer.split(' ').map(n=>n[0]).join('').slice(0,2);
+      div.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="position:relative;flex-shrink:0">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:white">${initials}</div>
+            ${conv.unread?`<div style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:#ef4444;border-radius:50%;border:2px solid #050a05"></div>`:''}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <span style="font-weight:${conv.unread?'700':'600'};font-size:.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${conv.farmer}</span>
+              <span style="font-size:.65rem;color:#6b7280;white-space:nowrap;font-family:'JetBrains Mono',monospace">${conv.time}</span>
+            </div>
+            <div style="font-size:.72rem;color:#6b7280;margin-top:2px;display:flex;align-items:center;gap:5px">
+              <span>${cropObj?cropObj.emoji:'🌿'}</span>
+              <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lastMsg.text.slice(0,45)}${lastMsg.text.length>45?'…':''}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      div.onclick = () => openSMSThread(conv.id);
+      container.appendChild(div);
+    });
+  }
+
+  function openSMSThread(id) {
+    activeSMSId = id;
+    const conv = smsConversations.find(c=>c.id===id);
+    if (!conv) return;
+    conv.unread = false;
+    updateSMSStats();
+    renderConversationList();
+
+    document.getElementById('sms-empty-state').style.display = 'none';
+    const thread = document.getElementById('sms-thread-content');
+    thread.style.display = 'flex';
+
+    const cropObj = CROPS_CATALOG.find(c=>c.name===conv.crop);
+    const initials = conv.farmer.split(' ').map(n=>n[0]).join('').slice(0,2);
+    document.getElementById('sms-thread-header').innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));display:flex;align-items:center;justify-content:center;font-weight:700;color:white;flex-shrink:0">${initials}</div>
+        <div>
+          <div style="font-weight:700">${conv.farmer}</div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px">
+            <i class="fa-solid fa-phone" style="color:var(--green);margin-right:4px"></i>${conv.phone} &nbsp;•&nbsp;
+            <i class="fa-solid fa-location-dot" style="color:var(--green);margin-right:4px"></i>${conv.district} &nbsp;•&nbsp;
+            ${cropObj?cropObj.emoji:''} ${conv.crop}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="callFarmer('${conv.phone}')" style="background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);padding:6px 12px;border-radius:20px;font-size:.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px"><i class="fa-solid fa-phone"></i> Call</button>
+        <button onclick="viewFarmerProfile('${conv.farmer}')" style="background:rgba(255,255,255,0.06);color:#9ca3af;border:1px solid rgba(255,255,255,0.1);padding:6px 12px;border-radius:20px;font-size:.72rem;font-weight:600;cursor:pointer">Profile</button>
+      </div>
+    `;
+
+    const msgContainer = document.getElementById('sms-thread-messages');
+    msgContainer.innerHTML = '';
+    conv.messages.forEach(msg => renderSMSMessage(msg, msgContainer));
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
+    // Hide AI bar on thread switch
+    document.getElementById('sms-ai-bar').style.display = 'none';
+    document.getElementById('sms-reply-input').value = '';
+    document.getElementById('sms-char-count').textContent = '0/160';
+  }
+
+  function renderSMSMessage(msg, container) {
+    const div = document.createElement('div');
+    const isSystem = msg.from === 'system';
+    const isFarmer = msg.from === 'farmer';
+    div.style.cssText = `display:flex;justify-content:${isFarmer?'flex-start':'flex-end'};gap:8px`;
+
+    let bubble = '';
+    if (isFarmer) {
+      bubble = `<div style="max-width:80%">
+        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:16px 16px 16px 4px;padding:10px 14px;line-height:1.55">${msg.text}</div>
+        ${msg.translated?`<div style="font-size:.68rem;color:#6b7280;margin-top:4px;padding-left:4px;font-style:italic">🌍 "${msg.translated}"</div>`:''}
+        <div style="font-size:.65rem;color:#4b5563;margin-top:4px;padding-left:4px;font-family:'JetBrains Mono',monospace">📱 ${msg.time}</div>
+      </div>`;
+    } else {
+      bubble = `<div style="max-width:80%">
+        <div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:16px 16px 4px 16px;padding:10px 14px;line-height:1.55;color:#d1fae5">${msg.text}</div>
+        <div style="font-size:.65rem;color:#4b5563;margin-top:4px;text-align:right;padding-right:4px;font-family:'JetBrains Mono',monospace">✅ Sent ${msg.time}</div>
+      </div>`;
+    }
+    div.innerHTML = bubble;
+    container.appendChild(div);
+  }
+
+  async function generateAIReply() {
+    const conv = smsConversations.find(c=>c.id===activeSMSId);
+    if (!conv) return;
+    const bar = document.getElementById('sms-ai-bar');
+    const suggestion = document.getElementById('sms-ai-suggestion');
+    bar.style.display = 'flex';
+    suggestion.textContent = 'Generating reply...';
+
+    if (!apiKey) {
+      suggestion.textContent = '⚠️ API key not set. Open AI Agent chat to add your key.';
+      return;
+    }
+
+    const lastFarmerMsg = [...conv.messages].reverse().find(m=>m.from==='farmer');
+    const context = `A Ugandan farmer named ${conv.farmer} from ${conv.district} grows ${conv.crop}. They sent this SMS: "${lastFarmerMsg?lastFarmerMsg.text:'(see conversation)'}". Write a SHORT, clear SMS reply (max 160 characters) with practical farming advice. No greetings. Direct, actionable, simple English.`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+        body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:200,
+          messages:[{ role:'user', content:context }]
+        })
+      });
+      const data = await res.json();
+      const reply = data.content&&data.content[0]&&data.content[0].text ? data.content[0].text.trim() : 'Unable to generate reply.';
+      suggestion.textContent = reply;
+      aiDraftedCount++;
+      updateSMSStats();
+    } catch {
+      suggestion.textContent = '⚠️ Could not reach AI. Check connection and API key.';
+    }
+  }
+
+  function useAISuggestion() {
+    const suggestion = document.getElementById('sms-ai-suggestion').textContent;
+    if (!suggestion || suggestion.includes('⚠️') || suggestion.includes('Generating')) return;
+    document.getElementById('sms-reply-input').value = suggestion;
+    updateSMSCharCount(document.getElementById('sms-reply-input'));
+    document.getElementById('sms-ai-bar').style.display = 'none';
+    document.getElementById('sms-reply-input').focus();
+  }
+
+  function insertTemplate(type) {
+    const conv = smsConversations.find(c=>c.id===activeSMSId);
+    const district = conv ? conv.district : 'your area';
+    const crop = conv ? conv.crop : 'crop';
+    const wd = WEATHER_DATA[district] || WEATHER_DATA['Mubende'];
+    const templates = {
+      price: `Market update: ${crop} prices today at ${CROPS_CATALOG.find(c=>c.name===crop)?.basePrice||1200} UGX/kg. ${wd.rain?'Rain expected - sell before Thursday.':'Good selling conditions this week.'}`,
+      weather: `Weather alert ${district}: ${wd.temp}°C, humidity ${wd.humidity}%. ${wd.advisory}`,
+      sell: `URGENT: Sell your ${crop} within 48hrs. Contact nearest market or call buyer. Delay risks post-harvest loss.`,
+      storage: `Storage tip: Keep ${crop} in cool, dry, ventilated space. Check daily for signs of rot or pests. Max storage 3 weeks.`,
+    };
+    const txt = templates[type] || '';
+    document.getElementById('sms-reply-input').value = txt;
+    updateSMSCharCount(document.getElementById('sms-reply-input'));
+  }
+
+  function updateSMSCharCount(el) {
+    const count = el.value.length;
+    const display = document.getElementById('sms-char-count');
+    if (display) {
+      display.textContent = `${count}/160`;
+      display.style.color = count > 160 ? '#ef4444' : count > 130 ? '#f59e0b' : '#6b7280';
+    }
+  }
+
+  function sendSMSReply() {
+    const conv = smsConversations.find(c=>c.id===activeSMSId);
+    const input = document.getElementById('sms-reply-input');
+    const text = input.value.trim();
+    if (!conv || !text) { showToast('⚠️ Type a reply first', 'error'); return; }
+
+    conv.messages.push({ from:'system', text, time:'Just now' });
+    input.value = '';
+    document.getElementById('sms-char-count').textContent = '0/160';
+    document.getElementById('sms-ai-bar').style.display = 'none';
+
+    const msgContainer = document.getElementById('sms-thread-messages');
+    renderSMSMessage({ from:'system', text, time:'Just now' }, msgContainer);
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
+    repliedCount++;
+    updateSMSStats();
+    renderConversationList();
+    showToast(`📤 SMS sent to ${conv.farmer}`);
+  }
+
+  function callFarmer(phone) {
+    showToast(`📞 Calling ${phone}...`);
+  }
+
+  function viewFarmerProfile(name) {
+    switchTab(1);
+    setTimeout(() => {
+      const searchEl = document.querySelector('.search-input');
+      if (searchEl) { searchEl.value = name; searchFarmers(name); }
+    }, 300);
   }
 
   // ============================================================
@@ -1624,9 +2008,10 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
     buildRecentAlerts();
     buildCropDistribution();
     generateNDVI('Mubende');
+    updateSMSStats();
     handleScrollReveal();
     setTimeout(handleScrollReveal, 300);
-    console.log('✅ YieldGuard AI v3.0 loaded — Smart Farming Assistant ready!');
+    console.log('✅ YieldGuard AI v4.0 loaded — SMS Inbox active!');
   });
 
   window.addEventListener('scroll', handleScrollReveal);
