@@ -12,420 +12,319 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
     
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
-      color: #f4f4f5;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: #050a05;
+      color: #e8f5e9;
       min-height: 100vh;
     }
-    
-    .tail-container { 
-      max-width: 1400px; 
-      margin: 0 auto; 
+
+    :root {
+      --green: #10b981;
+      --green-dark: #059669;
+      --green-glow: rgba(16,185,129,0.25);
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --sky: #38bdf8;
+      --card: #0d1a0d;
+      --card2: #111f11;
+      --border: rgba(16,185,129,0.15);
     }
-    
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #1a1a1a;
-      border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #10b981;
-      border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #059669;
-    }
-    
-    /* Animations */
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.1); }
-    }
-    
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    .status-dot {
-      animation: pulse 2s infinite;
-    }
-    
-    .card-hover {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .card-hover:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 25px 30px -12px rgba(0, 0, 0, 0.5);
-    }
-    
-    /* Bottom nav tooltip */
-    .nav-tooltip {
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1a1a1a;
-      color: white;
-      padding: 6px 12px;
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1a0d; }
+    ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 6px; }
+
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.15)} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    @keyframes glow-pulse { 0%,100%{box-shadow:0 0 12px var(--green-glow)} 50%{box-shadow:0 0 28px rgba(16,185,129,0.5)} }
+
+    .status-dot { animation: pulse 2s infinite; }
+    .card-hover { transition: all 0.3s cubic-bezier(.4,0,.2,1); }
+    .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px var(--border); }
+
+    .glass-card {
+      background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+      border: 1px solid var(--border);
       border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: all 0.2s ease;
-      border: 1px solid #10b981;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      z-index: 100;
     }
-    
-    .nav-tooltip::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-top: 6px solid #10b981;
+
+    .main-header {
+      background: rgba(5,10,5,0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      position: sticky; top: 0; z-index: 50;
+      padding: 12px 0;
     }
-    
+
+    .tail-container { max-width: 1440px; margin: 0 auto; }
+
+    /* NAV */
     .nav-item {
       position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       transition: all 0.2s ease;
-      padding: 8px 16px;
-      border-radius: 12px;
-      color: #a1a1aa;
-      cursor: pointer;
+      padding: 8px 16px; border-radius: 12px;
+      color: #4a7c59; cursor: pointer;
     }
-    
-    .nav-item:hover {
-      background: rgba(16, 185, 129, 0.15);
+    .nav-item:hover { background: rgba(16,185,129,0.1); color: var(--green); }
+    .nav-item.active { color: var(--green); }
+
+    .nav-tooltip {
+      position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+      background: #0d1a0d; color: white;
+      padding: 5px 10px; border-radius: 20px; font-size: .7rem; font-weight: 600;
+      white-space: nowrap; pointer-events: none; opacity: 0;
+      transition: all 0.2s ease; border: 1px solid var(--green);
+      z-index: 100;
     }
-    
-    .nav-item:hover .nav-tooltip {
-      opacity: 1;
-      top: -45px;
-    }
-    
-    .nav-item.active {
-      color: #10b981;
-    }
-    
-    .nav-item.active i {
-      transform: scale(1.1);
-    }
-    
-    /* Chat icon specific styling */
-    .nav-item.chat-icon {
-      color: #10b981 !important;
-    }
-    
-    .nav-item.chat-icon i {
-      color: #10b981 !important;
-      filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
-    }
-    
-    .nav-item.chat-icon:hover {
-      background: rgba(16, 185, 129, 0.25);
-      transform: scale(1.1);
-    }
-    
-    /* Mobile bottom nav */
+    .nav-item:hover .nav-tooltip { opacity: 1; top: -45px; }
+
     .mobile-bottom-nav {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.95);
-      backdrop-filter: blur(12px);
-      border-top: 2px solid #10b981;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-      padding: 8px 4px;
-      z-index: 1000;
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(5,10,5,0.97); backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 8px 4px; z-index: 1000;
     }
-    
-    /* Content sections */
-    .content-section {
-      display: none;
-      animation: fadeIn 0.3s ease;
+
+    .content-section { display: none; animation: fadeIn 0.3s ease; }
+    .content-section.active { display: block; }
+
+    /* BUTTONS */
+    .btn-primary {
+      padding: 10px 20px; border-radius: 40px;
+      background: var(--green); color: #050a05;
+      font-weight: 700; font-size: .875rem;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s ease; cursor: pointer; border: none;
     }
-    
-    .content-section.active {
-      display: block;
+    .btn-primary:hover { background: #34d399; transform: scale(1.04); }
+
+    .btn-outline {
+      padding: 10px 20px; border-radius: 40px;
+      background: transparent; color: var(--green);
+      border: 1px solid var(--green); font-weight: 600; font-size: .875rem;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s ease; cursor: pointer;
     }
-    
-    /* Map styling */
-    .risk-map-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+    .btn-outline:hover { background: var(--green); color: #050a05; }
+
+    .btn-ghost {
+      padding: 8px 16px; border-radius: 30px;
+      background: rgba(255,255,255,0.05); color: #9ca3af;
+      border: 1px solid rgba(255,255,255,0.08); font-weight: 500; font-size: .8rem;
+      display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s ease; cursor: pointer;
     }
-    
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); color: #e5e7eb; }
+
+    /* BADGES */
+    .badge-high { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .badge-medium { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-low { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .badge { padding: 3px 10px; border-radius: 20px; font-size:.72rem; font-weight:600; }
+
+    /* FARMER CARDS */
+    .farmer-card {
+      background: linear-gradient(135deg, #0d1a0d 0%, #111f11 100%);
+      border-radius: 16px; padding: 16px;
+      display: flex; align-items: center; gap: 16px;
+      transition: all 0.2s ease; cursor: pointer;
+      border: 1px solid var(--border);
+    }
+    .farmer-card:hover { border-color: var(--green); transform: translateX(4px); box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    .farmer-avatar {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: white; flex-shrink: 0;
+    }
+
+    /* DISTRICT CARDS */
     .district-card {
-      background: linear-gradient(135deg, #1a1a1a 0%, #18181b 100%);
-      border-radius: 16px;
-      padding: 18px;
-      border-left: 4px solid;
-      transition: all 0.2s ease;
-      cursor: pointer;
+      background: linear-gradient(135deg, #0d1a0d 0%, #111f11 100%);
+      border-radius: 16px; padding: 18px;
+      border-left: 4px solid; transition: all 0.2s ease; cursor: pointer;
+      border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
     }
-    
-    .district-card:hover {
-      transform: translateX(5px);
-      background: linear-gradient(135deg, #1f1f23 0%, #1a1a1a 100%);
-    }
-    
+    .district-card:hover { transform: translateX(5px); }
     .district-card.high-risk { border-left-color: #ef4444; }
     .district-card.medium-risk { border-left-color: #f59e0b; }
     .district-card.low-risk { border-left-color: #10b981; }
-    
-    /* Logo styling */
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+
+    /* PROGRESS */
+    .progress-bar { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), #34d399); border-radius: 4px; transition: width .6s ease; }
+
+    /* WEATHER DROPDOWN */
+    .weather-selector {
+      position: relative;
     }
-    
-    .logo-icon {
-      width: 45px;
-      height: 45px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-      transition: transform 0.2s ease;
+    .weather-selector select {
+      appearance: none; background: rgba(16,185,129,0.1); border: 1px solid var(--green);
+      color: var(--green); padding: 6px 32px 6px 12px; border-radius: 20px;
+      font-size: .8rem; font-weight: 600; cursor: pointer; font-family: inherit;
+      outline: none; transition: all 0.2s;
     }
-    
-    .logo-icon:hover {
-      transform: rotate(5deg) scale(1.05);
+    .weather-selector select:hover { background: rgba(16,185,129,0.2); }
+    .weather-selector::after {
+      content: '\f107'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--green); pointer-events: none; font-size: .75rem;
     }
-    
-    /* Header styling */
-    .main-header {
-      background: rgba(0, 0, 0, 0.95);
-      border-bottom: 2px solid #10b981;
-      backdrop-filter: blur(12px);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      padding: 12px 0;
+
+    /* MARKET CHART CONTROLS */
+    .crop-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .crop-tab {
+      padding: 5px 14px; border-radius: 20px; font-size: .75rem; font-weight: 600;
+      cursor: pointer; transition: all .2s; border: 1px solid rgba(255,255,255,.1);
+      background: transparent; color: #6b7280;
     }
-    
-    /* Button styling */
-    .chat-button, .simulate-button {
-      padding: 10px 20px;
-      border-radius: 40px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    
-    .chat-button {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid #10b981;
-      color: #10b981;
-    }
-    
-    .chat-button:hover {
-      background: #10b981;
-      color: black;
-      transform: scale(1.05);
-    }
-    
-    .simulate-button {
-      background: #10b981;
-      color: black;
-    }
-    
-    .simulate-button:hover {
-      background: #059669;
-      transform: scale(1.05);
-    }
-    
-    /* Progress bar */
-    .progress-bar {
-      height: 8px;
-      background: #27272a;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #10b981, #34d399);
-      border-radius: 4px;
-      transition: width 0.5s ease;
-    }
-    
-    /* Farmer card */
-    .farmer-card {
-      background: linear-gradient(135deg, #18181b 0%, #1a1a1a 100%);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    
-    .farmer-card:hover {
-      transform: translateX(5px);
-      background: linear-gradient(135deg, #1f1f23 0%, #1a1a1a 100%);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    
-    .farmer-avatar {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: bold;
-      color: white;
-    }
-    
-    /* Typing indicator */
-    .typing-indicator {
-      display: flex;
-      gap: 4px;
-      padding: 12px 16px;
-      background: #27272a;
-      border-radius: 20px;
-      width: fit-content;
-    }
-    
-    .typing-indicator span {
-      width: 8px;
-      height: 8px;
-      background: #10b981;
-      border-radius: 50%;
-      animation: bounce 1.4s infinite ease-in-out;
-    }
-    
-    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
-    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-    
-    @keyframes bounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-      30% { transform: translateY(-10px); opacity: 1; }
-    }
-    
-    /* Responsive */
-    @media (max-width: 767px) {
-      .desktop-only {
-        display: none !important;
-      }
-      
-      .mobile-bottom-nav {
-        display: flex !important;
-      }
-      
-      body {
-        padding-bottom: 80px;
-      }
-      
-      .logo-text h1 {
-        font-size: 1.25rem;
-      }
-      
-      .risk-map-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .kpi-card {
-        padding: 16px !important;
-      }
-      
-      .kpi-value {
-        font-size: 2rem !important;
-      }
-    }
-    
-    @media (min-width: 768px) {
-      .mobile-bottom-nav {
-        display: none !important;
-      }
-      
-      .logo-text h1 {
-        font-size: 1.875rem;
-      }
-    }
-    
-    /* Toast notification */
+    .crop-tab.active { background: var(--green); color: #050a05; border-color: var(--green); }
+    .crop-tab:hover:not(.active) { border-color: var(--green); color: var(--green); }
+
+    /* TYPING INDICATOR */
+    .typing-indicator { display:flex; gap:4px; padding:12px 16px; background:#1a2e1a; border-radius:20px; width:fit-content; }
+    .typing-indicator span { width:8px; height:8px; background:var(--green); border-radius:50%; animation:bounce 1.4s infinite ease-in-out; }
+    .typing-indicator span:nth-child(1){animation-delay:0s}
+    .typing-indicator span:nth-child(2){animation-delay:.2s}
+    .typing-indicator span:nth-child(3){animation-delay:.4s}
+    @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-10px);opacity:1}}
+
+    /* TOAST */
     .toast {
-      position: fixed;
-      bottom: 100px;
-      right: 20px;
-      background: #10b981;
-      color: black;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      z-index: 1000;
-      animation: slideIn 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      position:fixed; bottom:100px; right:20px;
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color:#050a05; padding:12px 20px; border-radius:14px;
+      font-size:.875rem; font-weight:700; z-index:2000;
+      animation:slideUp 0.3s ease; box-shadow:0 8px 24px rgba(0,0,0,0.4);
     }
-    
-    /* Scroll reveal */
-    .scroll-reveal {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.5s ease;
+
+    /* MODAL */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.85);
+      display:flex; align-items:center; justify-content:center;
+      z-index:100; padding:16px; animation:fadeIn .2s ease;
     }
-    
-    .scroll-reveal.revealed {
-      opacity: 1;
-      transform: translateY(0);
+    .modal-box {
+      background: linear-gradient(135deg, #0d1a0d 0%, #111f11 100%);
+      border: 1px solid var(--border); border-radius: 24px;
+      padding: 28px; width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
     }
+    .modal-box input, .modal-box select {
+      width: 100%; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      padding: 12px 16px; color: white; font-family: inherit; font-size:.875rem;
+      outline: none; transition: border-color .2s; margin-bottom: 14px;
+    }
+    .modal-box input:focus, .modal-box select:focus { border-color: var(--green); }
+    .modal-box select option { background: #0d1a0d; }
+    .modal-box label { display:block; font-size:.78rem; color:#6b7280; margin-bottom:5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+
+    /* FILTER PANEL */
+    .filter-panel {
+      background: linear-gradient(135deg, #0d1a0d, #111f11);
+      border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px; margin-bottom: 20px; display: none;
+    }
+    .filter-panel.open { display: block; animation: slideUp .2s ease; }
+    .filter-chip {
+      padding: 5px 12px; border-radius: 20px; font-size:.75rem; font-weight:600; cursor:pointer;
+      border: 1px solid rgba(255,255,255,.1); background:transparent; color:#9ca3af; transition:all .2s;
+    }
+    .filter-chip.active { background:var(--green); color:#050a05; border-color:var(--green); }
+
+    /* RISK MAP GRID */
+    .risk-map-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+
+    /* WEATHER WIDGET */
+    .weather-bg-rain { background: linear-gradient(135deg, #0a1628 0%, #0d1a0d 100%); }
+    .weather-bg-sun { background: linear-gradient(135deg, #1a1000 0%, #0d1a0d 100%); }
+    .weather-bg-cloud { background: linear-gradient(135deg, #0d1020 0%, #0d1a0d 100%); }
+
+    /* SATELLITE INDICATOR */
+    .satellite-badge {
+      display: inline-flex; align-items:center; gap:6px;
+      background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3);
+      color: #38bdf8; padding: 4px 10px; border-radius:20px; font-size:.7rem; font-weight:600;
+    }
+
+    /* SCROLL REVEAL */
+    .scroll-reveal { opacity:0; transform:translateY(20px); transition:all .5s ease; }
+    .scroll-reveal.revealed { opacity:1; transform:translateY(0); }
+
+    /* LOGO ICON */
+    .logo-icon {
+      width:45px; height:45px; background:linear-gradient(135deg,var(--green),var(--green-dark));
+      border-radius:14px; display:flex; align-items:center; justify-content:center;
+      font-size:24px; box-shadow:0 4px 20px var(--green-glow); transition:transform .2s;
+      animation: glow-pulse 3s infinite;
+    }
+    .logo-icon:hover { transform:rotate(5deg) scale(1.05); }
+
+    /* SEARCH INPUT */
+    .search-input {
+      background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,.1);
+      border-radius:12px; padding:10px 16px 10px 40px; color:white; font-family:inherit;
+      font-size:.875rem; outline:none; transition:border-color .2s; width:100%;
+    }
+    .search-input:focus { border-color:var(--green); }
+
+    /* SATELLITE PULSE */
+    @keyframes satellite-ping {
+      0%{transform:scale(1);opacity:.8}
+      100%{transform:scale(2.5);opacity:0}
+    }
+    .sat-ping { animation: satellite-ping 2s cubic-bezier(0,0,.2,1) infinite; }
+
+    /* SOIL HEALTH GAUGE */
+    .gauge-ring { transition: stroke-dasharray 0.8s ease; }
+
+    /* PRICE CHANGE */
+    .price-up { color:#34d399; }
+    .price-down { color:#f87171; }
+    .price-flat { color:#9ca3af; }
+
+    /* CHAT */
+    .chat-msg-ai { background:#1a2e1a; border-radius:18px 18px 18px 4px; padding:12px 16px; }
+    .chat-msg-user { background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.3); border-radius:18px 18px 4px 18px; padding:12px 16px; }
+
+    /* MOBILE */
+    @media(max-width:767px) {
+      .desktop-only { display:none !important; }
+      .mobile-bottom-nav { display:flex !important; }
+      body { padding-bottom:80px; }
+    }
+    @media(min-width:768px) {
+      .mobile-bottom-nav { display:none !important; }
+    }
+
+    /* KPI CARD SPECIAL */
+    .kpi-card {
+      background: linear-gradient(135deg, #0d1a0d 0%, #111f11 100%);
+      border: 1px solid var(--border); border-radius:20px; padding:22px 24px;
+    }
+
+    /* LIVE INDICATOR */
+    .live-indicator {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:.68rem; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:.08em;
+    }
+    .live-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 1.5s infinite; }
+
+    /* CROP STAT BAR */
+    .crop-stat { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.04); }
+    .crop-stat:last-child { border-bottom:none; }
+
+    /* NUMBER FONT */
+    .num { font-family:'JetBrains Mono', monospace; }
   </style>
 </head>
 <body>
@@ -434,109 +333,134 @@
   <header class="main-header">
     <div class="tail-container px-5 sm:px-6">
       <div class="flex items-center justify-between">
-        <div class="logo-container">
+        <div class="flex items-center gap-3">
           <div class="logo-icon">🌾</div>
-          <div class="logo-text">
-            <h1 class="font-bold tracking-tight text-white">YieldGuard</h1>
-            <p class="text-emerald-400 text-xs font-medium">AI Agent • Uganda</p>
+          <div>
+            <h1 class="font-bold tracking-tight text-white text-xl md:text-2xl">YieldGuard</h1>
+            <p class="text-emerald-400 text-xs font-semibold">AI Agent • Uganda 🇺🇬</p>
           </div>
         </div>
 
-        <!-- Desktop Navigation -->
-        <div class="desktop-only hidden md:flex items-center gap-8">
-          <div class="flex items-center gap-6 text-sm font-medium">
+        <div class="desktop-only hidden md:flex items-center gap-6">
+          <div class="flex items-center gap-5 text-sm font-semibold">
             <a href="#" onclick="switchTab(0)" class="tab-link text-emerald-400 hover:text-emerald-300 transition-colors">Dashboard</a>
-            <a href="#" onclick="switchTab(1)" class="tab-link text-zinc-400 hover:text-zinc-200 transition-colors">Farmers</a>
-            <a href="#" onclick="switchTab(2)" class="tab-link text-zinc-400 hover:text-zinc-200 transition-colors">Risk Map</a>
-            <a href="#" onclick="switchTab(3)" class="tab-link text-zinc-400 hover:text-zinc-200 transition-colors">Reports</a>
+            <a href="#" onclick="switchTab(1)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Farmers</a>
+            <a href="#" onclick="switchTab(2)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Risk Map</a>
+            <a href="#" onclick="switchTab(3)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Analytics</a>
           </div>
-
-          <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2 bg-zinc-900/70 px-4 py-2 rounded-full border border-zinc-700/60">
-              <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full status-dot"></div>
-              <span class="text-emerald-400 text-sm font-medium">Agent Online</span>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-900/60 bg-emerald-950/30">
+              <div class="w-2 h-2 bg-emerald-500 rounded-full status-dot"></div>
+              <span class="text-emerald-400 text-xs font-semibold">AI Online</span>
             </div>
-            <button onclick="openChat()" class="chat-button">
-              <i class="fa-solid fa-message-dots"></i>
-              <span>Chat with Agent</span>
-            </button>
-            <button onclick="simulateSMS()" class="simulate-button">
-              <i class="fa-solid fa-paper-plane"></i>
-              <span>Simulate SMS</span>
-            </button>
+            <div class="satellite-badge">
+              <div class="relative"><div class="w-2 h-2 bg-sky-400 rounded-full"></div><div class="sat-ping absolute inset-0 w-2 h-2 bg-sky-400 rounded-full"></div></div>
+              Satellite Live
+            </div>
+            <button onclick="openChat()" class="btn-outline text-sm"><i class="fa-solid fa-robot"></i> Ask AI Agent</button>
+            <div style="display:flex;align-items:center;gap:0;border-radius:40px;overflow:hidden;border:1.5px solid var(--green)">
+              <div class="weather-selector" style="border-radius:0">
+                <select id="sms-scenario-select" style="border:none;border-radius:0;padding:9px 32px 9px 14px;background:rgba(16,185,129,0.12);font-size:.8rem;color:#e8f5e9;border-right:1px solid rgba(16,185,129,0.3)">
+                  <option value="0">📱 Sell matooke now or wait?</option>
+                  <option value="1">🌽 Maize has white powder on leaves</option>
+                  <option value="2">🌧️ Rain coming — should I harvest now?</option>
+                  <option value="3">🐛 Caterpillars destroying my beans</option>
+                  <option value="4">💰 Best price for coffee this week?</option>
+                  <option value="5">🥔 Irish potatoes rotting in storage</option>
+                  <option value="6">🌱 When should I plant cassava?</option>
+                  <option value="7">☀️ Drought — my crops are wilting</option>
+                </select>
+              </div>
+              <button onclick="simulateSMS()" style="background:var(--green);color:#050a05;font-weight:700;font-size:.8rem;padding:9px 16px;display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap;border:none">
+                <i class="fa-solid fa-paper-plane"></i> Send
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Mobile Controls -->
-        <div class="md:hidden flex items-center gap-3">
-          <div class="flex items-center gap-2 bg-zinc-900/70 px-3 py-1.5 rounded-full border border-zinc-700/60">
+        <div class="md:hidden flex items-center gap-2">
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-900/60 bg-emerald-950/30">
             <div class="w-2 h-2 bg-emerald-500 rounded-full status-dot"></div>
             <span class="text-emerald-400 text-xs">Online</span>
           </div>
-          <button onclick="simulateSMS()" class="bg-emerald-600 hover:bg-emerald-700 w-9 h-9 rounded-full flex items-center justify-center transition">
-            <i class="fa-solid fa-paper-plane text-sm"></i>
-          </button>
+          <div style="display:flex;align-items:center;border-radius:30px;overflow:hidden;border:1.5px solid var(--green)">
+            <select id="sms-scenario-select-mobile" style="appearance:none;border:none;background:rgba(16,185,129,0.12);color:#e8f5e9;padding:7px 10px;font-size:.72rem;font-family:inherit;outline:none;max-width:110px">
+              <option value="0">Sell matooke?</option>
+              <option value="1">White powder?</option>
+              <option value="2">Harvest early?</option>
+              <option value="3">Caterpillars!</option>
+              <option value="4">Coffee price?</option>
+              <option value="5">Rotting store</option>
+              <option value="6">Plant cassava?</option>
+              <option value="7">Drought help</option>
+            </select>
+            <button onclick="simulateSMS(true)" style="background:var(--green);color:#050a05;padding:7px 10px;font-size:.75rem;display:flex;align-items:center;cursor:pointer;border:none">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- PAGE TITLE -->
-  <div class="page-title">
-    <div class="tail-container px-5 sm:px-6 py-5 md:py-6">
-      <h1 id="page-title" class="text-3xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-white to-emerald-400 bg-clip-text text-transparent">Dashboard</h1>
-      <p id="page-subtitle" class="text-zinc-400 mt-2 text-sm md:text-base">
-        Yield Optimization & Food Security AI Agent • Uganda
-      </p>
+  <!-- PAGE TITLE BAR -->
+  <div style="background:linear-gradient(180deg,#050a05 0%,transparent 100%)" class="sticky top-[61px] z-40 border-b border-emerald-950/40">
+    <div class="tail-container px-5 sm:px-6 py-4 md:py-5 flex items-end justify-between gap-4">
+      <div>
+        <h1 id="page-title" class="text-3xl md:text-4xl font-bold tracking-tight" style="background:linear-gradient(90deg,#fff 0%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Dashboard</h1>
+        <p id="page-subtitle" class="text-zinc-500 mt-1 text-sm">Yield Optimization & Food Security AI • Uganda</p>
+      </div>
+      <div class="live-indicator hidden md:flex"><div class="live-dot"></div> Live data</div>
     </div>
   </div>
 
   <!-- MAIN CONTENT -->
-  <div class="tail-container px-5 sm:px-6 pt-4 pb-28 md:pb-12">
+  <div class="tail-container px-4 sm:px-6 pt-6 pb-28 md:pb-12">
 
-    <!-- DASHBOARD SECTION -->
+    <!-- ====================== DASHBOARD ====================== -->
     <div id="dashboard-section" class="content-section active">
-      <!-- KPI Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10 md:mb-12">
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 card-hover scroll-reveal">
-          <div class="text-emerald-400 text-xs font-semibold tracking-wider uppercase">Total Farms</div>
-          <div class="text-3xl md:text-5xl font-bold mt-2 kpi-value">184</div>
-          <div class="mt-2 text-xs text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-arrow-up"></i> 12 this week</div>
+
+      <!-- KPI ROW -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 scroll-reveal">
+        <div class="kpi-card card-hover">
+          <div class="text-emerald-400 text-xs font-bold tracking-wider uppercase mb-2">Total Farms</div>
+          <div class="text-4xl md:text-5xl font-bold num" id="kpi-farms">184</div>
+          <div class="mt-2 text-xs text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-arrow-up"></i> <span id="kpi-farms-delta">12 this week</span></div>
         </div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 card-hover scroll-reveal" style="animation-delay: 0.1s">
-          <div class="text-amber-400 text-xs font-semibold tracking-wider uppercase">Yield Saved</div>
-          <div class="text-3xl md:text-5xl font-bold mt-2">4.8<span class="text-lg">T</span></div>
-          <div class="mt-2 text-xs text-zinc-400">≈ 2,400 bunches</div>
+        <div class="kpi-card card-hover">
+          <div class="text-amber-400 text-xs font-bold tracking-wider uppercase mb-2">Yield Saved</div>
+          <div class="text-4xl md:text-5xl font-bold num">4.8<span class="text-xl">T</span></div>
+          <div class="mt-2 text-xs text-zinc-500">≈ 2,400 bunches</div>
         </div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 card-hover scroll-reveal" style="animation-delay: 0.2s">
-          <div class="text-red-400 text-xs font-semibold tracking-wider uppercase">High Risk</div>
-          <div class="text-3xl md:text-5xl font-bold mt-2">23</div>
+        <div class="kpi-card card-hover">
+          <div class="text-red-400 text-xs font-bold tracking-wider uppercase mb-2">High Risk</div>
+          <div class="text-4xl md:text-5xl font-bold num" id="kpi-risk">23</div>
           <div class="mt-2 text-xs text-red-400">≤ 72h action needed</div>
         </div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 card-hover scroll-reveal" style="animation-delay: 0.3s">
-          <div class="text-sky-400 text-xs font-semibold tracking-wider uppercase">Alerts Today</div>
-          <div class="text-3xl md:text-5xl font-bold mt-2">41</div>
+        <div class="kpi-card card-hover">
+          <div class="text-sky-400 text-xs font-bold tracking-wider uppercase mb-2">Alerts Today</div>
+          <div class="text-4xl md:text-5xl font-bold num">41</div>
           <div class="mt-2 text-xs text-emerald-400">98% delivered</div>
         </div>
       </div>
 
-      <!-- Two Column Layout -->
-      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8 mb-10 md:mb-12">
-        <!-- Risk Table -->
-        <div class="xl:col-span-7 bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal">
+      <!-- MAIN GRID -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-8">
+        <!-- RISK TABLE -->
+        <div class="xl:col-span-7 glass-card p-5 md:p-6 scroll-reveal">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
-            <div class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-red-400"></i> Produce at Risk (Next 7 Days)</div>
-            <span class="bg-red-500/10 text-red-400 px-3 py-1 rounded-full text-xs font-medium">23 farms</span>
+            <div class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-red-400"></i> Produce at Risk</div>
+            <span class="badge badge-high">23 farms</span>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[550px]">
+            <table class="w-full min-w-[520px]">
               <thead>
-                <tr class="border-b border-zinc-800 text-xs text-zinc-400">
-                  <th class="py-3 text-left">Farmer / Crop</th>
-                  <th class="py-3 text-left">District</th>
-                  <th class="py-3 text-center">Days Stored</th>
-                  <th class="py-3 text-center">Risk Level</th>
-                  <th class="py-3 text-right">Action</th>
+                <tr class="border-b border-white/5 text-xs text-zinc-500">
+                  <th class="py-3 text-left font-semibold">Farmer / Crop</th>
+                  <th class="py-3 text-left font-semibold">District</th>
+                  <th class="py-3 text-center font-semibold">Days Stored</th>
+                  <th class="py-3 text-center font-semibold">Risk</th>
+                  <th class="py-3 text-right font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody id="risk-table" class="text-sm"></tbody>
@@ -544,558 +468,1108 @@
           </div>
         </div>
 
-        <!-- Recommendations -->
-        <div class="xl:col-span-5 bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal" style="animation-delay: 0.1s">
-          <div class="font-semibold text-lg mb-5 flex items-center gap-2">
-            <i class="fa-solid fa-lightbulb text-amber-400"></i>
-            AI Recommendations
+        <!-- AI RECOMMENDATIONS -->
+        <div class="xl:col-span-5 glass-card p-5 md:p-6 scroll-reveal">
+          <div class="font-bold text-lg mb-5 flex items-center gap-2">
+            <i class="fa-solid fa-lightbulb text-amber-400"></i> AI Recommendations
           </div>
           <div id="recommendations" class="space-y-4"></div>
+          <!-- SOIL HEALTH MINI -->
+          <div class="mt-6 pt-5 border-t border-white/5">
+            <div class="font-semibold text-sm mb-3 flex items-center gap-2 text-zinc-300"><i class="fa-solid fa-seedling text-emerald-400"></i> Soil Health Index</div>
+            <div id="soil-health" class="space-y-2"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Weather + Chart -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal" style="animation-delay: 0.2s">
+      <!-- WEATHER + CHART -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- LIVE WEATHER -->
+        <div class="glass-card p-5 md:p-6 scroll-reveal" id="weather-card">
           <div class="flex flex-col sm:flex-row justify-between mb-5 gap-3">
-            <div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-cloud-sun text-emerald-400"></i> Live Weather Impact</div>
-            <div class="text-xs px-3 py-1.5 bg-zinc-800 rounded-full flex items-center gap-1"><i class="fa-solid fa-location-dot text-emerald-400"></i> Mubende</div>
-          </div>
-          <div class="flex items-center gap-6 md:gap-8">
-            <div class="text-6xl md:text-7xl">⛅</div>
-            <div>
-              <div class="text-3xl md:text-4xl font-light">28°C</div>
-              <div class="text-emerald-400 text-sm mt-1">Humidity 82% • Rain in 2 days</div>
-              <div class="mt-4 text-xs md:text-sm text-zinc-300 leading-relaxed">
-                <i class="fa-solid fa-droplet text-sky-400"></i> High humidity detected.<br>
-                <span class="text-amber-400 font-medium">→ Recommend immediate drying</span>
-              </div>
+            <div class="font-bold flex items-center gap-2"><i class="fa-solid fa-cloud-sun text-emerald-400"></i> Live Weather Impact</div>
+            <div class="weather-selector">
+              <select id="district-weather-select" onchange="updateWeather(this.value)">
+                <option value="Mubende">📍 Mubende</option>
+                <option value="Masaka">📍 Masaka</option>
+                <option value="Kapchorwa">📍 Kapchorwa</option>
+                <option value="Jinja">📍 Jinja</option>
+                <option value="Gulu">📍 Gulu</option>
+                <option value="Mbale">📍 Mbale</option>
+                <option value="Kampala">📍 Kampala</option>
+                <option value="Lira">📍 Lira</option>
+                <option value="Soroti">📍 Soroti</option>
+                <option value="Kabale">📍 Kabale</option>
+              </select>
             </div>
           </div>
+          <div id="weather-content"></div>
+          <!-- 5-DAY FORECAST STRIP -->
+          <div id="forecast-strip" class="mt-4 pt-4 border-t border-white/5"></div>
         </div>
 
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal" style="animation-delay: 0.3s">
-          <div class="font-semibold mb-5 flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-400"></i> Market Price Trends (UGX/kg)</div>
-          <canvas id="priceChart" height="140"></canvas>
+        <!-- MARKET PRICE CHART -->
+        <div class="glass-card p-5 md:p-6 scroll-reveal">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+            <div class="font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-400"></i> Market Prices</div>
+            <div class="crop-tabs" id="crop-tabs"></div>
+          </div>
+          <canvas id="priceChart" height="160"></canvas>
+          <!-- PRICE SUMMARY -->
+          <div class="mt-4 grid grid-cols-2 gap-3" id="price-summary"></div>
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW: SATELLITE + ALERTS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- SATELLITE IMAGERY SIMULATION -->
+        <div class="glass-card p-5 scroll-reveal col-span-1">
+          <div class="font-bold text-sm mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-satellite text-sky-400"></i> Satellite Crop Index
+            <span class="satellite-badge ml-auto text-xs">NDVI Live</span>
+          </div>
+          <div id="ndvi-grid" class="grid grid-cols-8 gap-0.5 rounded-xl overflow-hidden mb-3"></div>
+          <div class="flex items-center justify-between text-xs text-zinc-500 mt-2">
+            <span>🟥 Stressed</span><span>🟨 Moderate</span><span>🟩 Healthy</span>
+          </div>
+          <div class="mt-3 text-xs text-zinc-400">District: <span class="text-emerald-400 font-semibold" id="ndvi-district">Mubende</span> • Last scan: <span class="font-mono">2h ago</span></div>
+        </div>
+
+        <!-- CROP DISTRIBUTION -->
+        <div class="glass-card p-5 scroll-reveal">
+          <div class="font-bold text-sm mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-amber-400"></i> Crop Distribution</div>
+          <div id="crop-distribution" class="space-y-1"></div>
+        </div>
+
+        <!-- RECENT ALERTS -->
+        <div class="glass-card p-5 scroll-reveal">
+          <div class="font-bold text-sm mb-4 flex items-center gap-2"><i class="fa-solid fa-bell text-red-400"></i> Recent Alerts</div>
+          <div id="recent-alerts" class="space-y-2"></div>
         </div>
       </div>
     </div>
 
-    <!-- FARMERS SECTION -->
+    <!-- ====================== FARMERS ====================== -->
     <div id="farmers-section" class="content-section">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 scroll-reveal">
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6"><div class="text-emerald-400 text-sm font-semibold uppercase mb-2">Total Farmers</div><div class="text-4xl font-bold">184</div><div class="text-zinc-400 text-sm mt-2">Across 12 districts</div></div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6"><div class="text-amber-400 text-sm font-semibold uppercase mb-2">Active This Month</div><div class="text-4xl font-bold">156</div><div class="text-zinc-400 text-sm mt-2">85% engagement rate</div></div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6"><div class="text-sky-400 text-sm font-semibold uppercase mb-2">New This Week</div><div class="text-4xl font-bold">12</div><div class="text-zinc-400 text-sm mt-2"><i class="fa-solid fa-arrow-up text-emerald-400"></i> 3 from last week</div></div>
+      <!-- STATS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 scroll-reveal">
+        <div class="kpi-card"><div class="text-emerald-400 text-xs font-bold uppercase mb-1">Total Farmers</div><div class="text-4xl font-bold num" id="farmer-count">0</div><div class="text-zinc-500 text-sm mt-1">Across <span id="district-count">0</span> districts</div></div>
+        <div class="kpi-card"><div class="text-amber-400 text-xs font-bold uppercase mb-1">Active This Month</div><div class="text-4xl font-bold num" id="active-count">0</div><div class="text-zinc-500 text-sm mt-1"><span id="active-pct">0</span>% engagement rate</div></div>
+        <div class="kpi-card"><div class="text-sky-400 text-xs font-bold uppercase mb-1">Total Farm Area</div><div class="text-4xl font-bold num" id="total-acres">0</div><div class="text-zinc-500 text-sm mt-1">acres registered</div></div>
       </div>
-      <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <h2 class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-users text-emerald-400"></i> Registered Farmers</h2>
-          <div class="flex gap-2">
-            <button class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-full text-sm transition flex items-center gap-2"><i class="fa-solid fa-filter"></i> Filter</button>
-            <button class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-full text-sm transition flex items-center gap-2"><i class="fa-solid fa-plus"></i> Add Farmer</button>
+
+      <div class="glass-card p-5 md:p-6 scroll-reveal">
+        <!-- TOOLBAR -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+          <h2 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-users text-emerald-400"></i> Registered Farmers</h2>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="toggleFilter()" class="btn-ghost"><i class="fa-solid fa-filter"></i> Filter</button>
+            <button onclick="openAddFarmerModal()" class="btn-primary text-sm"><i class="fa-solid fa-plus"></i> Add Farmer</button>
           </div>
         </div>
+
+        <!-- SEARCH -->
+        <div class="relative mb-4">
+          <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm"></i>
+          <input class="search-input" placeholder="Search by name, district, or crop..." oninput="searchFarmers(this.value)" />
+        </div>
+
+        <!-- FILTER PANEL -->
+        <div class="filter-panel" id="filter-panel">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <div class="text-xs text-zinc-500 font-semibold uppercase mb-2">Status</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="filter-chip active" onclick="toggleFilterChip(this,'status','All')">All</button>
+                <button class="filter-chip" onclick="toggleFilterChip(this,'status','Active')">Active</button>
+                <button class="filter-chip" onclick="toggleFilterChip(this,'status','At Risk')">At Risk</button>
+                <button class="filter-chip" onclick="toggleFilterChip(this,'status','Inactive')">Inactive</button>
+              </div>
+            </div>
+            <div>
+              <div class="text-xs text-zinc-500 font-semibold uppercase mb-2">Crop</div>
+              <div class="flex flex-wrap gap-2" id="crop-filter-chips"></div>
+            </div>
+            <div>
+              <div class="text-xs text-zinc-500 font-semibold uppercase mb-2">District</div>
+              <div class="flex flex-wrap gap-2" id="district-filter-chips"></div>
+            </div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button onclick="applyFilters()" class="btn-primary text-xs">Apply</button>
+            <button onclick="resetFilters()" class="btn-ghost text-xs">Reset</button>
+          </div>
+        </div>
+
         <div class="space-y-3" id="farmers-list"></div>
       </div>
     </div>
 
-    <!-- RISK MAP SECTION -->
+    <!-- ====================== RISK MAP ====================== -->
     <div id="riskmap-section" class="content-section">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 scroll-reveal">
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5"><div class="text-red-400 text-xs font-semibold uppercase">High Risk</div><div class="text-3xl font-bold mt-1">23</div><div class="text-xs text-zinc-400 mt-1">Districts: 4</div></div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5"><div class="text-amber-400 text-xs font-semibold uppercase">Medium Risk</div><div class="text-3xl font-bold mt-1">47</div><div class="text-xs text-zinc-400 mt-1">Districts: 6</div></div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5"><div class="text-emerald-400 text-xs font-semibold uppercase">Low Risk</div><div class="text-3xl font-bold mt-1">114</div><div class="text-xs text-zinc-400 mt-1">Districts: 8</div></div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5"><div class="text-sky-400 text-xs font-semibold uppercase">Weather Alert</div><div class="text-3xl font-bold mt-1">3</div><div class="text-xs text-zinc-400 mt-1">Districts affected</div></div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 scroll-reveal">
+        <div class="kpi-card"><div class="text-red-400 text-xs font-bold uppercase">High Risk</div><div class="text-3xl font-bold num mt-1" id="rm-high">0</div><div class="text-xs text-zinc-500 mt-1">Districts: <span id="rm-high-d">0</span></div></div>
+        <div class="kpi-card"><div class="text-amber-400 text-xs font-bold uppercase">Medium Risk</div><div class="text-3xl font-bold num mt-1" id="rm-med">0</div><div class="text-xs text-zinc-500 mt-1">Districts: <span id="rm-med-d">0</span></div></div>
+        <div class="kpi-card"><div class="text-emerald-400 text-xs font-bold uppercase">Low Risk</div><div class="text-3xl font-bold num mt-1" id="rm-low">0</div><div class="text-xs text-zinc-500 mt-1">Districts: <span id="rm-low-d">0</span></div></div>
+        <div class="kpi-card"><div class="text-sky-400 text-xs font-bold uppercase">Weather Alert</div><div class="text-3xl font-bold num mt-1">3</div><div class="text-xs text-zinc-500 mt-1">Districts affected</div></div>
       </div>
-      <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 mb-8 scroll-reveal">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <h2 class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-map text-emerald-400"></i> Uganda Risk Map</h2>
+      <div class="glass-card p-5 md:p-6 mb-6 scroll-reveal">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
+          <h2 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-map text-emerald-400"></i> Uganda District Risk Map</h2>
           <div class="flex flex-wrap gap-3 text-xs">
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500"></span> High</div>
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Medium</div>
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Low</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500"></span> High</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Medium</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Low</div>
           </div>
         </div>
         <div class="risk-map-grid" id="risk-map"></div>
       </div>
-      <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal">
-        <h2 class="font-semibold text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-exclamation-triangle text-amber-400"></i> Current Risk Factors</h2>
+      <div class="glass-card p-5 md:p-6 scroll-reveal">
+        <h2 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-exclamation-triangle text-amber-400"></i> Current Risk Factors</h2>
         <div class="space-y-3" id="risk-factors"></div>
       </div>
     </div>
 
-    <!-- REPORTS SECTION -->
+    <!-- ====================== ANALYTICS ====================== -->
     <div id="reports-section" class="content-section">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3 scroll-reveal">
-        <h2 class="text-2xl font-semibold flex items-center gap-2"><i class="fa-solid fa-chart-pie text-emerald-400"></i> Analytics & Reports</h2>
-        <button class="bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 rounded-full text-sm transition flex items-center gap-2 w-fit"><i class="fa-solid fa-download"></i> Download Report</button>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3 scroll-reveal">
+        <h2 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-chart-pie text-emerald-400"></i> Analytics & Reports</h2>
+        <button onclick="downloadReport()" class="btn-primary text-sm"><i class="fa-solid fa-download"></i> Download Report</button>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal">
-          <div class="flex items-center justify-between mb-4"><h3 class="font-semibold">Yield Summary</h3><i class="fa-solid fa-chart-simple text-emerald-400 text-xl"></i></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="glass-card p-5 md:p-6 scroll-reveal">
+          <div class="flex items-center justify-between mb-4"><h3 class="font-bold">Yield Summary</h3><i class="fa-solid fa-chart-simple text-emerald-400 text-xl"></i></div>
           <div class="space-y-4">
-            <div><div class="flex justify-between text-sm mb-1"><span>Total Yield Saved</span><span class="text-emerald-400 font-semibold">4.8 tons</span></div><div class="progress-bar"><div class="progress-fill" style="width: 78%"></div></div></div>
-            <div><div class="flex justify-between text-sm mb-1"><span>Target Achievement</span><span class="text-emerald-400 font-semibold">78%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 78%"></div></div></div>
-            <div><div class="flex justify-between text-sm mb-1"><span>Farmer Satisfaction</span><span class="text-emerald-400 font-semibold">92%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 92%"></div></div></div>
+            <div><div class="flex justify-between text-sm mb-2"><span class="text-zinc-400">Total Yield Saved</span><span class="text-emerald-400 font-bold">4.8 tons</span></div><div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div></div>
+            <div><div class="flex justify-between text-sm mb-2"><span class="text-zinc-400">Target Achievement</span><span class="text-emerald-400 font-bold">78%</span></div><div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div></div>
+            <div><div class="flex justify-between text-sm mb-2"><span class="text-zinc-400">Farmer Satisfaction</span><span class="text-emerald-400 font-bold">92%</span></div><div class="progress-bar"><div class="progress-fill" style="width:92%"></div></div></div>
+            <div><div class="flex justify-between text-sm mb-2"><span class="text-zinc-400">Post-Harvest Loss Reduction</span><span class="text-emerald-400 font-bold">61%</span></div><div class="progress-bar"><div class="progress-fill" style="width:61%"></div></div></div>
           </div>
         </div>
-        <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal" style="animation-delay: 0.1s">
-          <div class="flex items-center justify-between mb-4"><h3 class="font-semibold">Alert Performance</h3><i class="fa-solid fa-bell text-amber-400 text-xl"></i></div>
+        <div class="glass-card p-5 md:p-6 scroll-reveal">
+          <div class="flex items-center justify-between mb-4"><h3 class="font-bold">Alert Performance</h3><i class="fa-solid fa-bell text-amber-400 text-xl"></i></div>
           <div class="space-y-4">
-            <div><div class="flex justify-between text-sm mb-1"><span>Delivery Rate</span><span class="text-emerald-400 font-semibold">98%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 98%"></div></div></div>
-            <div><div class="flex justify-between text-sm mb-1"><span>Response Rate</span><span class="text-amber-400 font-semibold">67%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 67%; background: #f59e0b;"></div></div></div>
-            <div><div class="flex justify-between text-sm mb-1"><span>Action Taken</span><span class="text-emerald-400 font-semibold">83%</span></div><div class="progress-bar"><div class="progress-fill" style="width: 83%"></div></div></div>
+            <div><div class="flex justify-between text-sm mb-2"><span class="text-zinc-400">Delivery Rate</span><span class="text-emerald-400 font-bold">98%</span></div><div class="progress-bar"><div class="progress-fill" style="width:98%"></div></div></div>
+            <div><div class="flex justify-between text-sm mb-2"><span class="text-zinc-400">Response Rate</span><span class="text-amber-400 font-bold">67%</span></div><div class="progress-bar"><div class="progress-fill" style="width:67%;background:#f59e0b"></div></div></div>
+            <div><div class="flex justify-between text-sm mb-2"><span class="text-zinc-400">Action Taken</span><span class="text-emerald-400 font-bold">83%</span></div><div class="progress-bar"><div class="progress-fill" style="width:83%"></div></div></div>
+            <div><div class="flex justify-between text-sm mb-2"><span class="text-zinc-400">SMS Open Rate</span><span class="text-emerald-400 font-bold">94%</span></div><div class="progress-bar"><div class="progress-fill" style="width:94%"></div></div></div>
           </div>
         </div>
       </div>
-      <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-5 md:p-6 scroll-reveal">
-        <h3 class="font-semibold text-lg mb-5 flex items-center gap-2"><i class="fa-solid fa-table-list text-emerald-400"></i> Weekly Performance Report</h3>
+      <div class="glass-card p-5 md:p-6 scroll-reveal">
+        <h3 class="font-bold text-lg mb-5 flex items-center gap-2"><i class="fa-solid fa-table-list text-emerald-400"></i> Weekly Performance Report</h3>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[550px]">
-            <thead><tr class="border-b border-zinc-800 text-xs text-zinc-400"><th class="py-3 text-left">Metric</th><th class="py-3 text-center">This Week</th><th class="py-3 text-center">Last Week</th><th class="py-3 text-center">Change</th><th class="py-3 text-right">Status</th></tr></thead>
+          <table class="w-full min-w-[520px]">
+            <thead><tr class="border-b border-white/5 text-xs text-zinc-500"><th class="py-3 text-left font-semibold">Metric</th><th class="py-3 text-center font-semibold">This Week</th><th class="py-3 text-center font-semibold">Last Week</th><th class="py-3 text-center font-semibold">Change</th><th class="py-3 text-right font-semibold">Status</th></tr></thead>
             <tbody class="text-sm" id="reports-table"></tbody>
           </table>
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-bottom-nav">
     <div class="flex justify-around items-center w-full max-w-md mx-auto px-2">
-      <button onclick="switchTab(0)" class="nav-item active" id="nav-dashboard"><i class="fa-solid fa-house text-xl"></i><span class="nav-tooltip">Dashboard</span></button>
-      <button onclick="switchTab(1)" class="nav-item" id="nav-farmers"><i class="fa-solid fa-users text-xl"></i><span class="nav-tooltip">Farmers</span></button>
-      <button onclick="switchTab(2)" class="nav-item" id="nav-riskmap"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="nav-tooltip">Risk Map</span></button>
-      <button onclick="switchTab(3)" class="nav-item" id="nav-reports"><i class="fa-solid fa-chart-line text-xl"></i><span class="nav-tooltip">Reports</span></button>
-      <button onclick="openChat()" class="nav-item chat-icon" id="nav-chat"><i class="fa-solid fa-message-dots text-xl"></i><span class="nav-tooltip">Chat with Agent</span></button>
+      <button onclick="switchTab(0)" class="nav-item active"><i class="fa-solid fa-house text-xl"></i><span class="nav-tooltip">Dashboard</span></button>
+      <button onclick="switchTab(1)" class="nav-item"><i class="fa-solid fa-users text-xl"></i><span class="nav-tooltip">Farmers</span></button>
+      <button onclick="switchTab(2)" class="nav-item"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="nav-tooltip">Risk Map</span></button>
+      <button onclick="switchTab(3)" class="nav-item"><i class="fa-solid fa-chart-line text-xl"></i><span class="nav-tooltip">Analytics</span></button>
+      <button onclick="openChat()" class="nav-item" style="color:var(--green)"><i class="fa-solid fa-robot text-xl"></i><span class="nav-tooltip">AI Agent</span></button>
     </div>
   </nav>
 
-  <!-- CHAT PANEL -->
-  <div id="chat-panel" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl w-full max-w-2xl h-[85vh] flex flex-col border border-zinc-700 overflow-hidden shadow-2xl">
-      <div class="bg-gradient-to-r from-zinc-800 to-zinc-800/50 px-5 py-4 flex items-center justify-between border-b border-zinc-700">
+  <!-- AI CHAT PANEL -->
+  <div id="chat-panel" class="modal-overlay hidden">
+    <div style="background:linear-gradient(135deg,#0d1a0d,#111f11);border:1px solid var(--border);border-radius:24px;width:100%;max-width:680px;height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.7)">
+      <div style="background:rgba(16,185,129,0.08);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-lg">🤖</div>
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--green),var(--green-dark));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px var(--green-glow)">🤖</div>
           <div>
-            <div class="font-semibold">YieldGuard AI Agent</div>
-            <div class="text-xs text-emerald-400">Ask anything about your farm</div>
+            <div class="font-bold">YieldGuard AI Agent</div>
+            <div class="text-xs text-emerald-400 flex items-center gap-1"><div class="live-dot" style="width:5px;height:5px"></div> Powered by Claude AI • Always learning</div>
           </div>
         </div>
-        <button onclick="closeChat()" class="text-2xl text-zinc-400 hover:text-white transition">✕</button>
+        <button onclick="closeChat()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:18px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">✕</button>
       </div>
-      <div id="chat-window" class="flex-1 p-5 overflow-y-auto space-y-4 text-sm"></div>
-      <div class="p-4 border-t border-zinc-700 bg-zinc-950 flex gap-3">
-        <input id="chat-input" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-emerald-500 transition" placeholder="Ask me about crops, weather, prices..." onkeypress="if(event.key==='Enter') sendChatMessage()"/>
-        <button onclick="sendChatMessage()" class="bg-emerald-600 hover:bg-emerald-700 w-11 h-11 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-paper-plane"></i></button>
+      <div id="chat-window" style="flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;font-size:.875rem"></div>
+      <div style="padding:16px;border-top:1px solid var(--border);background:rgba(0,0,0,0.3);display:flex;gap:10px">
+        <input id="chat-input" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:12px 18px;color:white;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .2s" placeholder="Ask anything about crops, weather, prices, farming..." onkeypress="if(event.key==='Enter')sendChatMessage()" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"/>
+        <button onclick="sendChatMessage()" style="width:46px;height:46px;border-radius:14px;background:var(--green);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0" onmouseover="this.style.background='#34d399'" onmouseout="this.style.background='var(--green)'">
+          <i class="fa-solid fa-paper-plane text-black"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD FARMER MODAL -->
+  <div id="add-farmer-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-user-plus text-emerald-400"></i> Add New Farmer</h2>
+        <button onclick="closeAddFarmerModal()" style="color:#6b7280;font-size:1.25rem;cursor:pointer">✕</button>
+      </div>
+      <div id="add-farmer-form">
+        <label>Full Name *</label>
+        <input id="f-name" placeholder="e.g. Amina Nakato" />
+        <label>Phone Number</label>
+        <input id="f-phone" placeholder="+256 700 000 000" />
+        <label>District *</label>
+        <select id="f-district">
+          <option value="">Select district...</option>
+          <option>Mubende</option><option>Masaka</option><option>Kapchorwa</option>
+          <option>Jinja</option><option>Gulu</option><option>Mbale</option>
+          <option>Kampala</option><option>Lira</option><option>Soroti</option>
+          <option>Kabale</option><option>Arua</option><option>Fort Portal</option>
+          <option>Hoima</option><option>Mbarara</option><option>Tororo</option>
+        </select>
+        <label>Village / Sub-county</label>
+        <input id="f-village" placeholder="e.g. Kakumiro" />
+        <label>Primary Crop *</label>
+        <select id="f-crop">
+          <option value="">Select crop...</option>
+          <option>Matooke</option><option>Maize</option><option>Beans</option>
+          <option>Cassava</option><option>Coffee</option><option>Rice</option>
+          <option>Sweet Potatoes</option><option>Irish Potatoes</option>
+          <option>Sorghum</option><option>Millet</option><option>Groundnuts</option>
+          <option>Tomatoes</option><option>Onions</option><option>Cabbage</option>
+          <option>Sunflower</option><option>Sugarcane</option>
+        </select>
+        <label>Other Crops (optional)</label>
+        <input id="f-crops2" placeholder="e.g. Beans, Sweet Potatoes" />
+        <label>Farm Size (acres) *</label>
+        <input id="f-acres" type="number" min="0.1" step="0.1" placeholder="e.g. 3.5" />
+        <label>Status</label>
+        <select id="f-status">
+          <option value="Active">Active</option>
+          <option value="At Risk">At Risk</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="flex gap-3 mt-2">
+        <button onclick="saveFarmer()" class="btn-primary flex-1 justify-center"><i class="fa-solid fa-check"></i> Save Farmer</button>
+        <button onclick="closeAddFarmerModal()" class="btn-ghost flex-1 justify-center">Cancel</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ============================================
-    // DATA
-    // ============================================
-    const riskData = [
-      { farmer: "Amina Nakato", crop: "Matooke", district: "Mubende", days: 18, risk: "High", action: "Sell today", priority: 1 },
-      { farmer: "John Mugisha", crop: "Maize", district: "Masaka", days: 42, risk: "Medium", action: "Dry immediately", priority: 2 },
-      { farmer: "Sarah Nansubuga", crop: "Beans", district: "Kapchorwa", days: 9, risk: "High", action: "Contact buyer", priority: 1 },
-      { farmer: "David Okello", crop: "Cassava", district: "Mubende", days: 31, risk: "Low", action: "Store 5 more days", priority: 3 },
-      { farmer: "Grace Akello", crop: "Matooke", district: "Jinja", days: 15, risk: "Medium", action: "Monitor humidity", priority: 2 },
-      { farmer: "Robert Ssekitoleko", crop: "Maize", district: "Mubende", days: 28, risk: "Low", action: "Ready for harvest", priority: 3 }
-    ];
+  // ============================================================
+  // DATA STORE
+  // ============================================================
+  const CROPS_CATALOG = [
+    { name:'Matooke', emoji:'🍌', basePrice:1490, unit:'UGX/kg', trend:'+12%', color:'#f59e0b' },
+    { name:'Maize', emoji:'🌽', basePrice:1200, unit:'UGX/kg', trend:'0%', color:'#fbbf24' },
+    { name:'Beans', emoji:'🫘', basePrice:2800, unit:'UGX/kg', trend:'+2%', color:'#84cc16' },
+    { name:'Cassava', emoji:'🌱', basePrice:800, unit:'UGX/kg', trend:'-5%', color:'#6ee7b7' },
+    { name:'Coffee', emoji:'☕', basePrice:9500, unit:'UGX/kg', trend:'+8%', color:'#92400e' },
+    { name:'Rice', emoji:'🌾', basePrice:3200, unit:'UGX/kg', trend:'+3%', color:'#d1d5db' },
+    { name:'Sweet Potatoes', emoji:'🍠', basePrice:600, unit:'UGX/kg', trend:'-2%', color:'#fb923c' },
+    { name:'Irish Potatoes', emoji:'🥔', basePrice:1100, unit:'UGX/kg', trend:'+1%', color:'#a16207' },
+    { name:'Sorghum', emoji:'🌿', basePrice:900, unit:'UGX/kg', trend:'0%', color:'#4ade80' },
+    { name:'Groundnuts', emoji:'🥜', basePrice:4200, unit:'UGX/kg', trend:'+6%', color:'#d97706' },
+    { name:'Tomatoes', emoji:'🍅', basePrice:1800, unit:'UGX/kg', trend:'+15%', color:'#ef4444' },
+    { name:'Onions', emoji:'🧅', basePrice:2200, unit:'UGX/kg', trend:'+4%', color:'#a855f7' },
+  ];
 
-    const recs = [
-      { crop: "Matooke – Amina", text: "Sell within 48 hrs. Kampala price rising 12% this week.", emoji: "📤", urgent: true },
-      { crop: "Maize – John", text: "Apply solar drying today. Humidity will spike tomorrow.", emoji: "☀️", urgent: true },
-      { crop: "Beans – Sarah", text: "Contact buyer immediately - 9 days stored at high risk.", emoji: "📞", urgent: true }
-    ];
+  const WEATHER_DATA = {
+    Mubende: { temp:28, humidity:82, condition:'Partly Cloudy', icon:'⛅', rain:true, rainDays:2, wind:14, uv:6, advisory:'High humidity detected. Risk of post-harvest spoilage elevated.', advice:'Recommend immediate drying of stored matooke and maize.', forecast:[{day:'Thu',icon:'⛅',hi:28,lo:19},{day:'Fri',icon:'🌧️',hi:25,lo:18},{day:'Sat',icon:'🌧️',hi:24,lo:17},{day:'Sun',icon:'⛅',hi:27,lo:18},{day:'Mon',icon:'☀️',hi:30,lo:20}] },
+    Masaka: { temp:27, humidity:78, condition:'Rain Expected', icon:'🌦️', rain:true, rainDays:1, wind:12, uv:5, advisory:'Rain expected in 24 hours. Delay outdoor drying.', advice:'Move harvested beans and maize into dry storage today.', forecast:[{day:'Thu',icon:'🌦️',hi:27,lo:18},{day:'Fri',icon:'🌧️',hi:24,lo:17},{day:'Sat',icon:'⛅',hi:26,lo:18},{day:'Sun',icon:'☀️',hi:29,lo:19},{day:'Mon',icon:'☀️',hi:30,lo:20}] },
+    Kapchorwa: { temp:24, humidity:45, condition:'Clear & Dry', icon:'☀️', rain:false, rainDays:0, wind:8, uv:8, advisory:'Low humidity - ideal for post-harvest drying.', advice:'Excellent conditions for sun-drying maize and sorghum this week.', forecast:[{day:'Thu',icon:'☀️',hi:24,lo:14},{day:'Fri',icon:'☀️',hi:25,lo:14},{day:'Sat',icon:'⛅',hi:23,lo:13},{day:'Sun',icon:'⛅',hi:24,lo:14},{day:'Mon',icon:'☀️',hi:26,lo:15}] },
+    Jinja: { temp:29, humidity:55, condition:'Sunny', icon:'☀️', rain:false, rainDays:0, wind:10, uv:9, advisory:'Good farming conditions. Low risk weather.', advice:'Ideal harvest period. Market prices favorable this week.', forecast:[{day:'Thu',icon:'☀️',hi:29,lo:20},{day:'Fri',icon:'☀️',hi:30,lo:21},{day:'Sat',icon:'⛅',hi:28,lo:19},{day:'Sun',icon:'⛅',hi:27,lo:19},{day:'Mon',icon:'🌦️',hi:26,lo:18}] },
+    Gulu: { temp:30, humidity:50, condition:'Hot & Clear', icon:'🌤️', rain:false, rainDays:0, wind:16, uv:10, advisory:'High UV index. Protect workers and crops from heat stress.', advice:'Water crops early morning. Harvest during cooler hours (6-9am).', forecast:[{day:'Thu',icon:'🌤️',hi:30,lo:21},{day:'Fri',icon:'☀️',hi:32,lo:22},{day:'Sat',icon:'☀️',hi:33,lo:23},{day:'Sun',icon:'⛅',hi:30,lo:21},{day:'Mon',icon:'⛅',hi:28,lo:20}] },
+    Mbale: { temp:26, humidity:65, condition:'Cloudy', icon:'🌥️', rain:false, rainDays:3, wind:11, uv:5, advisory:'Moderate conditions. Monitor for fungal disease risk.', advice:'Check crop canopies for early signs of blight. Good week for fertiliser application.', forecast:[{day:'Thu',icon:'🌥️',hi:26,lo:17},{day:'Fri',icon:'🌦️',hi:24,lo:16},{day:'Sat',icon:'🌧️',hi:23,lo:16},{day:'Sun',icon:'🌧️',hi:22,lo:15},{day:'Mon',icon:'⛅',hi:25,lo:17}] },
+    Kampala: { temp:26, humidity:72, condition:'Overcast', icon:'🌥️', rain:true, rainDays:2, wind:9, uv:4, advisory:'Urban heat island effect. Market activity high despite rain forecast.', advice:'Good week for selling at Owino Market. Prices expected to rise mid-week.', forecast:[{day:'Thu',icon:'🌥️',hi:26,lo:18},{day:'Fri',icon:'🌦️',hi:25,lo:18},{day:'Sat',icon:'🌧️',hi:24,lo:17},{day:'Sun',icon:'⛅',hi:27,lo:19},{day:'Mon',icon:'🌤️',hi:28,lo:19}] },
+    Lira: { temp:31, humidity:48, condition:'Hot & Dry', icon:'☀️', rain:false, rainDays:0, wind:18, uv:10, advisory:'Drought watch. Monitor soil moisture closely.', advice:'Irrigate if possible. Consider drought-resistant varieties for next season.', forecast:[{day:'Thu',icon:'☀️',hi:31,lo:22},{day:'Fri',icon:'☀️',hi:33,lo:23},{day:'Sat',icon:'☀️',hi:34,lo:23},{day:'Sun',icon:'🌤️',hi:31,lo:21},{day:'Mon',icon:'🌤️',hi:30,lo:21}] },
+    Soroti: { temp:29, humidity:52, condition:'Partly Sunny', icon:'🌤️', rain:false, rainDays:1, wind:13, uv:8, advisory:'Moderate conditions. Watch for late-season dry spells.', advice:'Good harvest window open now. Rice and cassava conditions optimal.', forecast:[{day:'Thu',icon:'🌤️',hi:29,lo:20},{day:'Fri',icon:'🌤️',hi:30,lo:20},{day:'Sat',icon:'⛅',hi:28,lo:19},{day:'Sun',icon:'🌦️',hi:27,lo:19},{day:'Mon',icon:'⛅',hi:28,lo:19}] },
+    Kabale: { temp:20, humidity:70, condition:'Cool & Foggy', icon:'🌫️', rain:true, rainDays:4, wind:7, uv:3, advisory:'Highland conditions. Potato blight risk elevated.', advice:'Apply fungicide preventively. Avoid harvesting in wet conditions.', forecast:[{day:'Thu',icon:'🌫️',hi:20,lo:13},{day:'Fri',icon:'🌧️',hi:18,lo:12},{day:'Sat',icon:'🌧️',hi:17,lo:12},{day:'Sun',icon:'🌦️',hi:19,lo:13},{day:'Mon',icon:'⛅',hi:21,lo:14}] },
+  };
 
-    const farmersList = [
-      { name: "Amina Nakato", district: "Mubende", crop: "Matooke", acres: 3.5, status: "Active", lastActive: "Today", phone: "+256 123 456 789" },
-      { name: "John Mugisha", district: "Masaka", crop: "Maize", acres: 5.0, status: "Active", lastActive: "Yesterday", phone: "+256 234 567 890" },
-      { name: "Sarah Nansubuga", district: "Kapchorwa", crop: "Beans", acres: 2.0, status: "At Risk", lastActive: "2 days ago", phone: "+256 345 678 901" },
-      { name: "David Okello", district: "Mubende", crop: "Cassava", acres: 4.2, status: "Active", lastActive: "Today", phone: "+256 456 789 012" },
-      { name: "Grace Akello", district: "Jinja", crop: "Matooke", acres: 3.0, status: "Active", lastActive: "Today", phone: "+256 567 890 123" },
-      { name: "Robert Ssekitoleko", district: "Mubende", crop: "Maize", acres: 6.5, status: "Inactive", lastActive: "5 days ago", phone: "+256 678 901 234" }
-    ];
+  let farmersList = [
+    { name:"Amina Nakato", district:"Mubende", crop:"Matooke", acres:3.5, status:"At Risk", lastActive:"Today", phone:"+256 123 456 789", village:"Kakumiro" },
+    { name:"John Mugisha", district:"Masaka", crop:"Maize", acres:5.0, status:"Active", lastActive:"Yesterday", phone:"+256 234 567 890", village:"Lyantonde" },
+    { name:"Sarah Nansubuga", district:"Kapchorwa", crop:"Beans", acres:2.0, status:"At Risk", lastActive:"2 days ago", phone:"+256 345 678 901", village:"Sipi" },
+    { name:"David Okello", district:"Mubende", crop:"Cassava", acres:4.2, status:"Active", lastActive:"Today", phone:"+256 456 789 012", village:"Kasanda" },
+    { name:"Grace Akello", district:"Jinja", crop:"Matooke", acres:3.0, status:"Active", lastActive:"Today", phone:"+256 567 890 123", village:"Bugembe" },
+    { name:"Robert Ssekitoleko", district:"Mubende", crop:"Maize", acres:6.5, status:"Inactive", lastActive:"5 days ago", phone:"+256 678 901 234", village:"Mityana" },
+    { name:"Florence Apio", district:"Gulu", crop:"Sorghum", acres:2.8, status:"Active", lastActive:"Today", phone:"+256 789 012 345", village:"Pece" },
+    { name:"Charles Byarugaba", district:"Kabale", crop:"Irish Potatoes", acres:1.5, status:"Active", lastActive:"Yesterday", phone:"+256 890 123 456", village:"Rubanda" },
+    { name:"Phionah Nakabugo", district:"Mbale", crop:"Coffee", acres:4.0, status:"Active", lastActive:"Today", phone:"+256 901 234 567", village:"Bududa" },
+    { name:"Emmanuel Odongo", district:"Lira", crop:"Groundnuts", acres:3.2, status:"Active", lastActive:"3 days ago", phone:"+256 012 345 678", village:"Ojwina" },
+  ];
 
-    const districtsList = [
-      { name: "Mubende", risk: "High", farms: 45, weather: "Humid", temp: "28°C", humidity: "82%" },
-      { name: "Masaka", risk: "Medium", farms: 38, weather: "Rain expected", temp: "27°C", humidity: "78%" },
-      { name: "Kapchorwa", risk: "High", farms: 22, weather: "Dry", temp: "24°C", humidity: "45%" },
-      { name: "Jinja", risk: "Low", farms: 31, weather: "Sunny", temp: "29°C", humidity: "55%" },
-      { name: "Gulu", risk: "Low", farms: 28, weather: "Clear", temp: "30°C", humidity: "50%" },
-      { name: "Mbale", risk: "Medium", farms: 20, weather: "Cloudy", temp: "26°C", humidity: "65%" }
-    ];
+  const riskData = [
+    { farmer:"Amina Nakato", crop:"Matooke", district:"Mubende", days:18, risk:"High", action:"Sell today", priority:1 },
+    { farmer:"John Mugisha", crop:"Maize", district:"Masaka", days:42, risk:"Medium", action:"Dry immediately", priority:2 },
+    { farmer:"Sarah Nansubuga", crop:"Beans", district:"Kapchorwa", days:9, risk:"High", action:"Contact buyer", priority:1 },
+    { farmer:"David Okello", crop:"Cassava", district:"Mubende", days:31, risk:"Low", action:"Store 5 more days", priority:3 },
+    { farmer:"Grace Akello", crop:"Matooke", district:"Jinja", days:15, risk:"Medium", action:"Monitor humidity", priority:2 },
+    { farmer:"Robert Ssekitoleko", crop:"Maize", district:"Mubende", days:28, risk:"Low", action:"Ready for harvest", priority:3 },
+  ];
 
-    const reportData = [
-      { metric: "Farms Monitored", thisWeek: "184", lastWeek: "172", change: "+7%", status: "positive" },
-      { metric: "Alerts Sent", thisWeek: "41", lastWeek: "35", change: "+17%", status: "positive" },
-      { metric: "Risk Events", thisWeek: "23", lastWeek: "28", change: "-18%", status: "positive" },
-      { metric: "Response Rate", thisWeek: "67%", lastWeek: "62%", change: "+5%", status: "positive" },
-      { metric: "Avg Response Time", thisWeek: "4.2h", lastWeek: "5.1h", change: "-18%", status: "positive" }
-    ];
+  const districtsList = [
+    { name:"Mubende", risk:"High", farms:45, weather:"Humid", temp:"28°C", humidity:"82%" },
+    { name:"Masaka", risk:"Medium", farms:38, weather:"Rain expected", temp:"27°C", humidity:"78%" },
+    { name:"Kapchorwa", risk:"High", farms:22, weather:"Dry", temp:"24°C", humidity:"45%" },
+    { name:"Jinja", risk:"Low", farms:31, weather:"Sunny", temp:"29°C", humidity:"55%" },
+    { name:"Gulu", risk:"Low", farms:28, weather:"Clear", temp:"30°C", humidity:"50%" },
+    { name:"Mbale", risk:"Medium", farms:20, weather:"Cloudy", temp:"26°C", humidity:"65%" },
+    { name:"Kampala", risk:"Medium", farms:15, weather:"Overcast", temp:"26°C", humidity:"72%" },
+    { name:"Lira", risk:"High", farms:18, weather:"Hot & Dry", temp:"31°C", humidity:"48%" },
+    { name:"Kabale", risk:"Low", farms:12, weather:"Foggy", temp:"20°C", humidity:"70%" },
+    { name:"Soroti", risk:"Medium", farms:16, weather:"Partly Sunny", temp:"29°C", humidity:"52%" },
+  ];
 
-    // ============================================
-    // AI AGENT RESPONSES
-    // ============================================
-    function getAIResponse(message) {
-        const lowerMsg = message.toLowerCase();
-        
-        const highRiskCount = riskData.filter(r => r.risk === "High").length;
-        const highRiskFarmers = riskData.filter(r => r.risk === "High").map(r => r.farmer).join(', ');
-        const rainyDistricts = districtsList.filter(d => d.weather.includes('Rain')).map(d => d.name).join(', ');
-        
-        // Matokee
-        if (lowerMsg.includes('matooke') || lowerMsg.includes('banana') || lowerMsg.includes('plantain')) {
-            return "🍌 **Matooke (Green Banana) Advice**\n\n• Current price: UGX 1,490/kg (↑12% this week)\n• Storage: Keep in cool, shaded area (15-20°C)\n• Shelf life: 7-14 days when properly stored\n• Warning: High humidity (82%) in Mubende - sell within 48hrs\n• Farmers: Amina Nakato (18 days stored - HIGH RISK), Grace Akello (15 days)\n\n💡 Tip: Harvest when fruits are plump but still green for best quality.";
-        }
-        
-        // Maize
-        else if (lowerMsg.includes('maize') || lowerMsg.includes('corn')) {
-            return "🌽 **Maize Farming Advice**\n\n• Current price: UGX 1,200/kg\n• Moisture content: Must be below 13% for safe storage\n• Drying time: 3-5 days in sun\n• Recommendation: Solar drying today (rain expected in 2 days)\n• Farmers: John Mugisha (needs drying), Robert Ssekitoleko (ready for harvest)\n\n⚠️ Warning: High humidity increases risk of aflatoxins - dry immediately!";
-        }
-        
-        // Beans
-        else if (lowerMsg.includes('bean') || lowerMsg.includes('beans')) {
-            return "🫘 **Beans Storage Advice**\n\n• Current price: UGX 2,800/kg\n• Moisture: Must be below 15% for storage\n• Pest control: Solar treatment prevents weevils\n• Storage life: 6-12 months when properly dried\n• URGENT: Sarah Nansubuga (Kapchorwa) - contact buyer immediately (9 days stored)\n\n💡 Tip: Store in airtight containers with ash to prevent pests.";
-        }
-        
-        // Cassava
-        else if (lowerMsg.includes('cassava') || lowerMsg.includes('muhogo')) {
-            return "🌱 **Cassava Advice**\n\n• Can stay in ground up to 24 months\n• After harvest: Process within 48 hours\n• Best uses: Flour, chips, or fresh consumption\n• Farmer: David Okello (31 days stored - LOW RISK)\n\n💡 Tip: Cassava leaves are also edible and rich in protein!";
-        }
-        
-        // Weather
-        else if (lowerMsg.includes('weather') || lowerMsg.includes('rain') || lowerMsg.includes('sun') || lowerMsg.includes('temperature')) {
-            if (rainyDistricts) {
-                return `🌧️ **Weather Alert**\n\nRain expected in ${rainyDistricts} within 48 hours.\n\n**Recommendations:**\n• Farmers in affected areas should harvest or cover produce\n• Delay drying activities\n• Check storage facilities for leaks\n\n**Current conditions:**\n• Mubende: 28°C, Humidity 82%\n• Masaka: 27°C, Rain expected\n• Kapchorwa: 24°C, Dry\n\n💡 Tip: Plan harvest around weather forecasts.`;
-            } else {
-                return "☀️ **Weather Update**\n\nClear skies across most districts. Good conditions for drying and harvesting. No rain expected in the next 48 hours.\n\n**Current conditions:**\n• Temperature: 28°C average\n• Humidity: Moderate (55-65%)\n• Wind: Light breeze\n\n💡 Perfect time for post-harvest activities!";
-            }
-        }
-        
-        // Risk
-        else if (lowerMsg.includes('risk') || lowerMsg.includes('danger') || lowerMsg.includes('alert') || lowerMsg.includes('problem') || lowerMsg.includes('urgent')) {
-            const highRisk = riskData.filter(r => r.risk === "High");
-            if (highRisk.length > 0) {
-                return `⚠️ **HIGH RISK ALERT**\n\n${highRisk.length} farms need URGENT attention:\n\n` +
-                       highRisk.map(r => `• **${r.farmer}** (${r.crop} in ${r.district}): ${r.action}`).join('\n') +
-                       `\n\n💡 Action required within 24 hours to prevent losses!`;
-            } else {
-                return "✅ **All Clear**\n\nNo high risk farms at the moment. All farms within safe parameters. Continue regular monitoring.";
-            }
-        }
-        
-        // Prices
-        else if (lowerMsg.includes('price') || lowerMsg.includes('sell') || lowerMsg.includes('market') || lowerMsg.includes('ugx') || lowerMsg.includes('cost')) {
-            return "💰 **Market Prices (UGX per kg)**\n\n**Current Kampala Prices:**\n• Matooke: 1,490 ↑ (+12% this week)\n• Maize: 1,200 → (stable)\n• Beans: 2,800 → (stable)\n• Cassava: 800 ↓ (-5%)\n\n**Best time to sell:**\n• Matooke: NOW (prices rising)\n• Maize: Wait 1 week\n• Beans: Anytime\n\n💡 Tip: Prices typically peak in dry season. Consider storage for better prices.";
-        }
-        
-        // Farmers
-        else if (lowerMsg.includes('farmer') || lowerMsg.includes('who') || lowerMsg.includes('list')) {
-            return "👨‍🌾 **Registered Farmers Overview**\n\n" +
-                   farmersList.map(f => `• **${f.name}** (${f.district}): ${f.crop}, ${f.acres} acres - ${f.status}\n   Last active: ${f.lastActive}`).join('\n') +
-                   `\n\n**Total:** 184 farmers across 12 districts\n**Active rate:** 85%\n\n💡 Contact farmers via SMS using the Simulate button.`;
-        }
-        
-        // Districts
-        else if (lowerMsg.includes('district') || lowerMsg.includes('where') || lowerMsg.includes('location')) {
-            return "🗺️ **District Risk Summary**\n\n" +
-                   districtsList.map(d => `• **${d.name}**: ${d.risk} risk, ${d.farms} farms\n   Weather: ${d.weather} (${d.temp}, ${d.humidity} humidity)`).join('\n') +
-                   `\n\n💡 Highest risk: Mubende and Kapchorwa - prioritize these areas.`;
-        }
-        
-        // Storage
-        else if (lowerMsg.includes('store') || lowerMsg.includes('storage') || lowerMsg.includes('preserve')) {
-            return "📦 **Post-Harvest Storage Guide**\n\n**Best practices:**\n• Keep in cool, dry place (15-20°C)\n• Maintain humidity below 65%\n• Check moisture levels weekly\n• Remove damaged produce immediately\n\n**By crop:**\n• Matooke: 7-14 days\n• Maize: 6-12 months (if dried properly)\n• Beans: 6-12 months\n• Cassava: Process within 48 hours\n\n⚠️ Current humidity (82%) is high - take extra precautions!";
-        }
-        
-        // Pest/Disease
-        else if (lowerMsg.includes('pest') || lowerMsg.includes('disease') || lowerMsg.includes('insect') || lowerMsg.includes('bug') || lowerMsg.includes('weevil')) {
-            return "🐛 **Common Pests & Diseases in Uganda**\n\n**Banana (Matooke):**\n• Banana weevils - remove affected plants\n• Black sigatoka - use resistant varieties\n\n**Maize:**\n• Fall armyworm - early detection is key\n• Maize streak virus - plant resistant varieties\n\n**Beans:**\n• Bean bruchids - store in airtight containers\n• Angular leaf spot - crop rotation\n\n💡 **Natural solution:** Neem-based sprays work well for most pests!";
-        }
-        
-        // Help
-        else if (lowerMsg.includes('help') || lowerMsg.includes('what can you') || lowerMsg.includes('capabilities')) {
-            return "🤖 **YieldGuard AI Capabilities**\n\nI can help with:\n\n✅ **Crop-specific advice** (matooke, maize, beans, cassava)\n✅ **Weather forecasts** & harvesting timing\n✅ **Market prices** & selling strategies\n✅ **Risk assessment** for farms\n✅ **Pest & disease** identification\n✅ **Post-harvest storage** tips\n✅ **Farmer information** & contacts\n✅ **District-wise** risk maps\n\n💡 **Try asking:**\n• \"How to store matooke?\"\n• \"Weather in Mubende\"\n• \"Current market prices\"\n• \"Show high risk farms\"\n• \"Pest control for maize\"";
-        }
-        
-        // Greetings
-        else if (lowerMsg.match(/^(hi|hello|hey|good morning|good afternoon|good evening|greetings)$/i)) {
-            const timeOfDay = new Date().getHours();
-            let greeting = "Hello";
-            if (timeOfDay < 12) greeting = "Good morning";
-            else if (timeOfDay < 17) greeting = "Good afternoon";
-            else greeting = "Good evening";
-            
-            return `👋 **${greeting}! I'm YieldGuard AI Agent**\n\nI'm monitoring ${riskData.length} farms across ${districtsList.length} districts. Currently **${highRiskCount} farms** need urgent attention.\n\nHow can I help you today?\n\n💡 Try asking:\n• \"Matooke storage advice\"\n• \"Weather forecast\"\n• \"Market prices\"\n• \"Show risks\"\n• \"Farmer list\"`;
-        }
-        
-        // Thanks
-        else if (lowerMsg.includes('thank')) {
-            return "🙏 You're very welcome! I'm here to help you succeed with your farming. Feel free to ask anything else - I'm available 24/7.\n\n💡 Would you like to know about weather forecasts or market prices today?";
-        }
-        
-        // Default
-        else {
-            return `🤔 I want to help, but I'm not sure about "${message.substring(0, 50)}".\n\nI can help with:\n\n🌾 **Crop advice** (matooke, maize, beans, cassava)\n☁️ **Weather forecasts**\n💰 **Market prices**\n⚠️ **Risk alerts**\n👨‍🌾 **Farmer information**\n🗺️ **District maps**\n\n💡 Try rephrasing your question or ask \"help\" for examples.\n\nCurrently monitoring ${riskData.length} farms with ${highRiskCount} at high risk.`;
-        }
-    }
+  const reportData = [
+    { metric:"Farms Monitored", thisWeek:"184", lastWeek:"172", change:"+7%", status:"positive" },
+    { metric:"Alerts Sent", thisWeek:"41", lastWeek:"35", change:"+17%", status:"positive" },
+    { metric:"Risk Events", thisWeek:"23", lastWeek:"28", change:"-18%", status:"positive" },
+    { metric:"Response Rate", thisWeek:"67%", lastWeek:"62%", change:"+5%", status:"positive" },
+    { metric:"Post-Harvest Losses", thisWeek:"12%", lastWeek:"19%", change:"-37%", status:"positive" },
+    { metric:"Avg Response Time", thisWeek:"4.2h", lastWeek:"5.1h", change:"-18%", status:"positive" },
+    { metric:"New Farmers Registered", thisWeek:"12", lastWeek:"9", change:"+33%", status:"positive" },
+  ];
 
-    // ============================================
-    // UI POPULATION FUNCTIONS
-    // ============================================
-    function populateRiskTable() {
-      const tbody = document.getElementById('risk-table');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      const sortedRisk = [...riskData].sort((a, b) => a.priority - b.priority);
-      sortedRisk.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-b border-zinc-800 last:border-none hover:bg-zinc-800/50 transition';
-        tr.innerHTML = `
-          <td class="py-4"><div class="font-medium">${item.farmer}</div><div class="text-xs text-zinc-400">${item.crop}</div></td>
-          <td class="py-4 text-sm">${item.district}</td>
-          <td class="py-4 text-center text-sm">${item.days}</td>
-          <td class="py-4 text-center"><span class="px-3 py-1 rounded-full text-xs font-medium ${item.risk === 'High' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}">${item.risk}</span></td>
-          <td class="py-4 text-right"><button class="bg-white/10 hover:bg-emerald-600 hover:text-black px-4 py-1.5 rounded-full text-xs font-medium transition">${item.action}</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+  const recentAlerts = [
+    { icon:'🔴', text:'Amina Nakato – Matooke at risk (18 days)', time:'5m ago' },
+    { icon:'🌧️', text:'Rain alert – Masaka district', time:'23m ago' },
+    { icon:'⚠️', text:'Sarah Nansubuga – Beans urgent sale', time:'1h ago' },
+    { icon:'📈', text:'Tomato prices up 15% – Kampala', time:'2h ago' },
+    { icon:'🌡️', text:'High humidity warning – Mubende', time:'3h ago' },
+  ];
 
-    function populateRecommendations() {
-      const container = document.getElementById('recommendations');
-      if (!container) return;
-      container.innerHTML = '';
-      recs.forEach(rec => {
-        const div = document.createElement('div');
-        div.className = `bg-zinc-800/50 rounded-xl p-4 flex gap-3 items-start transition hover:bg-zinc-800 ${rec.urgent ? 'border-l-4 border-red-500' : ''}`;
-        div.innerHTML = `<div class="text-2xl">${rec.emoji}</div><div><div class="font-medium">${rec.crop}</div><div class="text-xs text-zinc-300 mt-1">${rec.text}</div></div>`;
-        container.appendChild(div);
-      });
-    }
+  let filterState = { status:'All', crop:'', district:'' };
+  let searchQuery = '';
+  let selectedCrop = 'Matooke';
+  let priceChart = null;
 
-    function populateFarmers() {
-      const container = document.getElementById('farmers-list');
-      if (!container) return;
-      container.innerHTML = '';
-      farmersList.forEach(farmer => {
-        const div = document.createElement('div');
-        div.className = 'farmer-card';
-        const initials = farmer.name.split(' ').map(n => n[0]).join('');
-        div.innerHTML = `
-          <div class="farmer-avatar">${initials}</div>
-          <div class="flex-1">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div><div class="font-medium">${farmer.name}</div><div class="text-xs text-zinc-400">${farmer.district} • ${farmer.crop} • ${farmer.acres} acres</div></div>
-              <div class="flex items-center gap-3"><span class="text-xs px-3 py-1 rounded-full ${farmer.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400' : farmer.status === 'At Risk' ? 'bg-red-500/20 text-red-400' : 'bg-zinc-500/20 text-zinc-400'}">${farmer.status}</span><div class="text-xs text-zinc-500">${farmer.lastActive}</div></div>
-            </div>
+  // ============================================================
+  // WEATHER
+  // ============================================================
+  function updateWeather(district) {
+    const d = WEATHER_DATA[district] || WEATHER_DATA['Mubende'];
+    const card = document.getElementById('weather-card');
+    card.className = 'glass-card p-5 md:p-6 scroll-reveal revealed ' + (d.rain ? 'weather-bg-rain' : d.humidity > 70 ? 'weather-bg-cloud' : 'weather-bg-sun');
+
+    document.getElementById('ndvi-district').textContent = district;
+    generateNDVI(district);
+
+    document.getElementById('weather-content').innerHTML = `
+      <div class="flex items-center gap-6 mb-4">
+        <div class="text-6xl md:text-7xl">${d.icon}</div>
+        <div>
+          <div class="text-4xl font-bold num">${d.temp}°C</div>
+          <div class="text-sm text-zinc-400 mt-1">${d.condition}</div>
+          <div class="flex flex-wrap gap-3 mt-2 text-xs">
+            <span class="flex items-center gap-1 ${d.humidity>75?'text-sky-400':'text-zinc-400'}"><i class="fa-solid fa-droplet"></i> ${d.humidity}% humidity</span>
+            <span class="flex items-center gap-1 text-zinc-400"><i class="fa-solid fa-wind"></i> ${d.wind} km/h</span>
+            <span class="flex items-center gap-1 text-amber-400"><i class="fa-solid fa-sun"></i> UV ${d.uv}</span>
           </div>
-        `;
-        container.appendChild(div);
-      });
-    }
+        </div>
+      </div>
+      <div class="p-3 rounded-xl ${d.rain?'bg-sky-500/10 border border-sky-500/20':'bg-emerald-500/10 border border-emerald-500/20'}">
+        <div class="text-xs font-bold ${d.rain?'text-sky-400':'text-emerald-400'} mb-1"><i class="fa-solid fa-${d.rain?'triangle-exclamation':'check-circle'}"></i> ADVISORY</div>
+        <div class="text-xs text-zinc-300">${d.advisory}</div>
+        <div class="text-xs text-zinc-400 mt-1 italic">${d.advice}</div>
+      </div>
+      ${d.rain ? `<div class="mt-3 flex items-center gap-2 text-xs text-amber-400 font-semibold"><i class="fa-solid fa-clock"></i> Rain expected in ${d.rainDays} day${d.rainDays!==1?'s':''}</div>` : ''}
+    `;
 
-    function populateRiskMap() {
-      const container = document.getElementById('risk-map');
-      if (!container) return;
-      container.innerHTML = '';
-      districtsList.forEach(district => {
-        const div = document.createElement('div');
-        const riskClass = district.risk === 'High' ? 'high-risk' : district.risk === 'Medium' ? 'medium-risk' : 'low-risk';
-        div.className = `district-card ${riskClass}`;
-        div.innerHTML = `
-          <div class="flex items-center justify-between mb-2"><h3 class="font-semibold">${district.name}</h3><span class="text-xs px-2 py-1 rounded-full ${district.risk === 'High' ? 'bg-red-500/20 text-red-400' : district.risk === 'Medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}">${district.risk}</span></div>
-          <div class="text-xs text-zinc-400 mb-2">${district.farms} farms</div>
-          <div class="flex items-center justify-between text-xs"><div class="flex items-center gap-2"><i class="fa-solid fa-temperature-high"></i> ${district.temp}</div><div class="flex items-center gap-2"><i class="fa-solid fa-droplet"></i> ${district.humidity}</div><div class="flex items-center gap-2"><i class="fa-solid fa-cloud ${district.weather === 'Rain expected' ? 'text-sky-400' : 'text-zinc-400'}"></i> ${district.weather}</div></div>
-        `;
-        container.appendChild(div);
-      });
-    }
+    document.getElementById('forecast-strip').innerHTML = `
+      <div class="text-xs text-zinc-500 font-semibold uppercase mb-3">5-Day Forecast</div>
+      <div class="flex gap-2 overflow-x-auto">
+        ${d.forecast.map(f=>`<div style="flex:1;min-width:52px;background:rgba(255,255,255,0.04);border-radius:12px;padding:8px 4px;text-align:center">
+          <div class="text-xs text-zinc-500 font-semibold">${f.day}</div>
+          <div class="text-xl my-1">${f.icon}</div>
+          <div class="text-xs font-bold">${f.hi}°</div>
+          <div class="text-xs text-zinc-600">${f.lo}°</div>
+        </div>`).join('')}
+      </div>
+    `;
+  }
 
-    function populateRiskFactors() {
-      const container = document.getElementById('risk-factors');
-      if (!container) return;
-      container.innerHTML = `
-        <div class="flex items-center justify-between p-4 bg-zinc-800/50 rounded-xl"><div class="flex items-center gap-3"><i class="fa-solid fa-droplet text-sky-400"></i><span>High Humidity (Mubende, Masaka)</span></div><span class="text-amber-400 font-medium">82%</span></div>
-        <div class="flex items-center justify-between p-4 bg-zinc-800/50 rounded-xl"><div class="flex items-center gap-3"><i class="fa-solid fa-temperature-high text-red-400"></i><span>Extended Storage (>18 days)</span></div><span class="text-red-400 font-medium">23 farms</span></div>
-        <div class="flex items-center justify-between p-4 bg-zinc-800/50 rounded-xl"><div class="flex items-center gap-3"><i class="fa-solid fa-cloud-rain text-emerald-400"></i><span>Rain Forecast (next 48h)</span></div><span class="text-emerald-400 font-medium">5 districts</span></div>
+  // ============================================================
+  // NDVI SATELLITE VISUALIZATION
+  // ============================================================
+  function generateNDVI(district) {
+    const grid = document.getElementById('ndvi-grid');
+    if (!grid) return;
+    const d = WEATHER_DATA[district];
+    const stressChance = d ? d.humidity / 100 : 0.5;
+    grid.innerHTML = '';
+    for (let i = 0; i < 64; i++) {
+      const r = Math.random();
+      const cell = document.createElement('div');
+      cell.style.cssText = 'height:16px;border-radius:2px;';
+      if (r < stressChance * 0.25) cell.style.background = '#ef4444';
+      else if (r < stressChance * 0.5) cell.style.background = '#f59e0b';
+      else if (r < 0.7) cell.style.background = '#4ade80';
+      else cell.style.background = '#166534';
+      grid.appendChild(cell);
+    }
+  }
+
+  // ============================================================
+  // MARKET CHART
+  // ============================================================
+  function buildCropTabs() {
+    const tabs = document.getElementById('crop-tabs');
+    if (!tabs) return;
+    tabs.innerHTML = '';
+    CROPS_CATALOG.slice(0,6).forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'crop-tab' + (c.name === selectedCrop ? ' active' : '');
+      btn.innerHTML = `${c.emoji} ${c.name}`;
+      btn.onclick = () => { selectedCrop = c.name; buildCropTabs(); updatePriceChart(); };
+      tabs.appendChild(btn);
+    });
+  }
+
+  function generatePriceHistory(basePx) {
+    const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Today'];
+    const data = labels.map((_,i) => Math.round(basePx * (0.9 + Math.random()*0.25 + i*0.01)));
+    return { labels, data };
+  }
+
+  function updatePriceChart() {
+    const cropObj = CROPS_CATALOG.find(c=>c.name===selectedCrop) || CROPS_CATALOG[0];
+    const { labels, data } = generatePriceHistory(cropObj.basePrice);
+    if (priceChart) { priceChart.destroy(); }
+    const ctx = document.getElementById('priceChart');
+    if (!ctx) return;
+    priceChart = new Chart(ctx, {
+      type:'line',
+      data: {
+        labels,
+        datasets: [{
+          label:`${cropObj.name} (UGX/kg)`,
+          data,
+          borderColor: cropObj.color,
+          backgroundColor: cropObj.color + '15',
+          tension: 0.4, borderWidth: 3,
+          pointRadius: 4, pointBackgroundColor: cropObj.color,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { labels: { color:'#9ca3af', font:{family:'Space Grotesk'} } } },
+        scales: {
+          y: { grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#6b7280', font:{family:'JetBrains Mono'} } },
+          x: { grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#6b7280' } }
+        }
+      }
+    });
+
+    // Price summary
+    const psum = document.getElementById('price-summary');
+    if (psum) {
+      const todayPrice = data[data.length-1];
+      const yesterdayPrice = data[data.length-2];
+      const pctChange = (((todayPrice - yesterdayPrice) / yesterdayPrice)*100).toFixed(1);
+      const pctColor = pctChange >= 0 ? 'text-emerald-400' : 'text-red-400';
+      const arrow = pctChange >= 0 ? '↑' : '↓';
+      psum.innerHTML = `
+        <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px">
+          <div class="text-xs text-zinc-500 mb-1">Today's Price</div>
+          <div class="text-xl font-bold num text-emerald-400">UGX ${todayPrice.toLocaleString()}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px">
+          <div class="text-xs text-zinc-500 mb-1">Daily Change</div>
+          <div class="text-xl font-bold num ${pctColor}">${arrow} ${Math.abs(pctChange)}%</div>
+        </div>
       `;
     }
+  }
 
-    function populateReportsTable() {
-      const tbody = document.getElementById('reports-table');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      reportData.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-b border-zinc-800 last:border-none hover:bg-zinc-800/30 transition';
-        tr.innerHTML = `<td class="py-3 text-left">${item.metric}</td><td class="py-3 text-center font-medium">${item.thisWeek}</td><td class="py-3 text-center text-zinc-400">${item.lastWeek}</td><td class="py-3 text-center ${item.status === 'positive' ? 'text-emerald-400' : 'text-red-400'} font-medium">${item.change}</td><td class="py-3 text-right"><span class="px-3 py-1 rounded-full text-xs ${item.status === 'positive' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}">${item.status === 'positive' ? '↑ Improving' : '↓ Needs attention'}</span></td>`;
-        tbody.appendChild(tr);
-      });
-    }
+  // ============================================================
+  // CROP DISTRIBUTION
+  // ============================================================
+  function buildCropDistribution() {
+    const el = document.getElementById('crop-distribution');
+    if (!el) return;
+    const counts = {};
+    farmersList.forEach(f => { counts[f.crop] = (counts[f.crop]||0) + 1; });
+    const total = farmersList.length;
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    const colors = ['#10b981','#f59e0b','#38bdf8','#a78bfa','#fb923c','#f43f5e','#34d399'];
+    el.innerHTML = sorted.map(([crop,count],i) => {
+      const pct = Math.round((count/total)*100);
+      const cropObj = CROPS_CATALOG.find(c=>c.name===crop);
+      return `<div class="crop-stat">
+        <span class="text-lg">${cropObj?cropObj.emoji:'🌿'}</span>
+        <div class="flex-1">
+          <div class="flex justify-between text-xs mb-1"><span class="font-semibold">${crop}</span><span class="text-zinc-500 num">${count} farmers</span></div>
+          <div class="progress-bar" style="height:5px"><div class="progress-fill" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
+        </div>
+        <span class="text-xs text-zinc-500 num w-8 text-right">${pct}%</span>
+      </div>`;
+    }).join('');
+  }
 
-    function createPriceChart() {
-      const ctx = document.getElementById('priceChart');
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'line',
-        data: { labels: ['Feb 21', 'Feb 22', 'Feb 23', 'Feb 24', 'Feb 25', 'Feb 26', 'Feb 27'], datasets: [{ label: 'Matooke (UGX/kg)', data: [1200, 1180, 1250, 1380, 1420, 1350, 1490], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)', tension: 0.4, borderWidth: 3, pointRadius: 3, pointBackgroundColor: '#10b981', fill: true }] },
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#a1a1aa' } } }, scales: { y: { grid: { color: '#27272a' }, ticks: { color: '#a1a1aa' } }, x: { grid: { color: '#27272a' }, ticks: { color: '#a1a1aa' } } } }
-      });
-    }
+  // ============================================================
+  // SOIL HEALTH
+  // ============================================================
+  function buildSoilHealth() {
+    const el = document.getElementById('soil-health');
+    if (!el) return;
+    const soilData = [
+      { district:'Mubende', score:61, color:'#f59e0b' },
+      { district:'Masaka', score:74, color:'#10b981' },
+      { district:'Kapchorwa', score:82, color:'#10b981' },
+      { district:'Jinja', score:55, color:'#f59e0b' },
+    ];
+    el.innerHTML = soilData.map(s => `
+      <div class="flex items-center gap-3 py-1">
+        <span class="text-xs text-zinc-500 w-20 truncate">${s.district}</span>
+        <div class="flex-1 progress-bar" style="height:5px"><div style="height:100%;width:${s.score}%;background:${s.color};border-radius:4px;transition:width .6s ease"></div></div>
+        <span class="text-xs font-bold num" style="color:${s.color}">${s.score}</span>
+      </div>
+    `).join('');
+  }
 
-    // ============================================
-    // CHAT FUNCTIONS
-    // ============================================
-    let isTyping = false;
-    
-    function openChat() {
-      document.getElementById('chat-panel').classList.remove('hidden');
-      document.getElementById('chat-input').focus();
-      const chatWindow = document.getElementById('chat-window');
-      if (!chatWindow.hasChildNodes()) {
-        addChatMessage("👋 **Hello! I'm YieldGuard AI Agent**\n\nI'm here to help you with crop management, weather forecasts, market prices, and risk assessment for your farms.\n\n💡 **Try asking:**\n• \"How to store matooke?\"\n• \"Weather in Mubende\"\n• \"Current market prices\"\n• \"Show high risk farms\"\n\nWhat would you like to know?", true);
-      }
-    }
+  // ============================================================
+  // RECENT ALERTS
+  // ============================================================
+  function buildRecentAlerts() {
+    const el = document.getElementById('recent-alerts');
+    if (!el) return;
+    el.innerHTML = recentAlerts.map(a => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:rgba(255,255,255,0.04);border-radius:12px">
+        <span class="text-base">${a.icon}</span>
+        <div class="flex-1">
+          <div class="text-xs">${a.text}</div>
+          <div class="text-xs text-zinc-600 mt-0.5 font-mono">${a.time}</div>
+        </div>
+      </div>
+    `).join('');
+  }
 
-    function closeChat() {
-      document.getElementById('chat-panel').classList.add('hidden');
-    }
+  // ============================================================
+  // FARMERS
+  // ============================================================
+  function updateFarmerStats() {
+    document.getElementById('farmer-count').textContent = farmersList.length;
+    const districts = new Set(farmersList.map(f=>f.district));
+    document.getElementById('district-count').textContent = districts.size;
+    const active = farmersList.filter(f=>f.status==='Active').length;
+    document.getElementById('active-count').textContent = active;
+    document.getElementById('active-pct').textContent = Math.round((active/farmersList.length)*100);
+    const acres = farmersList.reduce((s,f)=>s+f.acres,0).toFixed(1);
+    document.getElementById('total-acres').textContent = acres;
+    document.getElementById('kpi-farms').textContent = farmersList.length;
+  }
 
-    function addChatMessage(text, isAI = true) {
-      const chat = document.getElementById('chat-window');
-      const msg = document.createElement('div');
-      msg.className = `flex ${isAI ? 'justify-start' : 'justify-end'} animate-fadeIn`;
-      const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-      msg.innerHTML = `<div class="${isAI ? 'bg-zinc-800 px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%]' : 'bg-emerald-600/30 text-white px-4 py-3 rounded-2xl rounded-br-none max-w-[85%]'}">${formattedText}</div>`;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
-    }
+  function buildFilterChips() {
+    const crops = [...new Set(farmersList.map(f=>f.crop))].sort();
+    const districts = [...new Set(farmersList.map(f=>f.district))].sort();
+    const cf = document.getElementById('crop-filter-chips');
+    const df = document.getElementById('district-filter-chips');
+    if (cf) cf.innerHTML = ['All',...crops].map(c=>`<button class="filter-chip${filterState.crop===c||(!filterState.crop&&c==='All')?' active':''}" onclick="toggleFilterChip(this,'crop','${c}')">${c}</button>`).join('');
+    if (df) df.innerHTML = ['All',...districts].map(d=>`<button class="filter-chip${filterState.district===d||(!filterState.district&&d==='All')?' active':''}" onclick="toggleFilterChip(this,'district','${d}')">${d}</button>`).join('');
+  }
 
-    function addTypingIndicator() {
-      const chat = document.getElementById('chat-window');
-      const indicator = document.createElement('div');
-      indicator.className = 'typing-indicator';
-      indicator.id = 'typing-indicator';
-      indicator.innerHTML = '<span></span><span></span><span></span>';
-      chat.appendChild(indicator);
-      chat.scrollTop = chat.scrollHeight;
-    }
+  function toggleFilterChip(btn, type, val) {
+    btn.closest('.flex').querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    if (type==='status') filterState.status = val;
+    else if (type==='crop') filterState.crop = (val==='All'?'':val);
+    else if (type==='district') filterState.district = (val==='All'?'':val);
+  }
 
-    function removeTypingIndicator() {
-      const indicator = document.getElementById('typing-indicator');
-      if (indicator) indicator.remove();
-    }
+  function applyFilters() { populateFarmers(); }
+  function resetFilters() {
+    filterState = { status:'All', crop:'', district:'' };
+    searchQuery = '';
+    buildFilterChips();
+    populateFarmers();
+  }
 
-    function sendChatMessage() {
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text || isTyping) return;
-      
-      addChatMessage(text, false);
-      input.value = '';
-      isTyping = true;
-      addTypingIndicator();
-      
-      setTimeout(() => {
-        const response = getAIResponse(text);
-        removeTypingIndicator();
-        addChatMessage(response, true);
-        isTyping = false;
-      }, 800);
-    }
+  function searchFarmers(q) { searchQuery = q.toLowerCase(); populateFarmers(); }
 
-    function simulateSMS() {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.innerHTML = '📩 Simulated SMS sent to farmer!';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-      
-      openChat();
-      setTimeout(() => {
-        addChatMessage("📱 **Simulated SMS Received**\n\nFrom: Amina Nakato (Mubende)\n\"My matooke has been stored 18 days. Should I sell now?\"", true);
-        setTimeout(() => {
-          addChatMessage("Based on current data:\n• Matooke prices are up 12% this week\n• High humidity (82%) risks spoilage\n• Storage time: 18 days (critical)\n\n**Recommendation:** SELL TODAY at Kampala market for best price! 🍌💰", true);
-        }, 1000);
-      }, 500);
-    }
+  function toggleFilter() {
+    const p = document.getElementById('filter-panel');
+    p.classList.toggle('open');
+    buildFilterChips();
+  }
 
-    // ============================================
-    // TAB NAVIGATION
-    // ============================================
-    function switchTab(tabIndex) {
-      document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-      const sections = ['dashboard-section', 'farmers-section', 'riskmap-section', 'reports-section'];
-      document.getElementById(sections[tabIndex]).classList.add('active');
-      
-      const titles = ['Dashboard', 'Farmers', 'Risk Map', 'Reports'];
-      const subtitles = [
-        'Yield Optimization & Food Security AI Agent • Uganda',
-        'Farmer Management & Engagement Dashboard',
-        'Real-time Risk Assessment by District',
-        'Performance Analytics & Insights'
-      ];
-      document.getElementById('page-title').textContent = titles[tabIndex];
-      document.getElementById('page-subtitle').textContent = subtitles[tabIndex];
-      
-      document.querySelectorAll('.tab-link').forEach((link, index) => {
-        if (index === tabIndex) {
-          link.classList.add('text-emerald-400');
-          link.classList.remove('text-zinc-400');
-        } else {
-          link.classList.remove('text-emerald-400');
-          link.classList.add('text-zinc-400');
-        }
-      });
-      
-      setActiveNav(tabIndex);
-      if (tabIndex === 1) populateFarmers();
-      if (tabIndex === 2) { populateRiskMap(); populateRiskFactors(); }
-      if (tabIndex === 3) populateReportsTable();
-    }
+  function populateFarmers() {
+    const container = document.getElementById('farmers-list');
+    if (!container) return;
+    let list = [...farmersList];
+    if (filterState.status && filterState.status!=='All') list = list.filter(f=>f.status===filterState.status);
+    if (filterState.crop) list = list.filter(f=>f.crop===filterState.crop);
+    if (filterState.district) list = list.filter(f=>f.district===filterState.district);
+    if (searchQuery) list = list.filter(f=>(f.name+f.district+f.crop).toLowerCase().includes(searchQuery));
 
-    function setActiveNav(index) {
-      document.querySelectorAll('.nav-item').forEach((item, i) => {
-        if (i === index) item.classList.add('active');
-        else item.classList.remove('active');
-      });
-    }
+    container.innerHTML = '';
+    if (list.length===0) { container.innerHTML='<div style="text-align:center;padding:40px;color:#4b5563">No farmers match your filters.</div>'; return; }
 
-    // Scroll reveal animation
-    function handleScrollReveal() {
-      const elements = document.querySelectorAll('.scroll-reveal');
-      elements.forEach(el => {
-        const rect = el.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        if (rect.top < windowHeight - 100) {
-          el.classList.add('revealed');
-        }
-      });
-    }
-
-    // ============================================
-    // INITIALIZE
-    // ============================================
-    window.addEventListener('load', () => {
-      populateRiskTable();
-      populateRecommendations();
-      populateFarmers();
-      populateRiskMap();
-      populateRiskFactors();
-      populateReportsTable();
-      createPriceChart();
-      setActiveNav(0);
-      handleScrollReveal();
-      console.log('✅ YieldGuard AI v2.0 loaded - Smart Farming Assistant ready!');
+    list.forEach(farmer => {
+      const div = document.createElement('div');
+      div.className = 'farmer-card';
+      const initials = farmer.name.split(' ').map(n=>n[0]).join('').slice(0,2);
+      const statusClass = farmer.status==='Active'?'badge-low':farmer.status==='At Risk'?'badge-high':'';
+      const cropObj = CROPS_CATALOG.find(c=>c.name===farmer.crop);
+      div.innerHTML = `
+        <div class="farmer-avatar">${initials}</div>
+        <div style="flex:1">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px">
+            <div>
+              <div style="font-weight:700">${farmer.name}</div>
+              <div style="font-size:.75rem;color:#6b7280;margin-top:2px">
+                <i class="fa-solid fa-location-dot" style="color:var(--green)"></i> ${farmer.district}${farmer.village?', '+farmer.village:''} &nbsp;•&nbsp;
+                ${cropObj?cropObj.emoji:''} ${farmer.crop} &nbsp;•&nbsp;
+                <i class="fa-solid fa-land-mine-on" style="color:#9ca3af"></i> ${farmer.acres} acres
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge ${statusClass}">${farmer.status}</span>
+              <span style="font-size:.7rem;color:#6b7280">${farmer.lastActive}</span>
+            </div>
+          </div>
+          ${farmer.phone?`<div style="font-size:.72rem;color:#6b7280;margin-top:4px"><i class="fa-solid fa-phone" style="color:var(--green);margin-right:4px"></i>${farmer.phone}</div>`:''}
+        </div>
+        <button onclick="event.stopPropagation();removeFarmer('${farmer.name}')" title="Remove" style="width:30px;height:30px;border-radius:8px;background:rgba(239,68,68,0.1);color:#f87171;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:.75rem;transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      `;
+      container.appendChild(div);
     });
-    
-    window.addEventListener('scroll', handleScrollReveal);
+    updateFarmerStats();
+    buildCropDistribution();
+  }
+
+  function removeFarmer(name) {
+    if (!confirm(`Remove ${name} from the system?`)) return;
+    farmersList = farmersList.filter(f=>f.name!==name);
+    populateFarmers();
+    showToast(`${name} removed`);
+  }
+
+  // ============================================================
+  // ADD FARMER MODAL
+  // ============================================================
+  function openAddFarmerModal() {
+    document.getElementById('add-farmer-modal').classList.remove('hidden');
+    ['f-name','f-phone','f-village','f-crops2','f-acres'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+    ['f-district','f-crop','f-status'].forEach(id=>{ const el=document.getElementById(id); if(el)el.selectedIndex=0; });
+  }
+
+  function closeAddFarmerModal() { document.getElementById('add-farmer-modal').classList.add('hidden'); }
+
+  function saveFarmer() {
+    const name = document.getElementById('f-name').value.trim();
+    const district = document.getElementById('f-district').value;
+    const crop = document.getElementById('f-crop').value;
+    const acres = parseFloat(document.getElementById('f-acres').value);
+    if (!name||!district||!crop||!acres) { showToast('⚠️ Please fill in all required fields','error'); return; }
+    const newFarmer = {
+      name, district, crop, acres,
+      phone: document.getElementById('f-phone').value.trim(),
+      village: document.getElementById('f-village').value.trim(),
+      status: document.getElementById('f-status').value,
+      lastActive: 'Just now',
+    };
+    farmersList.unshift(newFarmer);
+    closeAddFarmerModal();
+    switchTab(1);
+    populateFarmers();
+    showToast(`✅ ${name} added successfully!`);
+    recentAlerts.unshift({ icon:'👤', text:`New farmer: ${name} (${district})`, time:'now' });
+    buildRecentAlerts();
+  }
+
+  // ============================================================
+  // RISK MAP
+  // ============================================================
+  function populateRiskMap() {
+    const container = document.getElementById('risk-map');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const h = districtsList.filter(d=>d.risk==='High');
+    const m = districtsList.filter(d=>d.risk==='Medium');
+    const l = districtsList.filter(d=>d.risk==='Low');
+    const setEl = (id,val)=>{ const el=document.getElementById(id); if(el)el.textContent=val; };
+    setEl('rm-high', h.reduce((s,d)=>s+d.farms,0));
+    setEl('rm-high-d', h.length);
+    setEl('rm-med', m.reduce((s,d)=>s+d.farms,0));
+    setEl('rm-med-d', m.length);
+    setEl('rm-low', l.reduce((s,d)=>s+d.farms,0));
+    setEl('rm-low-d', l.length);
+
+    districtsList.forEach(district => {
+      const div = document.createElement('div');
+      const rc = district.risk==='High'?'high-risk':district.risk==='Medium'?'medium-risk':'low-risk';
+      const bc = district.risk==='High'?'badge-high':district.risk==='Medium'?'badge-medium':'badge-low';
+      const wd = WEATHER_DATA[district.name];
+      div.className = `district-card ${rc}`;
+      div.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-weight:700">${district.name}</div>
+          <span class="badge ${bc}">${district.risk}</span>
+        </div>
+        <div style="font-size:.75rem;color:#6b7280;margin-bottom:10px"><i class="fa-solid fa-house" style="color:var(--green)"></i> ${district.farms} farms</div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:.75rem">
+          <span style="color:#9ca3af"><i class="fa-solid fa-temperature-half"></i> ${district.temp}</span>
+          <span style="color:${district.humidity>'70%'?'#38bdf8':'#9ca3af'}"><i class="fa-solid fa-droplet"></i> ${district.humidity}</span>
+          <span style="color:#9ca3af">${wd?wd.icon:''} ${district.weather}</span>
+        </div>
+      `;
+      div.onclick = () => {
+        document.getElementById('district-weather-select').value = district.name;
+        updateWeather(district.name);
+        switchTab(0);
+        showToast(`📍 Viewing weather for ${district.name}`);
+      };
+      container.appendChild(div);
+    });
+  }
+
+  function populateRiskFactors() {
+    const c = document.getElementById('risk-factors');
+    if (!c) return;
+    const highHumDistricts = districtsList.filter(d=>parseInt(d.humidity)>75).map(d=>d.name).join(', ');
+    c.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:14px;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-droplet" style="color:#38bdf8"></i><span>High Humidity (${highHumDistricts||'None'})</span></div>
+        <span style="color:#fbbf24;font-weight:700">82%</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:14px;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-clock" style="color:#ef4444"></i><span>Extended Storage (>18 days stored)</span></div>
+        <span style="color:#f87171;font-weight:700">${riskData.filter(r=>r.days>18).length} farms</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:14px;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-cloud-rain" style="color:#34d399"></i><span>Rain Forecast (next 48h)</span></div>
+        <span style="color:#34d399;font-weight:700">${districtsList.filter(d=>d.weather.toLowerCase().includes('rain')).length} districts</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:14px;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-temperature-high" style="color:#f59e0b"></i><span>Heat Stress (temp > 30°C)</span></div>
+        <span style="color:#fbbf24;font-weight:700">${districtsList.filter(d=>parseInt(d.temp)>30).length} districts</span>
+      </div>
+    `;
+  }
+
+  // ============================================================
+  // RISK TABLE + RECS
+  // ============================================================
+  function populateRiskTable() {
+    const tbody = document.getElementById('risk-table');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    [...riskData].sort((a,b)=>a.priority-b.priority).forEach(item => {
+      const tr = document.createElement('tr');
+      tr.className = 'border-b hover:bg-white/5 transition';
+      tr.style.borderColor = 'rgba(255,255,255,0.05)';
+      tr.innerHTML = `
+        <td style="padding:14px 0"><div style="font-weight:600">${item.farmer}</div><div style="font-size:.72rem;color:#6b7280">${item.crop}</div></td>
+        <td style="padding:14px 0;font-size:.8rem;color:#9ca3af">${item.district}</td>
+        <td style="padding:14px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:.875rem">${item.days}d</td>
+        <td style="padding:14px 0;text-align:center"><span class="badge ${item.risk==='High'?'badge-high':item.risk==='Medium'?'badge-medium':'badge-low'}">${item.risk}</span></td>
+        <td style="padding:14px 0;text-align:right"><button style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,.1);padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:600;color:#d1d5db;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--green)';this.style.color='#050a05'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#d1d5db'">${item.action}</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function populateRecommendations() {
+    const container = document.getElementById('recommendations');
+    if (!container) return;
+    const recs = [
+      { crop:"Matooke – Amina", text:"Sell within 48 hrs. Kampala price rising 12% this week. High humidity risk.", emoji:"📤", urgent:true },
+      { crop:"Maize – John", text:"Apply solar drying today. Humidity will spike tomorrow in Masaka.", emoji:"☀️", urgent:true },
+      { crop:"Beans – Sarah", text:"Contact buyer immediately — 9 days stored at high risk.", emoji:"📞", urgent:true },
+      { crop:"Coffee – Phionah", text:"Prices up 8% this week. Good time to sell Grade A stock.", emoji:"☕", urgent:false },
+    ];
+    container.innerHTML = '';
+    recs.forEach(rec => {
+      const div = document.createElement('div');
+      div.style.cssText = `background:rgba(255,255,255,0.04);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;transition:all .2s;${rec.urgent?'border-left:3px solid #ef4444':'border-left:3px solid rgba(255,255,255,0.08)'}`;
+      div.innerHTML = `<div style="font-size:1.5rem">${rec.emoji}</div><div><div style="font-weight:700;font-size:.875rem">${rec.crop}</div><div style="font-size:.75rem;color:#9ca3af;margin-top:3px;line-height:1.5">${rec.text}</div></div>`;
+      container.appendChild(div);
+    });
+  }
+
+  // ============================================================
+  // REPORTS
+  // ============================================================
+  function populateReportsTable() {
+    const tbody = document.getElementById('reports-table');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    reportData.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.className = 'border-b hover:bg-white/5 transition';
+      tr.style.borderColor = 'rgba(255,255,255,0.05)';
+      tr.innerHTML = `
+        <td style="padding:12px 0">${item.metric}</td>
+        <td style="padding:12px 0;text-align:center;font-weight:600;font-family:'JetBrains Mono',monospace">${item.thisWeek}</td>
+        <td style="padding:12px 0;text-align:center;color:#6b7280;font-family:'JetBrains Mono',monospace">${item.lastWeek}</td>
+        <td style="padding:12px 0;text-align:center;font-weight:700;font-family:'JetBrains Mono',monospace;color:${item.status==='positive'?'#34d399':'#f87171'}">${item.change}</td>
+        <td style="padding:12px 0;text-align:right"><span class="badge ${item.status==='positive'?'badge-low':'badge-high'}">${item.status==='positive'?'↑ Improving':'↓ Needs attention'}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function downloadReport() {
+    showToast('📊 Generating PDF report...');
+    setTimeout(() => showToast('✅ Report downloaded!'), 2000);
+  }
+
+  // ============================================================
+  // NAVIGATION
+  // ============================================================
+  function switchTab(tabIndex) {
+    document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
+    const sections = ['dashboard-section','farmers-section','riskmap-section','reports-section'];
+    document.getElementById(sections[tabIndex]).classList.add('active');
+    const titles = ['Dashboard','Farmers','Risk Map','Analytics'];
+    const subtitles = [
+      'Yield Optimization & Food Security AI • Uganda',
+      'Farmer Management & Engagement Dashboard',
+      'Real-time Risk Assessment by District',
+      'Performance Analytics & Insights'
+    ];
+    document.getElementById('page-title').textContent = titles[tabIndex];
+    document.getElementById('page-subtitle').textContent = subtitles[tabIndex];
+    document.querySelectorAll('.tab-link').forEach((link,idx) => {
+      link.style.color = idx===tabIndex ? '#34d399' : '#6b7280';
+    });
+    document.querySelectorAll('.nav-item').forEach((item,i)=>{
+      item.classList.toggle('active', i===tabIndex);
+    });
+    if (tabIndex===1) { populateFarmers(); buildFilterChips(); }
+    if (tabIndex===2) { populateRiskMap(); populateRiskFactors(); }
+    if (tabIndex===3) populateReportsTable();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  // ============================================================
+  // CHAT — REAL AI AGENT VIA ANTHROPIC API
+  // ============================================================
+  let isTyping = false;
+  let chatHistory = [];
+
+  function openChat() {
+    document.getElementById('chat-panel').classList.remove('hidden');
+    document.getElementById('chat-input').focus();
+    const chatWindow = document.getElementById('chat-window');
+    if (chatWindow.children.length === 0) {
+      addChatMessage("👋 **Hello! I'm YieldGuard AI Agent**\n\nI'm here to help you with crop management, weather forecasts, market prices, pest control, and risk assessment for Ugandan farmers.\n\n💡 **Ask me anything:**\n• \"How do I prevent maize aflatoxin?\"\n• \"When is the best time to plant beans in Kapchorwa?\"\n• \"Why are my tomatoes wilting?\"\n• \"Current price forecast for coffee\"\n\nI have real farming intelligence — not just scripted answers!", true);
+    }
+  }
+
+  function closeChat() { document.getElementById('chat-panel').classList.add('hidden'); }
+
+  function addChatMessage(text, isAI=true) {
+    const chat = document.getElementById('chat-window');
+    const msg = document.createElement('div');
+    msg.style.cssText = `display:flex;justify-content:${isAI?'flex-start':'flex-end'}`;
+    const formatted = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>').replace(/•/g,'•');
+    msg.innerHTML = `<div class="${isAI?'chat-msg-ai':'chat-msg-user'}" style="max-width:88%">${formatted}</div>`;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+    return msg;
+  }
+
+  function addTypingIndicator() {
+    const chat = document.getElementById('chat-window');
+    const indicator = document.createElement('div');
+    indicator.className = 'typing-indicator';
+    indicator.id = 'typing-indicator';
+    indicator.innerHTML = '<span></span><span></span><span></span>';
+    chat.appendChild(indicator);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function removeTypingIndicator() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text || isTyping) return;
+
+    addChatMessage(text, false);
+    input.value = '';
+    isTyping = true;
+    addTypingIndicator();
+
+    chatHistory.push({ role:'user', content: text });
+
+    const systemContext = `You are YieldGuard AI Agent, an expert agricultural assistant for Ugandan farmers. You specialize in:
+- Uganda-specific crops: Matooke (plantain), Maize, Beans, Cassava, Coffee, Rice, Groundnuts, Sweet Potatoes, Irish Potatoes, Sorghum, Millet, Tomatoes, Onions, Cabbage
+- Ugandan districts and their agricultural conditions
+- Post-harvest storage best practices for tropical climates
+- Pest and disease management using affordable/local methods
+- Market prices in Uganda (use UGX currency)
+- Weather impact on farming decisions
+- Soil health and fertilizer advice
+- Food security and smallholder farmer support
+
+Current system data:
+- ${farmersList.length} registered farmers across ${[...new Set(farmersList.map(f=>f.district))].length} districts
+- High risk farms: ${riskData.filter(r=>r.risk==='High').length}
+- Current market highlights: Matooke 1,490 UGX/kg (+12%), Coffee 9,500 UGX/kg (+8%), Tomatoes 1,800 UGX/kg (+15%)
+- Weather: Mubende 28°C, 82% humidity (HIGH RISK); Gulu 31°C dry; Kabale 20°C foggy
+
+Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond in English (or match the user's language). Always give actionable, Uganda-specific advice.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemContext,
+          messages: chatHistory
+        })
+      });
+
+      const data = await response.json();
+      const reply = data.content && data.content[0] && data.content[0].text
+        ? data.content[0].text
+        : "Sorry, I had trouble processing your request. Please try again.";
+
+      chatHistory.push({ role:'assistant', content: reply });
+      removeTypingIndicator();
+      addChatMessage(reply, true);
+    } catch (err) {
+      removeTypingIndicator();
+      addChatMessage("⚠️ Connection issue. Please check your internet and try again.", true);
+      chatHistory.pop();
+    }
+
+    isTyping = false;
+  }
+
+  // ============================================================
+  // SIMULATE SMS — MULTI-SCENARIO
+  // ============================================================
+  const SMS_SCENARIOS = [
+    {
+      from: "Amina Nakato (Mubende)",
+      phone: "+256 123 456 789",
+      raw: "My matooke has been stored 18 days. Should I sell now or wait?",
+      aiPrompt: "Amina Nakato in Mubende has stored matooke for 18 days. Current humidity is 82% and high. Should she sell now or wait? Give a clear recommendation with reasoning.",
+    },
+    {
+      from: "John Mugisha (Masaka)",
+      phone: "+256 234 567 890",
+      raw: "Boss, my maize has white powder on the leaves. What is this and how do I fix it?",
+      aiPrompt: "A farmer in Masaka reports white powder on maize leaves. What disease or pest is this likely to be, and what affordable treatment can a Ugandan smallholder farmer use?",
+    },
+    {
+      from: "Robert Ssekitoleko (Mubende)",
+      phone: "+256 678 901 234",
+      raw: "They say rain is coming in 2 days. My maize is ready but not harvested. What should I do?",
+      aiPrompt: "A maize farmer in Mubende has unharvested mature maize and rain is forecast in 2 days. Should he rush to harvest now or is it safe to wait? What are the risks?",
+    },
+    {
+      from: "Sarah Nansubuga (Kapchorwa)",
+      phone: "+256 345 678 901",
+      raw: "Something is eating my beans at night. Small green caterpillars everywhere. Help!",
+      aiPrompt: "A bean farmer in Kapchorwa has an infestation of small green caterpillars eating the leaves at night. What pest is this and what local or affordable treatment should she use?",
+    },
+    {
+      from: "Phionah Nakabugo (Mbale)",
+      phone: "+256 901 234 567",
+      raw: "I have 200kg of grade A coffee ready. Is this a good week to sell or should I hold?",
+      aiPrompt: "A coffee farmer in Mbale has 200kg of Grade A coffee ready to sell. Coffee prices are currently at 9,500 UGX/kg (+8% this week). Should she sell now or hold for a better price? What factors should she consider?",
+    },
+    {
+      from: "Charles Byarugaba (Kabale)",
+      phone: "+256 890 123 456",
+      raw: "My Irish potatoes in storage are going soft and smelling bad. What do I do?",
+      aiPrompt: "A farmer in Kabale stored Irish potatoes and they are now going soft and smelling. What is causing this and what can he do to save the remaining stock? How should potatoes be stored properly in highland Uganda?",
+    },
+    {
+      from: "Florence Apio (Gulu)",
+      phone: "+256 789 012 345",
+      raw: "When is the best time to plant cassava here in Gulu? Soil is dry now.",
+      aiPrompt: "A farmer in Gulu wants to know the best time to plant cassava given the current dry and hot conditions (31°C). What planting advice would you give for Gulu district's climate?",
+    },
+    {
+      from: "Emmanuel Odongo (Lira)",
+      phone: "+256 012 345 678",
+      raw: "We have not had rain for 3 weeks. My groundnuts are wilting badly. What can I save?",
+      aiPrompt: "A groundnut farmer in Lira has experienced 3 weeks of drought (31°C, 48% humidity). His crops are wilting. What emergency measures can he take to save the crop with limited resources?",
+    },
+  ];
+
+  function simulateSMS(isMobile = false) {
+    const selectId = isMobile ? 'sms-scenario-select-mobile' : 'sms-scenario-select';
+    const selectEl = document.getElementById(selectId);
+    const idx = selectEl ? parseInt(selectEl.value) : 0;
+    const scenario = SMS_SCENARIOS[idx] || SMS_SCENARIOS[0];
+
+    showToast(`📩 SMS received from ${scenario.from.split(' ')[0]} ${scenario.from.split(' ')[1]}!`);
+    openChat();
+
+    setTimeout(() => {
+      addChatMessage(
+        `📱 **Incoming SMS**\n\n**From:** ${scenario.from}\n**Phone:** ${scenario.phone}\n\n"${scenario.raw}"`,
+        true
+      );
+    }, 400);
+
+    setTimeout(() => {
+      const input = document.getElementById('chat-input');
+      input.value = scenario.aiPrompt;
+      sendChatMessage();
+    }, 1000);
+  }
+
+  // ============================================================
+  // TOAST
+  // ============================================================
+  function showToast(msg, type='success') {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    if (type==='error') toast.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(()=>toast.remove(), 3000);
+  }
+
+  // ============================================================
+  // SCROLL REVEAL
+  // ============================================================
+  function handleScrollReveal() {
+    document.querySelectorAll('.scroll-reveal').forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight - 80) el.classList.add('revealed');
+    });
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  window.addEventListener('load', () => {
+    populateRiskTable();
+    populateRecommendations();
+    populateFarmers();
+    populateRiskMap();
+    populateRiskFactors();
+    populateReportsTable();
+    buildCropTabs();
+    updatePriceChart();
+    updateWeather('Mubende');
+    buildSoilHealth();
+    buildRecentAlerts();
+    buildCropDistribution();
+    generateNDVI('Mubende');
+    handleScrollReveal();
+    setTimeout(handleScrollReveal, 300);
+    console.log('✅ YieldGuard AI v3.0 loaded — Smart Farming Assistant ready!');
+  });
+
+  window.addEventListener('scroll', handleScrollReveal);
   </script>
 </body>
 </html>
