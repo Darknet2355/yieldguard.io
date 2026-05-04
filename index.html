@@ -1,242 +1,781 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YieldGuard AI • Uganda - Sign In</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
-  
+  <title>YieldGuard AI • Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #16a34a; --green2: #22c55e; --green-glow: rgba(22,163,74,0.28);
+      --bg: #030b03; --card: #080f08; --border: rgba(22,163,74,0.15);
+      --text: #e8f3e8; --muted: #4a6b4a; --red: #ef4444; --amber: #f59e0b;
+    }
+
     body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: linear-gradient(135deg, #0a0a0a 0%, #050505 100%);
-      color: #f4f4f5;
-      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; align-items: stretch;
+      overflow-x: hidden;
     }
 
-    .glass {
-      background: rgba(15, 15, 15, 0.75);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(39, 39, 42, 0.6);
+    /* BG */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 15% 15%, rgba(22,163,74,0.13) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 70% at 85% 85%, rgba(6,95,70,0.1) 0%, transparent 55%),
+        radial-gradient(ellipse 30% 40% at 50% 50%, rgba(22,163,74,0.04) 0%, transparent 70%);
+      pointer-events: none;
     }
 
-    .logo-glow {
-      box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background-image: linear-gradient(rgba(22,163,74,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(22,163,74,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
     }
+
+    /* LAYOUT */
+    .auth-wrapper {
+      display: flex; width: 100%; min-height: 100vh; position: relative; z-index: 1;
+    }
+
+    /* LEFT PANEL */
+    .left-panel {
+      width: 52%; padding: 60px 64px;
+      display: flex; flex-direction: column; justify-content: center;
+      position: relative;
+    }
+
+    .logo-row { display: flex; align-items: center; gap: 14px; margin-bottom: 52px; }
+    .logo-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, var(--green), #065f46);
+      border-radius: 18px; display: flex; align-items: center; justify-content: center;
+      font-size: 28px; box-shadow: 0 0 36px var(--green-glow);
+      animation: logoGlow 3s ease-in-out infinite;
+    }
+    @keyframes logoGlow {
+      0%,100%{box-shadow:0 0 30px var(--green-glow)}
+      50%{box-shadow:0 0 60px rgba(22,163,74,0.5)}
+    }
+    .logo-text h1 {
+      font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 900;
+      color: #fff; letter-spacing: -.02em;
+    }
+    .logo-text p { font-size: .72rem; color: var(--green2); font-weight: 600; margin-top: 2px; }
+
+    .headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.6rem, 4.5vw, 4rem);
+      font-weight: 900; line-height: 1.06; letter-spacing: -.03em;
+      color: #fff; margin-bottom: 20px;
+    }
+    .headline em {
+      font-style: italic;
+      background: linear-gradient(130deg, var(--green2), #16a34a);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .tagline { color: var(--muted); font-size: 1rem; line-height: 1.75; max-width: 380px; margin-bottom: 44px; }
+
+    /* FEATURE LIST */
+    .feature-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 48px; }
+    .feature-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .feature-item:nth-child(1){animation-delay:.1s}
+    .feature-item:nth-child(2){animation-delay:.2s}
+    .feature-item:nth-child(3){animation-delay:.3s}
+    .feature-item:nth-child(4){animation-delay:.4s}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+    .feat-icon {
+      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 17px;
+    }
+    .feat-icon.green { background: rgba(22,163,74,0.12); }
+    .feat-icon.amber { background: rgba(245,158,11,0.12); }
+    .feat-icon.sky { background: rgba(56,189,248,0.10); }
+    .feat-icon.red { background: rgba(239,68,68,0.10); }
+
+    .feat-text strong { display: block; font-size: .88rem; font-weight: 700; color: #d1fae5; }
+    .feat-text span { font-size: .76rem; color: var(--muted); line-height: 1.5; }
+
+    /* CROP PILLS */
+    .crop-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cp {
+      background: rgba(22,163,74,0.07); border: 1px solid rgba(22,163,74,0.18);
+      border-radius: 30px; padding: 5px 13px;
+      font-size: .75rem; color: #4a9a62; display: flex; align-items: center; gap: 6px;
+      transition: all .2s; cursor: default;
+    }
+    .cp:hover { background: rgba(22,163,74,0.14); color: var(--green2); transform: translateY(-2px); }
+
+    /* RIGHT PANEL (auth form) */
+    .right-panel {
+      width: 48%;
+      background: rgba(8,15,8,0.96);
+      border-left: 1px solid var(--border);
+      backdrop-filter: blur(24px);
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 48px 52px;
+      overflow-y: auto;
+    }
+
+    /* TABS */
+    .auth-tabs {
+      display: flex; gap: 0; margin-bottom: 36px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 14px; padding: 4px;
+    }
+    .tab-btn {
+      flex: 1; padding: 10px; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: .85rem; font-weight: 600;
+      cursor: pointer; border: none; transition: all .25s;
+      background: transparent; color: var(--muted);
+    }
+    .tab-btn.active { background: var(--green); color: #fff; box-shadow: 0 4px 16px var(--green-glow); }
+
+    .form-panel { display: none; animation: formFade .3s ease; }
+    .form-panel.active { display: block; }
+    @keyframes formFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    .form-title {
+      font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700;
+      color: #fff; margin-bottom: 6px;
+    }
+    .form-sub { font-size: .82rem; color: var(--muted); margin-bottom: 28px; }
+
+    /* FORM FIELDS */
+    .field-group { margin-bottom: 18px; }
+    .field-label {
+      display: block; font-size: .73rem; font-weight: 700; color: #4a7c59;
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 7px;
+    }
+    .field-wrap { position: relative; }
+    .field-input {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 12px; padding: 13px 16px;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: .9rem;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .field-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+    .field-input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+    .field-input::placeholder { color: #2a4a2a; }
+    .field-input.has-icon { padding-right: 46px; }
+
+    .field-icon-btn {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer; font-size: .9rem;
+      transition: color .2s; padding: 4px;
+    }
+    .field-icon-btn:hover { color: var(--green2); }
+
+    .field-prefix-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); font-size: .85rem; pointer-events: none;
+    }
+    .field-input.with-prefix { padding-left: 40px; }
+
+    .field-error { font-size: .72rem; color: var(--red); margin-top: 5px; display: none; }
+    .field-error.show { display: block; }
+
+    /* ROLE SELECT */
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .role-card {
+      border: 1.5px solid rgba(255,255,255,0.08); border-radius: 12px;
+      padding: 12px; cursor: pointer; transition: all .2s; text-align: center;
+    }
+    .role-card:hover { border-color: rgba(22,163,74,0.4); background: rgba(22,163,74,0.05); }
+    .role-card.selected { border-color: var(--green); background: rgba(22,163,74,0.1); }
+    .role-card .ri { font-size: 1.3rem; margin-bottom: 5px; }
+    .role-card .rt { font-size: .75rem; font-weight: 600; color: #a7c8a7; }
+    .role-card .rs { font-size: .65rem; color: var(--muted); margin-top: 2px; }
+
+    /* SUBMIT BTN */
+    .submit-btn {
+      width: 100%; padding: 14px; border-radius: 12px;
+      background: var(--green); color: #fff; font-family: 'DM Sans', sans-serif;
+      font-size: .95rem; font-weight: 700; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all .25s; position: relative; overflow: hidden; margin-top: 8px;
+    }
+    .submit-btn:hover { background: var(--green2); transform: translateY(-1px); box-shadow: 0 8px 24px var(--green-glow); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn.loading { pointer-events: none; opacity: .8; }
+
+    .btn-spinner {
+      width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin .7s linear infinite; display: none;
+    }
+    .btn-spinner.show { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* FORGOT / DIVIDER */
+    .forgot-link {
+      display: block; text-align: right; font-size: .78rem; color: var(--green2);
+      text-decoration: none; margin-bottom: 20px; transition: opacity .2s;
+    }
+    .forgot-link:hover { opacity: .7; }
+
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background: rgba(255,255,255,.07); }
+    .divider span { font-size: .72rem; color: var(--muted); }
+
+    /* TOAST */
+    .toast {
+      position: fixed; top: 28px; left: 50%; transform: translateX(-50%) translateY(-100px);
+      background: #0b160b; border: 1px solid var(--green);
+      border-radius: 16px; padding: 16px 24px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 0 1px var(--border);
+      z-index: 9999; transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+      min-width: 300px; max-width: 420px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: var(--red); }
+    .toast.success { border-color: var(--green); }
+    .toast-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .toast-body strong { display: block; font-size: .88rem; font-weight: 700; color: #fff; }
+    .toast-body span { font-size: .78rem; color: var(--muted); }
+
+    /* FORGOT PASSWORD OVERLAY */
+    .forgot-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn .2s ease; padding: 20px;
+    }
+    .forgot-overlay.hidden { display: none; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    .forgot-box {
+      background: #0b160b; border: 1px solid var(--border); border-radius: 24px;
+      padding: 36px; width: 100%; max-width: 420px;
+      animation: slideUp .3s ease;
+    }
+    @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+    .forgot-box h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .forgot-box p { font-size: .82rem; color: var(--muted); margin-bottom: 24px; }
+    .forgot-close { float: right; background: none; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; transition: color .2s; }
+    .forgot-close:hover { color: #fff; }
+
+    /* STRENGTH METER */
+    .strength-meter { margin-top: 6px; }
+    .strength-bar { height: 4px; background: rgba(255,255,255,.07); border-radius: 2px; overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 2px; transition: width .3s, background .3s; width: 0; }
+    .strength-label { font-size: .68rem; color: var(--muted); margin-top: 4px; }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .left-panel { display: none; }
+      .right-panel { width: 100%; padding: 36px 24px; justify-content: flex-start; padding-top: 60px; }
+      body { align-items: flex-start; }
+    }
+
+    select.field-input { appearance: none; cursor: pointer; }
+    select.field-input option { background: #0b160b; }
+
+    .terms-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+    .terms-row input[type=checkbox] { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+    .terms-row label { font-size: .78rem; color: var(--muted); line-height: 1.5; cursor: pointer; }
+    .terms-row label a { color: var(--green2); text-decoration: none; }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body>
 
-  <div class="w-full max-w-md">
-    
-    <!-- Logo -->
-    <div class="text-center mb-10">
-      <div class="inline-flex items-center justify-center w-20 h-20 bg-emerald-600/20 rounded-3xl mb-6 border border-emerald-500/30 logo-glow">
-        <span class="text-5xl">🌾</span>
+<div class="grid-bg"></div>
+
+<div class="auth-wrapper">
+
+  <!-- LEFT BRANDING -->
+  <div class="left-panel">
+    <div class="logo-row">
+      <div class="logo-icon">🌾</div>
+      <div class="logo-text">
+        <h1>YieldGuard AI</h1>
+        <p>Uganda's Smart Farming Platform 🇺🇬</p>
       </div>
-      <h1 class="text-4xl font-bold tracking-tight">YieldGuard AI</h1>
-      <p class="text-emerald-400 mt-2">Smart Farming Assistant • Uganda</p>
     </div>
 
-    <!-- Main Card -->
-    <div class="glass rounded-3xl shadow-2xl overflow-hidden">
+    <h2 class="headline">
+      Grow smarter.<br>
+      <em>Lose less.</em><br>
+      Feed more.
+    </h2>
 
-      <!-- Tab Buttons -->
-      <div class="flex border-b border-zinc-800">
-        <button onclick="showTab(0)" id="tab-login" 
-                class="flex-1 py-5 text-center font-semibold tab-btn active border-b-2 border-emerald-500 text-emerald-400">
-          Sign In
-        </button>
-        <button onclick="showTab(1)" id="tab-signup" 
-                class="flex-1 py-5 text-center font-semibold tab-btn text-zinc-400 hover:text-zinc-200">
-          Create Account
-        </button>
-      </div>
-
-      <!-- LOGIN FORM -->
-      <div id="login-form" class="p-8 space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-zinc-400 mb-2">Email or Phone Number</label>
-          <input type="text" id="login-email" 
-                 class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition" 
-                 placeholder="e.g. +256 712 345 678 or email@farm.ug" />
-        </div>
-
-        <div>
-          <div class="flex justify-between mb-2">
-            <label class="block text-sm font-medium text-zinc-400">Password</label>
-            <a href="#" onclick="showForgotPassword()" class="text-sm text-emerald-400 hover:text-emerald-300">Forgot password?</a>
-          </div>
-          <input type="password" id="login-password" 
-                 class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition" 
-                 placeholder="Enter your password" />
-        </div>
-
-        <button onclick="handleLogin()" 
-                class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-semibold text-lg transition-all">
-          Sign In
-        </button>
-
-        <div class="text-center text-sm text-zinc-500">
-          Don't have an account? 
-          <span onclick="showTab(1)" class="text-emerald-400 hover:text-emerald-300 cursor-pointer font-medium">Create one</span>
-        </div>
-      </div>
-
-      <!-- SIGNUP FORM -->
-      <div id="signup-form" class="p-8 space-y-6 hidden">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-zinc-400 mb-2">First Name</label>
-            <input type="text" id="signup-firstname" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition" placeholder="John" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-zinc-400 mb-2">Last Name</label>
-            <input type="text" id="signup-lastname" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition" placeholder="Mukasa" />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-zinc-400 mb-2">Phone Number</label>
-          <input type="tel" id="signup-phone" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition" placeholder="+256 712 345 678" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-zinc-400 mb-2">Email Address</label>
-          <input type="email" id="signup-email" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition" placeholder="you@farm.ug" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-zinc-400 mb-2">Create Password</label>
-          <input type="password" id="signup-password" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition" placeholder="••••••••" />
-        </div>
-
-        <button onclick="handleSignup()" 
-                class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-semibold text-lg transition-all">
-          Create Account
-        </button>
-
-        <div class="text-center text-sm text-zinc-500">
-          Already have an account? 
-          <span onclick="showTab(0)" class="text-emerald-400 hover:text-emerald-300 cursor-pointer font-medium">Sign in</span>
-        </div>
-      </div>
-
-      <!-- FORGOT PASSWORD FORM -->
-      <div id="forgot-form" class="p-8 space-y-6 hidden">
-        <h2 class="text-2xl font-semibold text-center">Reset Password</h2>
-        <p class="text-center text-zinc-400 text-sm">We'll send a reset link to your email or phone.</p>
-
-        <div>
-          <label class="block text-sm font-medium text-zinc-400 mb-2">Email or Phone</label>
-          <input type="text" id="forgot-contact" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-5 py-4 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition" placeholder="you@farm.ug or +256 712 345 678" />
-        </div>
-
-        <button onclick="handleForgotPassword()" 
-                class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-semibold text-lg transition-all">
-          Send Reset Link
-        </button>
-
-        <div class="text-center">
-          <button onclick="showTab(0)" class="text-emerald-400 hover:text-emerald-300 text-sm">← Back to Sign In</button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Footer -->
-    <p class="text-center text-zinc-600 text-xs mt-8">
-      © 2026 YieldGuard AI • Built for Ugandan Farmers
+    <p class="tagline">
+      AI-powered post-harvest intelligence for Ugandan farmers. Real-time risk alerts, live market prices, and crop gestation tracking — delivered by SMS.
     </p>
 
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feat-icon green"><i class="fa-solid fa-seedling" style="color:#22c55e"></i></div>
+        <div class="feat-text">
+          <strong>Crop Gestation Tracking</strong>
+          <span>Know exactly when to weed, spray, and harvest every crop</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feat-icon amber"><i class="fa-solid fa-chart-line" style="color:#f59e0b"></i></div>
+        <div class="feat-text">
+          <strong>Live Market Prices</strong>
+          <span>Real UGX prices from Kampala, Jinja, Mbarara & Gulu markets</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feat-icon sky"><i class="fa-solid fa-cloud-sun" style="color:#38bdf8"></i></div>
+        <div class="feat-text">
+          <strong>Live Weather Forecasts</strong>
+          <span>District-level rain and humidity alerts powered by Open-Meteo</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feat-icon red"><i class="fa-solid fa-robot" style="color:#f87171"></i></div>
+        <div class="feat-text">
+          <strong>AI Agent via SMS</strong>
+          <span>Claude AI answers farmer questions on any basic phone</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="crop-pills">
+      <div class="cp">🍌 Matooke</div>
+      <div class="cp">🌽 Maize</div>
+      <div class="cp">☕ Coffee</div>
+      <div class="cp">🫘 Beans</div>
+      <div class="cp">🌱 Cassava</div>
+      <div class="cp">🥔 Potatoes</div>
+      <div class="cp">🍅 Tomatoes</div>
+      <div class="cp">🥜 Groundnuts</div>
+    </div>
   </div>
 
-  <script>
-    // Tab switching
-    function showTab(tab) {
-      document.getElementById('login-form').classList.add('hidden');
-      document.getElementById('signup-form').classList.add('hidden');
-      document.getElementById('forgot-form').classList.add('hidden');
+  <!-- RIGHT AUTH PANEL -->
+  <div class="right-panel">
 
-      document.getElementById('tab-login').classList.remove('active', 'border-b-2', 'border-emerald-500', 'text-emerald-400');
-      document.getElementById('tab-signup').classList.remove('active', 'border-b-2', 'border-emerald-500', 'text-emerald-400');
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
 
-      if (tab === 0) {
-        document.getElementById('login-form').classList.remove('hidden');
-        document.getElementById('tab-login').classList.add('active', 'border-b-2', 'border-emerald-500', 'text-emerald-400');
-      } else if (tab === 1) {
-        document.getElementById('signup-form').classList.remove('hidden');
-        document.getElementById('tab-signup').classList.add('active', 'border-b-2', 'border-emerald-500', 'text-emerald-400');
-      }
+    <!-- LOGIN FORM -->
+    <div class="form-panel active" id="panel-login">
+      <h2 class="form-title">Welcome back 👋</h2>
+      <p class="form-sub">Sign in to your YieldGuard account to continue</p>
+
+      <div class="field-group">
+        <label class="field-label">Email Address</label>
+        <div class="field-wrap">
+          <i class="fa-solid fa-envelope field-prefix-icon"></i>
+          <input id="login-email" type="email" class="field-input with-prefix" placeholder="you@example.com" />
+        </div>
+        <div class="field-error" id="login-email-err">Please enter a valid email</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <div class="field-wrap">
+          <i class="fa-solid fa-lock field-prefix-icon"></i>
+          <input id="login-pass" type="password" class="field-input with-prefix has-icon" placeholder="Your password" />
+          <button class="field-icon-btn" onclick="togglePwd('login-pass', this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
+        </div>
+        <div class="field-error" id="login-pass-err">Password is required</div>
+      </div>
+
+      <a href="#" class="forgot-link" onclick="openForgot(event)">Forgot password?</a>
+
+      <button class="submit-btn" id="login-btn" onclick="handleLogin()">
+        <div class="btn-spinner" id="login-spinner"></div>
+        <span id="login-btn-text"><i class="fa-solid fa-right-to-bracket"></i> Sign In</span>
+      </button>
+
+      <div class="divider"><span>Don't have an account?</span></div>
+      <button class="submit-btn" style="background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);color:var(--green2)" onclick="switchAuthTab('signup')">
+        Create Account
+      </button>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div class="form-panel" id="panel-signup">
+      <h2 class="form-title">Join YieldGuard 🌾</h2>
+      <p class="form-sub">Create your account to start monitoring farms</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label">First Name</label>
+          <input id="su-fname" type="text" class="field-input" placeholder="Ian" />
+          <div class="field-error" id="su-fname-err">Required</div>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label">Last Name</label>
+          <input id="su-lname" type="text" class="field-input" placeholder="Mugisha" />
+          <div class="field-error" id="su-lname-err">Required</div>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-top:14px">
+        <label class="field-label">Email Address</label>
+        <div class="field-wrap">
+          <i class="fa-solid fa-envelope field-prefix-icon"></i>
+          <input id="su-email" type="email" class="field-input with-prefix" placeholder="you@example.com" />
+        </div>
+        <div class="field-error" id="su-email-err">Enter a valid email</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Phone Number</label>
+        <div class="field-wrap">
+          <i class="fa-solid fa-phone field-prefix-icon"></i>
+          <input id="su-phone" type="tel" class="field-input with-prefix" placeholder="+256 700 000 000" />
+        </div>
+      </div>
+
+      <input type="hidden" id="su-role" value="Administrator" />
+
+      <div class="field-group">
+        <label class="field-label">Organisation / Institution</label>
+        <div class="field-wrap">
+          <i class="fa-solid fa-building field-prefix-icon"></i>
+          <input id="su-org" type="text" class="field-input with-prefix" placeholder="e.g. MAAIF, World Food Programme, Kampala City Council" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">District</label>
+        <select id="su-district" class="field-input">
+          <option value="">Select your district...</option>
+          <option>Kampala</option><option>Mubende</option><option>Masaka</option>
+          <option>Kapchorwa</option><option>Jinja</option><option>Gulu</option>
+          <option>Mbale</option><option>Lira</option><option>Soroti</option>
+          <option>Kabale</option><option>Arua</option><option>Fort Portal</option>
+          <option>Hoima</option><option>Mbarara</option><option>Tororo</option>
+        </select>
+        <div class="field-error" id="su-district-err">Select your district</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <div class="field-wrap">
+          <i class="fa-solid fa-lock field-prefix-icon"></i>
+          <input id="su-pass" type="password" class="field-input with-prefix has-icon" placeholder="Min. 6 characters" oninput="checkStrength(this.value)" />
+          <button class="field-icon-btn" onclick="togglePwd('su-pass', this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
+        </div>
+        <div class="strength-meter">
+          <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+          <div class="strength-label" id="strength-label"></div>
+        </div>
+        <div class="field-error" id="su-pass-err">Password must be at least 6 characters</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Confirm Password</label>
+        <div class="field-wrap">
+          <i class="fa-solid fa-lock field-prefix-icon"></i>
+          <input id="su-pass2" type="password" class="field-input with-prefix has-icon" placeholder="Repeat password" />
+          <button class="field-icon-btn" onclick="togglePwd('su-pass2', this)" tabindex="-1"><i class="fa-solid fa-eye"></i></button>
+        </div>
+        <div class="field-error" id="su-pass2-err">Passwords do not match</div>
+      </div>
+
+      <div class="terms-row">
+        <input type="checkbox" id="su-terms" />
+        <label for="su-terms">I agree to YieldGuard's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+      </div>
+      <div class="field-error" id="su-terms-err" style="margin-bottom:10px">Please accept the terms</div>
+
+      <button class="submit-btn" id="signup-btn" onclick="handleSignup()">
+        <div class="btn-spinner" id="signup-spinner"></div>
+        <span id="signup-btn-text"><i class="fa-solid fa-user-plus"></i> Create Account</span>
+      </button>
+
+      <div class="divider"><span>Already have an account?</span></div>
+      <button class="submit-btn" style="background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);color:var(--green2)" onclick="switchAuthTab('login')">
+        Sign In Instead
+      </button>
+    </div>
+
+  </div><!-- /right-panel -->
+</div><!-- /auth-wrapper -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toast-icon">✅</div>
+  <div class="toast-body">
+    <strong id="toast-title">Success</strong>
+    <span id="toast-msg">Done</span>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD OVERLAY -->
+<div class="forgot-overlay hidden" id="forgot-overlay">
+  <div class="forgot-box">
+    <button class="forgot-close" onclick="closeForgot()">✕</button>
+    <h2>Reset Password 🔑</h2>
+    <p>Enter your registered email address and we'll send you a reset link.</p>
+
+    <div class="field-group">
+      <label class="field-label">Email Address</label>
+      <div class="field-wrap">
+        <i class="fa-solid fa-envelope field-prefix-icon"></i>
+        <input id="forgot-email" type="email" class="field-input with-prefix" placeholder="you@example.com" />
+      </div>
+      <div class="field-error" id="forgot-email-err">Enter a valid email</div>
+    </div>
+
+    <button class="submit-btn" onclick="handleForgot()">
+      <i class="fa-solid fa-paper-plane"></i> Send Reset Link
+    </button>
+    <div style="margin-top:16px;text-align:center">
+      <a href="#" onclick="closeForgot()" style="font-size:.78rem;color:var(--muted);text-decoration:none">← Back to sign in</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── USER STORE (localStorage) ──────────────────────────────────
+const USERS_KEY = 'yg_users_v1';
+const SESSION_KEY = 'yg_session_v1';
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch { return []; }
+}
+function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
+}
+function saveSession(user) { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); }
+
+// If already logged in, go straight to dashboard
+window.addEventListener('DOMContentLoaded', () => {
+  const session = getSession();
+  if (session) goToDashboard(session, false);
+});
+
+// ── TAB SWITCH ─────────────────────────────────────────────────
+function switchAuthTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup'));
+  });
+  document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+  document.getElementById('panel-signup').classList.toggle('active', tab === 'signup');
+}
+
+// ── PASSWORD VISIBILITY ────────────────────────────────────────
+function togglePwd(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  const icon = btn.querySelector('i');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.className = 'fa-solid fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    icon.className = 'fa-solid fa-eye';
+  }
+}
+
+// ── ROLE SELECTION ─────────────────────────────────────────────
+function selectRole(card, role) {
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  document.getElementById('su-role').value = role;
+}
+
+// ── PASSWORD STRENGTH ──────────────────────────────────────────
+function checkStrength(val) {
+  const fill = document.getElementById('strength-fill');
+  const label = document.getElementById('strength-label');
+  let score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    { pct: '0%', color: '#ef4444', text: '' },
+    { pct: '25%', color: '#ef4444', text: 'Too weak' },
+    { pct: '50%', color: '#f59e0b', text: 'Fair' },
+    { pct: '75%', color: '#22c55e', text: 'Good' },
+    { pct: '100%', color: '#16a34a', text: 'Strong ✓' },
+  ];
+  const l = levels[Math.min(score, 4)];
+  fill.style.width = l.pct;
+  fill.style.background = l.color;
+  label.textContent = l.text;
+  label.style.color = l.color;
+}
+
+// ── TOAST ──────────────────────────────────────────────────────
+let toastTimer;
+function showToast(type, title, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : '📧';
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ── LOADING BTN ────────────────────────────────────────────────
+function setLoading(btnId, spinnerId, textId, state) {
+  const btn = document.getElementById(btnId);
+  const sp = document.getElementById(spinnerId);
+  const tx = document.getElementById(textId);
+  if (state) { btn.classList.add('loading'); sp.classList.add('show'); tx.style.display = 'none'; }
+  else { btn.classList.remove('loading'); sp.classList.remove('show'); tx.style.display = 'flex'; }
+}
+
+function clearError(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('show');
+}
+function showError(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('show');
+}
+function setFieldError(inputEl) { if (inputEl) inputEl.classList.add('error'); }
+function clearFieldError(inputEl) { if (inputEl) inputEl.classList.remove('error'); }
+
+// ── SIGN UP ────────────────────────────────────────────────────
+function handleSignup() {
+  let valid = true;
+
+  const fname = document.getElementById('su-fname').value.trim();
+  const lname = document.getElementById('su-lname').value.trim();
+  const email = document.getElementById('su-email').value.trim().toLowerCase();
+  const phone = document.getElementById('su-phone').value.trim();
+  const org = document.getElementById('su-org') ? document.getElementById('su-org').value.trim() : '';
+  const role = 'Administrator';
+  const district = document.getElementById('su-district').value;
+  const pass = document.getElementById('su-pass').value;
+  const pass2 = document.getElementById('su-pass2').value;
+  const terms = document.getElementById('su-terms').checked;
+
+  ['su-fname-err','su-lname-err','su-email-err','su-district-err','su-pass-err','su-pass2-err','su-terms-err'].forEach(clearError);
+  ['su-fname','su-lname','su-email','su-district','su-pass','su-pass2'].forEach(id => clearFieldError(document.getElementById(id)));
+
+  if (!fname) { showError('su-fname-err'); setFieldError(document.getElementById('su-fname')); valid = false; }
+  if (!lname) { showError('su-lname-err'); setFieldError(document.getElementById('su-lname')); valid = false; }
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('su-email-err'); setFieldError(document.getElementById('su-email')); valid = false; }
+  if (!district) { showError('su-district-err'); setFieldError(document.getElementById('su-district')); valid = false; }
+  if (pass.length < 6) { showError('su-pass-err'); setFieldError(document.getElementById('su-pass')); valid = false; }
+  if (pass !== pass2) { showError('su-pass2-err'); setFieldError(document.getElementById('su-pass2')); valid = false; }
+  if (!terms) { showError('su-terms-err'); valid = false; }
+  if (!valid) return;
+
+  const users = getUsers();
+  if (users.find(u => u.email === email)) {
+    showError('su-email-err');
+    document.getElementById('su-email-err').textContent = 'An account with this email already exists';
+    setFieldError(document.getElementById('su-email'));
+    showToast('error', 'Email Taken', 'Please use a different email or sign in.');
+    return;
+  }
+
+  setLoading('signup-btn','signup-spinner','signup-btn-text', true);
+
+  setTimeout(() => {
+    const newUser = { fname, lname, email, phone, role, org, district, pass, createdAt: Date.now() };
+    users.push(newUser);
+    saveUsers(users);
+    setLoading('signup-btn','signup-spinner','signup-btn-text', false);
+    showToast('success', 'Administrator Account Created!', `Welcome, ${fname}! You can now sign in.`);
+    setTimeout(() => {
+      switchAuthTab('login');
+      document.getElementById('login-email').value = email;
+    }, 1500);
+  }, 1200);
+}
+
+// ── SIGN IN ────────────────────────────────────────────────────
+function handleLogin() {
+  let valid = true;
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-pass').value;
+
+  clearError('login-email-err'); clearError('login-pass-err');
+  clearFieldError(document.getElementById('login-email'));
+  clearFieldError(document.getElementById('login-pass'));
+
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('login-email-err'); setFieldError(document.getElementById('login-email')); valid = false; }
+  if (!pass) { showError('login-pass-err'); setFieldError(document.getElementById('login-pass')); valid = false; }
+  if (!valid) return;
+
+  setLoading('login-btn','login-spinner','login-btn-text', true);
+
+  setTimeout(() => {
+    const users = getUsers();
+    const user = users.find(u => u.email === email && u.pass === pass);
+    if (!user) {
+      setLoading('login-btn','login-spinner','login-btn-text', false);
+      showToast('error', 'Login Failed', 'Email or password is incorrect. Please try again.');
+      document.getElementById('login-pass-err').textContent = 'Email or password is incorrect';
+      showError('login-pass-err');
+      setFieldError(document.getElementById('login-pass'));
+      return;
     }
+    saveSession(user);
+    goToDashboard(user, true);
+  }, 1000);
+}
 
-    // Handle Login
-    function handleLogin() {
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value.trim();
+// ── GO TO DASHBOARD ────────────────────────────────────────────
+function goToDashboard(user, showWelcome) {
+  if (showWelcome) {
+    showToast('success', `Welcome back, ${user.fname}! 👋`, `Signed in as ${user.role} • ${user.district}`);
+    setTimeout(() => {
+      // Pass user info to dashboard via URL
+      window.location.href = `yieldguard.html?user=${encodeURIComponent(user.fname)}&role=${encodeURIComponent(user.role)}&district=${encodeURIComponent(user.district)}`;
+    }, 1800);
+  } else {
+    window.location.href = `yieldguard.html?user=${encodeURIComponent(user.fname)}&role=${encodeURIComponent(user.role)}&district=${encodeURIComponent(user.district)}`;
+  }
+}
 
-      if (!email || !password) {
-        alert("Please enter email/phone and password");
-        return;
-      }
+// ── FORGOT PASSWORD ────────────────────────────────────────────
+function openForgot(e) { e.preventDefault(); document.getElementById('forgot-overlay').classList.remove('hidden'); }
+function closeForgot() { document.getElementById('forgot-overlay').classList.add('hidden'); }
 
-      // Simulate successful login
-      alert("✅ Login successful! Welcome back.");
-      window.location.href = "dashboard.html";  // Change to your actual dashboard file name
-    }
+function handleForgot() {
+  const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('forgot-email-err'); return; }
+  clearError('forgot-email-err');
+  const users = getUsers();
+  const user = users.find(u => u.email === email);
+  closeForgot();
+  if (user) {
+    showToast('info', 'Reset Link Sent!', `A password reset link has been sent to ${email}`);
+  } else {
+    showToast('info', 'Reset Link Sent!', 'If that email is registered, a reset link will arrive shortly.');
+  }
+}
 
-    // Handle Signup
-    function handleSignup() {
-      const firstname = document.getElementById('signup-firstname').value.trim();
-      const lastname = document.getElementById('signup-lastname').value.trim();
-      const phone = document.getElementById('signup-phone').value.trim();
-      const email = document.getElementById('signup-email').value.trim();
-      const password = document.getElementById('signup-password').value.trim();
+// Click outside to close forgot overlay
+document.getElementById('forgot-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeForgot();
+});
 
-      if (!firstname || !lastname || !phone || !email || !password) {
-        alert("Please fill all fields");
-        return;
-      }
-
-      alert("✅ Account created successfully!\n\nYou can now sign in.");
-      showTab(0);  // Switch back to login tab
-    }
-
-    // Handle Forgot Password
-    function showForgotPassword() {
-      document.getElementById('login-form').classList.add('hidden');
-      document.getElementById('forgot-form').classList.remove('hidden');
-    }
-
-    function handleForgotPassword() {
-      const contact = document.getElementById('forgot-contact').value.trim();
-      if (!contact) {
-        alert("Please enter your email or phone number");
-        return;
-      }
-      alert(`✅ Reset link sent to ${contact}\n\nCheck your inbox or SMS.`);
-      showTab(0);
-    }
-
-    // Keyboard support (Enter key)
-    document.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        const activeForm = document.querySelector('.form-content:not(.hidden)');
-        if (activeForm) {
-          if (document.getElementById('login-form').classList.contains('hidden') === false) handleLogin();
-          else if (document.getElementById('signup-form').classList.contains('hidden') === false) handleSignup();
-          else if (document.getElementById('forgot-form').classList.contains('hidden') === false) handleForgotPassword();
-        }
-      }
-    });
-
-    // Default: Show login form
-    window.onload = () => {
-      showTab(0);
-    };
-  </script>
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const loginPanel = document.getElementById('panel-login');
+    const signupPanel = document.getElementById('panel-signup');
+    if (loginPanel.classList.contains('active')) handleLogin();
+    else if (signupPanel.classList.contains('active')) handleSignup();
+  }
+});
+</script>
 </body>
 </html>
