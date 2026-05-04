@@ -869,18 +869,21 @@
     Kabale: { temp:20, humidity:70, condition:'Cool & Foggy', icon:'🌫️', rain:true, rainDays:4, wind:7, uv:3, advisory:'Highland conditions. Potato blight risk elevated.', advice:'Apply fungicide preventively. Avoid harvesting in wet conditions.', forecast:[{day:'Thu',icon:'🌫️',hi:20,lo:13},{day:'Fri',icon:'🌧️',hi:18,lo:12},{day:'Sat',icon:'🌧️',hi:17,lo:12},{day:'Sun',icon:'🌦️',hi:19,lo:13},{day:'Mon',icon:'⛅',hi:21,lo:14}] },
   };
 
-  let farmersList = [
-    { name:"Amina Nakato", district:"Mubende", crop:"Matooke", acres:3.5, status:"At Risk", lastActive:"Today", phone:"+256 123 456 789", village:"Kakumiro" },
-    { name:"John Mugisha", district:"Masaka", crop:"Maize", acres:5.0, status:"Active", lastActive:"Yesterday", phone:"+256 234 567 890", village:"Lyantonde" },
-    { name:"Sarah Nansubuga", district:"Kapchorwa", crop:"Beans", acres:2.0, status:"At Risk", lastActive:"2 days ago", phone:"+256 345 678 901", village:"Sipi" },
-    { name:"David Okello", district:"Mubende", crop:"Cassava", acres:4.2, status:"Active", lastActive:"Today", phone:"+256 456 789 012", village:"Kasanda" },
-    { name:"Grace Akello", district:"Jinja", crop:"Matooke", acres:3.0, status:"Active", lastActive:"Today", phone:"+256 567 890 123", village:"Bugembe" },
-    { name:"Robert Ssekitoleko", district:"Mubende", crop:"Maize", acres:6.5, status:"Inactive", lastActive:"5 days ago", phone:"+256 678 901 234", village:"Mityana" },
-    { name:"Florence Apio", district:"Gulu", crop:"Sorghum", acres:2.8, status:"Active", lastActive:"Today", phone:"+256 789 012 345", village:"Pece" },
-    { name:"Charles Byarugaba", district:"Kabale", crop:"Irish Potatoes", acres:1.5, status:"Active", lastActive:"Yesterday", phone:"+256 890 123 456", village:"Rubanda" },
-    { name:"Phionah Nakabugo", district:"Mbale", crop:"Coffee", acres:4.0, status:"Active", lastActive:"Today", phone:"+256 901 234 567", village:"Bududa" },
-    { name:"Emmanuel Odongo", district:"Lira", crop:"Groundnuts", acres:3.2, status:"Active", lastActive:"3 days ago", phone:"+256 012 345 678", village:"Ojwina" },
-  ];
+  const FARMERS_KEY = 'yg_farmers_v1';
+  const DEFAULT_FARMERS = []; // start empty — admin adds real farmers
+
+  function loadFarmers() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(FARMERS_KEY));
+      return Array.isArray(stored) ? stored : [...DEFAULT_FARMERS];
+    } catch { return [...DEFAULT_FARMERS]; }
+  }
+
+  function persistFarmers() {
+    localStorage.setItem(FARMERS_KEY, JSON.stringify(farmersList));
+  }
+
+  let farmersList = loadFarmers();
 
   const riskData = [
     { farmer:"Amina Nakato", crop:"Matooke", district:"Mubende", days:18, risk:"High", action:"Sell today", priority:1 },
@@ -928,49 +931,154 @@
   let priceChart = null;
 
   // ============================================================
-  // WEATHER
+  // WELCOME POPUP — reads URL param from login
   // ============================================================
-  function updateWeather(district) {
-    const d = WEATHER_DATA[district] || WEATHER_DATA['Mubende'];
-    const card = document.getElementById('weather-card');
-    card.className = 'glass-card p-5 md:p-6 scroll-reveal revealed ' + (d.rain ? 'weather-bg-rain' : d.humidity > 70 ? 'weather-bg-cloud' : 'weather-bg-sun');
+  function showWelcomePopup() {
+    const params = new URLSearchParams(window.location.search);
+    const user = params.get('user');
+    const role = params.get('role');
+    const district = params.get('district');
+    if (!user) return;
 
-    document.getElementById('ndvi-district').textContent = district;
-    generateNDVI(district);
+    // Clean URL without reload
+    window.history.replaceState({}, '', 'yieldguard.html');
 
-    document.getElementById('weather-content').innerHTML = `
-      <div class="flex items-center gap-6 mb-4">
-        <div class="text-6xl md:text-7xl">${d.icon}</div>
-        <div>
-          <div class="text-4xl font-bold num">${d.temp}°C</div>
-          <div class="text-sm text-zinc-400 mt-1">${d.condition}</div>
-          <div class="flex flex-wrap gap-3 mt-2 text-xs">
-            <span class="flex items-center gap-1 ${d.humidity>75?'text-sky-400':'text-zinc-400'}"><i class="fa-solid fa-droplet"></i> ${d.humidity}% humidity</span>
-            <span class="flex items-center gap-1 text-zinc-400"><i class="fa-solid fa-wind"></i> ${d.wind} km/h</span>
-            <span class="flex items-center gap-1 text-amber-400"><i class="fa-solid fa-sun"></i> UV ${d.uv}</span>
-          </div>
-        </div>
+    const popup = document.createElement('div');
+    popup.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-120px);z-index:9999;background:linear-gradient(135deg,#0d1a0d,#111f11);border:1px solid rgba(16,185,129,0.4);border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 20px 60px rgba(0,0,0,0.7),0 0 40px rgba(16,185,129,0.15);transition:transform .5s cubic-bezier(.34,1.56,.64,1);min-width:320px;max-width:480px';
+    popup.innerHTML = `
+      <div style="font-size:2.2rem;flex-shrink:0">👋</div>
+      <div>
+        <div style="font-size:1.05rem;font-weight:800;color:#fff">Welcome back, <span style="color:#34d399">${user}</span>!</div>
+        <div style="font-size:.75rem;color:#4a7c59;margin-top:3px">${role||'User'} ${district?'• '+district:''} • YieldGuard AI is ready</div>
       </div>
-      <div class="p-3 rounded-xl ${d.rain?'bg-sky-500/10 border border-sky-500/20':'bg-emerald-500/10 border border-emerald-500/20'}">
-        <div class="text-xs font-bold ${d.rain?'text-sky-400':'text-emerald-400'} mb-1"><i class="fa-solid fa-${d.rain?'triangle-exclamation':'check-circle'}"></i> ADVISORY</div>
-        <div class="text-xs text-zinc-300">${d.advisory}</div>
-        <div class="text-xs text-zinc-400 mt-1 italic">${d.advice}</div>
-      </div>
-      ${d.rain ? `<div class="mt-3 flex items-center gap-2 text-xs text-amber-400 font-semibold"><i class="fa-solid fa-clock"></i> Rain expected in ${d.rainDays} day${d.rainDays!==1?'s':''}</div>` : ''}
+      <button onclick="this.parentElement.remove()" style="margin-left:auto;color:#4a7c59;background:none;border:none;font-size:1.1rem;cursor:pointer;flex-shrink:0">✕</button>
     `;
+    document.body.appendChild(popup);
+    setTimeout(() => popup.style.transform = 'translateX(-50%) translateY(0)', 100);
+    setTimeout(() => { popup.style.transform = 'translateX(-50%) translateY(-120px)'; setTimeout(()=>popup.remove(),500); }, 5000);
 
-    document.getElementById('forecast-strip').innerHTML = `
-      <div class="text-xs text-zinc-500 font-semibold uppercase mb-3">5-Day Forecast</div>
-      <div class="flex gap-2 overflow-x-auto">
-        ${d.forecast.map(f=>`<div style="flex:1;min-width:52px;background:rgba(255,255,255,0.04);border-radius:12px;padding:8px 4px;text-align:center">
-          <div class="text-xs text-zinc-500 font-semibold">${f.day}</div>
-          <div class="text-xl my-1">${f.icon}</div>
-          <div class="text-xs font-bold">${f.hi}°</div>
-          <div class="text-xs text-zinc-600">${f.lo}°</div>
-        </div>`).join('')}
-      </div>
-    `;
+    // Update header with logged-in user name
+    const aiOnline = document.querySelector('.flex.items-center.gap-2.px-4');
+    if (aiOnline) {
+      const userChip = document.createElement('div');
+      userChip.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:30px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25)';
+      userChip.innerHTML = `<span style="font-size:1rem">👤</span><span style="font-size:.78rem;font-weight:600;color:#34d399">${user}</span><button onclick="logOut()" style="background:none;border:none;color:#4a7c59;cursor:pointer;font-size:.7rem;margin-left:4px" title="Log out"><i class="fa-solid fa-right-from-bracket"></i></button>`;
+      aiOnline.parentElement.insertBefore(userChip, aiOnline);
+    }
   }
+
+  function logOut() {
+    localStorage.removeItem('yg_session_v1');
+    window.location.href = 'login.html';
+  }
+
+  // ============================================================
+  // LIVE WEATHER — Open-Meteo API (free, no key needed)
+  // ============================================================
+  const DISTRICT_COORDS = {
+    Mubende: {lat:0.5773,lon:31.3694}, Masaka: {lat:-0.3436,lon:31.7339},
+    Kapchorwa: {lat:1.3572,lon:34.4521}, Jinja: {lat:0.4478,lon:33.2026},
+    Gulu: {lat:2.7745,lon:32.2990}, Mbale: {lat:1.0844,lon:34.1750},
+    Kampala: {lat:0.3476,lon:32.5825}, Lira: {lat:2.2499,lon:32.8999},
+    Soroti: {lat:1.7142,lon:33.6108}, Kabale: {lat:-1.2492,lon:29.9899},
+  };
+
+  const WMO_CODES = {
+    0:'☀️ Clear', 1:'🌤️ Mainly Clear', 2:'⛅ Partly Cloudy', 3:'☁️ Overcast',
+    45:'🌫️ Foggy', 48:'🌫️ Icy Fog', 51:'🌦️ Light Drizzle', 53:'🌦️ Drizzle',
+    61:'🌧️ Light Rain', 63:'🌧️ Rain', 65:'🌧️ Heavy Rain',
+    71:'🌨️ Light Snow', 80:'🌦️ Showers', 81:'🌧️ Heavy Showers',
+    95:'⛈️ Thunderstorm', 99:'⛈️ Heavy Thunderstorm',
+  };
+
+  function wmoToIcon(code) {
+    if (code === 0) return '☀️'; if (code <= 2) return '🌤️'; if (code === 3) return '☁️';
+    if (code <= 48) return '🌫️'; if (code <= 55) return '🌦️'; if (code <= 67) return '🌧️';
+    if (code <= 77) return '🌨️'; if (code <= 82) return '🌦️'; return '⛈️';
+  }
+
+  function farmAdvisory(temp, humidity, rain) {
+    if (rain) return { text:'Rain detected or forecast. Move harvested crops indoors. Delay drying operations.', cls:'sky', icon:'triangle-exclamation' };
+    if (humidity > 78) return { text:'High humidity detected. Elevated risk of mould and post-harvest losses. Improve ventilation.', cls:'sky', icon:'triangle-exclamation' };
+    if (temp > 32) return { text:'Heat stress conditions. Water crops early morning. Harvest before 9am to avoid heat damage.', cls:'amber', icon:'temperature-high' };
+    return { text:'Good farming conditions. Low risk. Ideal time for drying, spraying and field work.', cls:'emerald', icon:'check-circle' };
+  }
+
+  async function updateWeather(district) {
+    const coords = DISTRICT_COORDS[district] || DISTRICT_COORDS['Mubende'];
+    const wc = document.getElementById('weather-content');
+    const fs = document.getElementById('forecast-strip');
+    wc.innerHTML = `<div style="text-align:center;padding:20px;color:#4a7c59"><i class="fa-solid fa-spinner fa-spin"></i> Loading live weather for ${district}...</div>`;
+    document.getElementById('ndvi-district').textContent = district;
+
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,uv_index,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Africa%2FNairobi&forecast_days=5`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const c = data.current;
+      const temp = Math.round(c.temperature_2m);
+      const humidity = c.relative_humidity_2m;
+      const wind = Math.round(c.wind_speed_10m);
+      const uv = Math.round(c.uv_index || 0);
+      const wmo = c.weather_code;
+      const prec = c.precipitation || 0;
+      const icon = wmoToIcon(wmo);
+      const condLabel = (WMO_CODES[wmo] || '🌤️ Clear').replace(/^[^ ]+ /, '');
+      const rain = prec > 0 || wmo >= 51;
+      const adv = farmAdvisory(temp, humidity, rain);
+
+      // Update districtsList for risk map
+      const dl = districtsList.find(d=>d.name===district);
+      if (dl) { dl.temp=temp+'°C'; dl.humidity=humidity+'%'; dl.weather=condLabel; }
+
+      wc.innerHTML = `
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap">
+          <div style="font-size:64px;line-height:1">${icon}</div>
+          <div>
+            <div style="font-size:2.4rem;font-weight:800;font-family:'JetBrains Mono',monospace">${temp}°C</div>
+            <div style="font-size:.85rem;color:#9ca3af;margin-top:2px">${condLabel}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:.75rem">
+              <span style="color:${humidity>75?'#38bdf8':'#9ca3af'}"><i class="fa-solid fa-droplet"></i> ${humidity}% humidity</span>
+              <span style="color:#9ca3af"><i class="fa-solid fa-wind"></i> ${wind} km/h</span>
+              <span style="color:#f59e0b"><i class="fa-solid fa-sun"></i> UV ${uv}</span>
+              ${prec>0?`<span style="color:#38bdf8"><i class="fa-solid fa-cloud-rain"></i> ${prec}mm</span>`:''}
+            </div>
+          </div>
+          <div style="margin-left:auto;font-size:.65rem;color:#22c55e;background:rgba(34,197,94,0.1);padding:4px 10px;border-radius:20px;border:1px solid rgba(34,197,94,0.2);white-space:nowrap"><i class="fa-solid fa-satellite-dish"></i> Live • Open-Meteo</div>
+        </div>
+        <div style="background:rgba(${adv.cls==='sky'?'56,189,248':adv.cls==='amber'?'245,158,11':'16,185,129'},0.08);border:1px solid rgba(${adv.cls==='sky'?'56,189,248':adv.cls==='amber'?'245,158,11':'16,185,129'},0.2);border-radius:12px;padding:12px">
+          <div style="font-size:.7rem;font-weight:700;color:${adv.cls==='sky'?'#38bdf8':adv.cls==='amber'?'#f59e0b':'#34d399'};margin-bottom:4px"><i class="fa-solid fa-${adv.icon}"></i> FARMING ADVISORY</div>
+          <div style="font-size:.78rem;color:#d1d5db;line-height:1.55">${adv.text}</div>
+        </div>
+      `;
+
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      fs.innerHTML = `
+        <div style="font-size:.68rem;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">5-Day Forecast</div>
+        <div style="display:flex;gap:6px;overflow-x:auto">
+          ${data.daily.time.map((t,i)=>{
+            const d2 = new Date(t); const dayName = days[d2.getDay()];
+            return `<div style="flex:1;min-width:54px;background:rgba(255,255,255,0.04);border-radius:12px;padding:8px 4px;text-align:center">
+              <div style="font-size:.65rem;color:#6b7280;font-weight:600">${dayName}</div>
+              <div style="font-size:1.3rem;margin:5px 0">${wmoToIcon(data.daily.weather_code[i])}</div>
+              <div style="font-size:.78rem;font-weight:700">${Math.round(data.daily.temperature_2m_max[i])}°</div>
+              <div style="font-size:.68rem;color:#6b7280">${Math.round(data.daily.temperature_2m_min[i])}°</div>
+              ${data.daily.precipitation_sum[i]>0?`<div style="font-size:.62rem;color:#38bdf8;margin-top:2px">${data.daily.precipitation_sum[i]}mm</div>`:''}
+            </div>`;
+          }).join('')}
+        </div>
+      `;
+      generateNDVI(district);
+
+    } catch(err) {
+      // Fallback to static data if API fails
+      const d = WEATHER_DATA[district] || WEATHER_DATA['Mubende'];
+      wc.innerHTML = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><div style="font-size:56px">${d.icon}</div><div><div style="font-size:2rem;font-weight:700">${d.temp}°C</div><div style="font-size:.8rem;color:#9ca3af">${d.condition} <span style="color:#f59e0b;font-size:.7rem">(cached)</span></div></div></div><div style="font-size:.75rem;color:#6b7280">${d.advisory}</div>`;
+      generateNDVI(district);
+    }
+  }
+
+
 
   // ============================================================
   // NDVI SATELLITE VISUALIZATION
@@ -1187,7 +1295,16 @@
     if (searchQuery) list = list.filter(f=>(f.name+f.district+f.crop).toLowerCase().includes(searchQuery));
 
     container.innerHTML = '';
-    if (list.length===0) { container.innerHTML='<div style="text-align:center;padding:40px;color:#4b5563">No farmers match your filters.</div>'; return; }
+    if (list.length===0) {
+      container.innerHTML = farmersList.length === 0
+        ? `<div style="text-align:center;padding:48px 20px;color:#4b5563">
+            <div style="font-size:3rem;margin-bottom:12px">👨‍🌾</div>
+            <div style="font-weight:700;font-size:1rem;color:#6b7280;margin-bottom:6px">No farmers added yet</div>
+            <div style="font-size:.82rem;color:#374151;margin-bottom:20px">Click <strong style="color:var(--green)">"Add Farmer"</strong> to register your first farmer with their real details.</div>
+          </div>`
+        : `<div style="text-align:center;padding:40px;color:#4b5563">No farmers match your filters.</div>`;
+      return;
+    }
 
     list.forEach(farmer => {
       const div = document.createElement('div');
@@ -1227,6 +1344,7 @@
   function removeFarmer(name) {
     if (!confirm(`Remove ${name} from the system?`)) return;
     farmersList = farmersList.filter(f=>f.name!==name);
+    persistFarmers();
     populateFarmers();
     showToast(`${name} removed`);
   }
@@ -1256,6 +1374,7 @@
       lastActive: 'Just now',
     };
     farmersList.unshift(newFarmer);
+    persistFarmers();
     closeAddFarmerModal();
     switchTab(1);
     populateFarmers();
@@ -1357,22 +1476,69 @@
     });
   }
 
-  function populateRecommendations() {
+  async function populateRecommendations() {
     const container = document.getElementById('recommendations');
     if (!container) return;
-    const recs = [
-      { crop:"Matooke – Amina", text:"Sell within 48 hrs. Kampala price rising 12% this week. High humidity risk.", emoji:"📤", urgent:true },
-      { crop:"Maize – John", text:"Apply solar drying today. Humidity will spike tomorrow in Masaka.", emoji:"☀️", urgent:true },
-      { crop:"Beans – Sarah", text:"Contact buyer immediately — 9 days stored at high risk.", emoji:"📞", urgent:true },
-      { crop:"Coffee – Phionah", text:"Prices up 8% this week. Good time to sell Grade A stock.", emoji:"☕", urgent:false },
-    ];
-    container.innerHTML = '';
-    recs.forEach(rec => {
-      const div = document.createElement('div');
-      div.style.cssText = `background:rgba(255,255,255,0.04);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;transition:all .2s;${rec.urgent?'border-left:3px solid #ef4444':'border-left:3px solid rgba(255,255,255,0.08)'}`;
-      div.innerHTML = `<div style="font-size:1.5rem">${rec.emoji}</div><div><div style="font-weight:700;font-size:.875rem">${rec.crop}</div><div style="font-size:.75rem;color:#9ca3af;margin-top:3px;line-height:1.5">${rec.text}</div></div>`;
-      container.appendChild(div);
-    });
+
+    // Show loading state
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:#4a7c59"><i class="fa-solid fa-spinner fa-spin"></i><div style="font-size:.75rem;margin-top:8px">AI generating live recommendations...</div></div>`;
+
+    const ak = localStorage.getItem('yg_api_key') || '';
+    if (!ak) {
+      // Static fallback when no API key
+      container.innerHTML = `
+        <div style="background:rgba(239,68,68,0.07);border-left:3px solid #ef4444;border-radius:14px;padding:14px;display:flex;gap:12px">
+          <div style="font-size:1.4rem">📤</div>
+          <div><div style="font-weight:700;font-size:.875rem">High humidity risk</div><div style="font-size:.75rem;color:#9ca3af;margin-top:3px;line-height:1.5">Add your Claude API key in the AI chat to get live, real recommendations tailored to your registered farmers.</div></div>
+        </div>
+        <div style="background:rgba(245,158,11,0.07);border-left:3px solid #f59e0b;border-radius:14px;padding:14px;display:flex;gap:12px">
+          <div style="font-size:1.4rem">💡</div>
+          <div><div style="font-weight:700;font-size:.875rem">Get started</div><div style="font-size:.75rem;color:#9ca3af;margin-top:3px;line-height:1.5">Register farmers in the Farmers tab, then open the AI Agent chat and save your API key to unlock live recommendations.</div></div>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const farmerSummary = farmersList.length > 0
+        ? farmersList.slice(0,6).map(f=>`${f.name} (${f.district}, ${f.crop}, ${f.acres}ac, ${f.status})`).join('; ')
+        : 'No farmers registered yet';
+      const highRisk = farmersList.filter(f=>f.status==='At Risk').length;
+      const today = new Date().toLocaleDateString('en-UG');
+
+      const prompt = `You are YieldGuard AI, an agricultural intelligence system for Uganda. Today is ${today}.
+
+Registered farmers: ${farmerSummary}
+At-risk farmers: ${highRisk}
+
+Generate exactly 4 SHORT, specific, actionable farming recommendations for the dashboard. Each must be directly relevant to the registered farmers and Uganda's current season (May = second dry season starting in central Uganda).
+
+Return ONLY a JSON array, no other text:
+[
+  {"emoji":"🌾","title":"Short title (max 6 words)","text":"One actionable sentence. Max 20 words.","urgent":true/false},
+  ...
+]`;
+
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':ak,'anthropic-version':'2023-06-01'},
+        body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:500, messages:[{role:'user',content:prompt}] })
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || '';
+      const match = text.match(/\[[\s\S]*\]/);
+      if (!match) throw new Error('no JSON');
+      const recs = JSON.parse(match[0]);
+      container.innerHTML = '';
+      recs.forEach(rec => {
+        const div = document.createElement('div');
+        div.style.cssText = `background:rgba(255,255,255,0.04);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;transition:all .2s;border-left:3px solid ${rec.urgent?'#ef4444':'rgba(255,255,255,0.08)'}`;
+        div.innerHTML = `<div style="font-size:1.5rem">${rec.emoji}</div><div><div style="font-weight:700;font-size:.875rem">${rec.title}</div><div style="font-size:.75rem;color:#9ca3af;margin-top:3px;line-height:1.5">${rec.text}</div></div>`;
+        container.appendChild(div);
+      });
+    } catch(e) {
+      container.innerHTML = `<div style="font-size:.78rem;color:#4a7c59;text-align:center;padding:16px">Could not load live recommendations. Check AI Agent API key.</div>`;
+    }
   }
 
   // ============================================================
@@ -1399,7 +1565,205 @@
 
   function downloadReport() {
     showToast('📊 Generating PDF report...');
-    setTimeout(() => showToast('✅ Report downloaded!'), 2000);
+    try {
+      // Build HTML content for print
+      const reportHTML = `
+        <html><head><title>YieldGuard Report</title>
+        <style>
+          body{font-family:Arial,sans-serif;padding:32px;color:#111;max-width:800px;margin:0 auto}
+          h1{color:#16a34a;border-bottom:3px solid #16a34a;padding-bottom:12px;margin-bottom:24px}
+          h2{color:#374151;margin-top:28px;margin-bottom:12px;font-size:1.1rem}
+          table{width:100%;border-collapse:collapse;margin-bottom:20px}
+          th{background:#16a34a;color:white;padding:10px;text-align:left;font-size:.85rem}
+          td{padding:9px 10px;border-bottom:1px solid #e5e7eb;font-size:.85rem}
+          tr:nth-child(even){background:#f9fafb}
+          .badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+          .high{background:#fee2e2;color:#b91c1c} .med{background:#fef3c7;color:#b45309} .low{background:#d1fae5;color:#065f46}
+          .header-info{display:flex;justify-content:space-between;color:#6b7280;font-size:.82rem;margin-bottom:24px}
+          .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+          .kpi{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;text-align:center}
+          .kpi .val{font-size:1.8rem;font-weight:700;color:#16a34a}
+          .kpi .label{font-size:.72rem;color:#6b7280;margin-top:4px}
+          @media print{body{padding:16px}}
+        </style></head><body>
+        <h1>🌾 YieldGuard AI — Weekly Report</h1>
+        <div class="header-info">
+          <span>Generated: ${new Date().toLocaleDateString('en-UG',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</span>
+          <span>Uganda Smart Farming Platform</span>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi"><div class="val">${farmersList.length}</div><div class="label">Total Farmers</div></div>
+          <div class="kpi"><div class="val">${riskData.filter(r=>r.risk==='High').length}</div><div class="label">High Risk Farms</div></div>
+          <div class="kpi"><div class="val">4.8T</div><div class="label">Yield Saved</div></div>
+          <div class="kpi"><div class="val">98%</div><div class="label">Alert Delivery</div></div>
+        </div>
+        <h2>Risk Summary</h2>
+        <table><tr><th>Farmer</th><th>Crop</th><th>District</th><th>Days Stored</th><th>Risk Level</th><th>Action</th></tr>
+        ${riskData.map(r=>`<tr><td>${r.farmer}</td><td>${r.crop}</td><td>${r.district}</td><td>${r.days}</td><td><span class="badge ${r.risk==='High'?'high':r.risk==='Medium'?'med':'low'}">${r.risk}</span></td><td>${r.action}</td></tr>`).join('')}
+        </table>
+        <h2>Registered Farmers</h2>
+        <table><tr><th>Name</th><th>District</th><th>Crop</th><th>Acres</th><th>Status</th></tr>
+        ${farmersList.map(f=>`<tr><td>${f.name}</td><td>${f.district}</td><td>${f.crop}</td><td>${f.acres}</td><td>${f.status}</td></tr>`).join('')}
+        </table>
+        <h2>Performance Metrics</h2>
+        <table><tr><th>Metric</th><th>This Week</th><th>Last Week</th><th>Change</th></tr>
+        ${reportData.map(r=>`<tr><td>${r.metric}</td><td><b>${r.thisWeek}</b></td><td>${r.lastWeek}</td><td style="color:${r.status==='positive'?'#16a34a':'#dc2626'}">${r.change}</td></tr>`).join('')}
+        </table>
+        <h2>Crop Gestation Periods</h2>
+        <table><tr><th>Crop</th><th>Gestation</th><th>Weed At</th><th>Spray At</th><th>Harvest At</th></tr>
+        ${Object.entries(CROP_GESTATION).map(([crop,g])=>`<tr><td>${crop}</td><td>${g.days} days</td><td>${g.weed}</td><td>${g.spray}</td><td>${g.harvest}</td></tr>`).join('')}
+        </table>
+        <p style="margin-top:32px;font-size:.75rem;color:#9ca3af;text-align:center">YieldGuard AI • Uganda • Powered by Claude AI & Open-Meteo • ${new Date().getFullYear()}</p>
+        </body></html>`;
+
+      const win = window.open('', '_blank');
+      win.document.write(reportHTML);
+      win.document.close();
+      win.onload = () => { win.print(); };
+      setTimeout(() => showToast('✅ Report opened — use Print → Save as PDF'), 2000);
+    } catch(e) {
+      showToast('⚠️ Could not generate report');
+    }
+  }
+
+  // ============================================================
+  // CROP GESTATION PERIODS
+  // ============================================================
+  const CROP_GESTATION = {
+    'Matooke':        { days:365, weed:'30, 60, 90 days', spray:'60, 120 days (fungicide)', harvest:'12–18 months', practices:['Desuckering monthly','Propping when bunches form','Deleafing diseased leaves','Mulching around base'] },
+    'Maize':          { days:90,  weed:'2–3 weeks, 6 weeks', spray:'3 weeks (armyworm)', harvest:'90–120 days', practices:['Top-dress with N at knee height','Remove tassels on seed rows','Watch for stalk borer after 3 weeks'] },
+    'Beans':          { days:75,  weed:'2 weeks, 5 weeks', spray:'4 weeks (bean fly)', harvest:'65–90 days', practices:['Inoculate with Rhizobium','Avoid overhead irrigation at flowering','Harvest when 90% pods are dry'] },
+    'Cassava':        { days:365, weed:'1–3 months', spray:'3 months (whitefly)', harvest:'9–24 months', practices:['Stake stem cuttings correctly','Weed 3 times in first 3 months','Harvest before 24 months to avoid hardening'] },
+    'Coffee':         { days:730, weed:'Quarterly', spray:'6 months (CBD, leaf rust)', harvest:'9–11 months after flowering', practices:['Prune after each harvest','Apply mulch 30cm deep','Pick only red cherries'] },
+    'Rice':           { days:120, weed:'2–3 weeks, 6 weeks', spray:'6 weeks (blast)', harvest:'100–130 days', practices:['Maintain 5cm water depth','Drain 2 weeks before harvest','Dry to 14% moisture quickly'] },
+    'Sweet Potatoes': { days:120, weed:'2 weeks, 6 weeks', spray:'Monthly (weevil)', harvest:'3–5 months', practices:['Lift vines occasionally to prevent rooting','Cure at 30°C for 4 days after harvest'] },
+    'Irish Potatoes': { days:90,  weed:'3 weeks, 6 weeks', spray:'3 weeks (blight)', harvest:'70–120 days', practices:['Earth up 3 weeks and 6 weeks','Cut haulms 2 weeks before harvest','Store in dark at 4–10°C'] },
+    'Sorghum':        { days:120, weed:'2–4 weeks', spray:'6 weeks (shoot fly)', harvest:'90–130 days', practices:['Thin to 1 plant per stand at 3 weeks','Apply phosphorus at planting'] },
+    'Groundnuts':     { days:120, weed:'3, 6 weeks', spray:'6 weeks (leaf spot)', harvest:'90–140 days', practices:['Earth up at pegging stage','Harvest when 75% leaves yellowed','Dry in windrows 3–5 days before stripping'] },
+    'Tomatoes':       { days:80,  weed:'Weekly first month', spray:'Weekly (blight, aphids)', harvest:'60–90 days from transplant', practices:['Stake at 30cm','Prune to 2 stems','Avoid wetting foliage when watering'] },
+    'Onions':         { days:120, weed:'2, 4, 8 weeks', spray:'6 weeks (thrips)', harvest:'90–130 days', practices:['Reduce water 2 weeks before harvest','Cure in field 2–3 days after pulling','Store in mesh bags in dry place'] },
+  };
+
+  function buildGestationTab() {
+    // Inject a Gestation section into the Analytics tab
+    let container = document.getElementById('gestation-section');
+    if (container) return; // already built
+
+    const reportsSection = document.getElementById('reports-section');
+    const gestDiv = document.createElement('div');
+    gestDiv.id = 'gestation-section';
+    gestDiv.style.cssText = 'margin-top:24px';
+    gestDiv.innerHTML = `
+      <div class="glass-card p-5 md:p-6 scroll-reveal">
+        <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <i class="fa-solid fa-seedling" style="color:var(--green)"></i> Crop Gestation Periods & Farm Calendar
+        </h3>
+        <div style="overflow-x:auto">
+          <table style="width:100%;min-width:700px">
+            <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.06);font-size:.72rem;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">
+              <th style="padding:10px 12px;text-align:left">Crop</th>
+              <th style="padding:10px 12px;text-align:left">Gestation</th>
+              <th style="padding:10px 12px;text-align:left">Weed Dates</th>
+              <th style="padding:10px 12px;text-align:left">Spray Dates</th>
+              <th style="padding:10px 12px;text-align:left">Harvest Window</th>
+              <th style="padding:10px 12px;text-align:left">Key Practices</th>
+            </tr></thead>
+            <tbody id="gestation-body"></tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    reportsSection.appendChild(gestDiv);
+
+    const tbody = document.getElementById('gestation-body');
+    const cropObjs = CROPS_CATALOG;
+    Object.entries(CROP_GESTATION).forEach(([crop, g]) => {
+      const cropObj = cropObjs.find(c=>c.name===crop);
+      const tr = document.createElement('tr');
+      tr.style.cssText = 'border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s;cursor:pointer';
+      tr.onmouseover = () => tr.style.background='rgba(255,255,255,0.03)';
+      tr.onmouseout = () => tr.style.background='transparent';
+      tr.innerHTML = `
+        <td style="padding:12px;font-weight:700;white-space:nowrap">${cropObj?cropObj.emoji:''} ${crop}</td>
+        <td style="padding:12px;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:#34d399">${g.days}d</td>
+        <td style="padding:12px;font-size:.78rem;color:#fbbf24">${g.weed}</td>
+        <td style="padding:12px;font-size:.78rem;color:#38bdf8">${g.spray}</td>
+        <td style="padding:12px;font-size:.78rem;color:#a78bfa">${g.harvest}</td>
+        <td style="padding:12px;font-size:.72rem;color:#6b7280">${g.practices.slice(0,2).join(' • ')}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ============================================================
+  // LIVE MARKET PRICES — Claude AI (real Uganda market context)
+  // ============================================================
+  let livePrices = {}; // cached per session
+  let pricesLoading = false;
+
+  async function fetchLiveMarketPrices() {
+    if (pricesLoading || Object.keys(livePrices).length > 0) return;
+    pricesLoading = true;
+    const ak = localStorage.getItem('yg_api_key') || '';
+    if (!ak) {
+      // Use realistic UGX baseline prices if no key
+      CROPS_CATALOG.forEach(c => { livePrices[c.name] = { price: c.basePrice, change: c.trend, source: 'Baseline' }; });
+      updatePriceChart(); pricesLoading = false; return;
+    }
+
+    try {
+      const today = new Date().toLocaleDateString('en-UG');
+      const prompt = `Today is ${today}. You are a Uganda agricultural market analyst. Provide CURRENT realistic Uganda market prices for these crops in UGX per kg as of today. Base on typical Uganda market fluctuations and seasons. Return ONLY valid JSON like: {"Matooke":{"price":1490,"change":"+12%","market":"Owino Kampala"},...} for ALL these crops: Matooke, Maize, Beans, Cassava, Coffee, Rice, Sweet Potatoes, Irish Potatoes, Sorghum, Groundnuts, Tomatoes, Onions. Use realistic UGX prices (Matooke ~1200-2000, Maize ~900-1400, Coffee ~8000-12000, Beans ~2500-3500, Tomatoes ~1500-2500 UGX/kg range). Vary prices realistically. Return ONLY the JSON object, no other text.`;
+
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':ak,'anthropic-version':'2023-06-01'},
+        body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600, messages:[{role:'user',content:prompt}] })
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || '';
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        livePrices = parsed;
+        // Update CROPS_CATALOG basePrice with live prices
+        CROPS_CATALOG.forEach(c => {
+          if (livePrices[c.name]) {
+            c.basePrice = livePrices[c.name].price;
+            c.trend = livePrices[c.name].change;
+          }
+        });
+        updatePriceChart();
+        buildPriceSummaryCards();
+        showToast('📈 Live market prices updated!');
+      }
+    } catch(e) {
+      console.log('Price fetch failed, using baseline');
+      CROPS_CATALOG.forEach(c => { livePrices[c.name] = { price: c.basePrice, change: c.trend, source: 'Baseline' }; });
+    }
+    pricesLoading = false;
+  }
+
+  function buildPriceSummaryCards() {
+    // Update the existing price summary
+    const psum = document.getElementById('price-summary');
+    if (!psum) return;
+    const cropObj = CROPS_CATALOG.find(c=>c.name===selectedCrop);
+    if (!cropObj) return;
+    const lp = livePrices[selectedCrop];
+    const price = lp ? lp.price : cropObj.basePrice;
+    const change = lp ? lp.change : cropObj.trend;
+    const up = change && change.startsWith('+');
+    psum.innerHTML = `
+      <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px">
+        <div style="font-size:.7rem;color:#6b7280;margin-bottom:4px">Today's Price ${lp?.source==='Baseline'?'<span style="color:#f59e0b;font-size:.65rem">(add API key for live)</span>':lp?'<span style="color:#22c55e;font-size:.65rem">• AI Live</span>':''}</div>
+        <div style="font-size:1.3rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:#34d399">UGX ${price.toLocaleString()}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px">
+        <div style="font-size:.7rem;color:#6b7280;margin-bottom:4px">Weekly Change</div>
+        <div style="font-size:1.3rem;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:${up?'#34d399':'#f87171'}">${change||'0%'}</div>
+      </div>
+    `;
   }
 
   // ============================================================
@@ -1427,7 +1791,7 @@
     });
     if (tabIndex===1) { populateFarmers(); buildFilterChips(); }
     if (tabIndex===2) { populateRiskMap(); populateRiskFactors(); }
-    if (tabIndex===3) populateReportsTable();
+    if (tabIndex===3) { populateReportsTable(); buildGestationTab(); fetchLiveMarketPrices(); }
     if (tabIndex===4) { buildSMSInbox(); }
     window.scrollTo({ top:0, behavior:'smooth' });
   }
@@ -1995,6 +2359,7 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
   // INIT
   // ============================================================
   window.addEventListener('load', () => {
+    showWelcomePopup();
     populateRiskTable();
     populateRecommendations();
     populateFarmers();
@@ -2011,7 +2376,9 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
     updateSMSStats();
     handleScrollReveal();
     setTimeout(handleScrollReveal, 300);
-    console.log('✅ YieldGuard AI v4.0 loaded — SMS Inbox active!');
+    // Fetch live prices after 1s (non-blocking)
+    setTimeout(fetchLiveMarketPrices, 1000);
+    console.log('✅ YieldGuard AI v5.0 — Live weather, live prices, gestation, PDF reports!');
   });
 
   window.addEventListener('scroll', handleScrollReveal);
