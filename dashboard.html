@@ -329,77 +329,134 @@
 </head>
 <body>
 
+  <!-- SIDEBAR OVERLAY -->
+  <div id="sidebar-overlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;backdrop-filter:blur(3px)"></div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar" style="position:fixed;top:0;right:-320px;width:300px;height:100vh;background:linear-gradient(160deg,#050a05,#0d1a0d);border-left:1px solid var(--border);z-index:201;display:flex;flex-direction:column;transition:right .3s cubic-bezier(.4,0,.2,1);box-shadow:-20px 0 60px rgba(0,0,0,0.5);padding:0">
+    <!-- sidebar header -->
+    <div style="padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--green),var(--green-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🌾</div>
+        <div>
+          <div style="font-weight:700;font-size:.9rem;color:#fff">YieldGuard</div>
+          <div style="font-size:.65rem;color:var(--green);font-weight:600">Admin Panel</div>
+        </div>
+      </div>
+      <button onclick="closeSidebar()" style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#9ca3af;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">✕</button>
+    </div>
+
+    <!-- user info -->
+    <div id="sidebar-user" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+      <div id="sidebar-avatar" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-dark));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#fff;flex-shrink:0">?</div>
+      <div>
+        <div id="sidebar-name" style="font-weight:700;font-size:.9rem;color:#fff">Administrator</div>
+        <div id="sidebar-role" style="font-size:.7rem;color:#6b7280;margin-top:2px">System Administrator</div>
+      </div>
+    </div>
+
+    <!-- sidebar items -->
+    <div style="flex:1;padding:12px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+
+      <!-- AI Status -->
+      <div style="padding:12px 14px;border-radius:12px;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:.78rem;font-weight:600;color:#34d399">AI Agent Online</div>
+          <div style="font-size:.65rem;color:#4a7c59">Claude AI • Open-Meteo Live</div>
+        </div>
+      </div>
+
+      <!-- Satellite -->
+      <div style="padding:12px 14px;border-radius:12px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div style="position:relative;width:10px;height:10px;flex-shrink:0"><div style="width:10px;height:10px;border-radius:50%;background:#38bdf8"></div><div style="position:absolute;inset:0;border-radius:50%;background:#38bdf8;animation:sat-ping 2s infinite;opacity:.6"></div></div>
+        <div>
+          <div style="font-size:.78rem;font-weight:600;color:#38bdf8">Satellite NDVI Live</div>
+          <div style="font-size:.65rem;color:#4a7c59">Simulated crop index</div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div style="font-size:.65rem;color:#4a7c59;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:0 4px 6px">Quick Actions</div>
+
+      <button onclick="openChat();closeSidebar()" style="padding:11px 14px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,0.07);color:#d1d5db;font-size:.83rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;text-align:left;width:100%" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.borderColor='var(--green)';this.style.color='#34d399'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.07)';this.style.color='#d1d5db'">
+        <i class="fa-solid fa-robot" style="width:16px;color:var(--green)"></i> Ask AI Agent
+      </button>
+
+      <button onclick="openAddFarmerModal();closeSidebar()" style="padding:11px 14px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,0.07);color:#d1d5db;font-size:.83rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;text-align:left;width:100%" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.borderColor='var(--green)';this.style.color='#34d399'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.07)';this.style.color='#d1d5db'">
+        <i class="fa-solid fa-user-plus" style="width:16px;color:#fbbf24"></i> Add New Farmer
+      </button>
+
+      <button onclick="simulateSMS();closeSidebar()" style="padding:11px 14px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,0.07);color:#d1d5db;font-size:.83rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;text-align:left;width:100%" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.borderColor='var(--green)';this.style.color='#34d399'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.07)';this.style.color='#d1d5db'">
+        <i class="fa-solid fa-paper-plane" style="width:16px;color:#38bdf8"></i> Simulate Farmer SMS
+      </button>
+
+      <button onclick="downloadReport();closeSidebar()" style="padding:11px 14px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,0.07);color:#d1d5db;font-size:.83rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;text-align:left;width:100%" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.borderColor='var(--green)';this.style.color='#34d399'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.07)';this.style.color='#d1d5db'">
+        <i class="fa-solid fa-download" style="width:16px;color:#a78bfa"></i> Download Report
+      </button>
+
+      <div style="height:1px;background:var(--border);margin:8px 0"></div>
+      <div style="font-size:.65rem;color:#4a7c59;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:0 4px 6px">Appearance</div>
+
+      <!-- DARK/LIGHT MODE TOGGLE -->
+      <button onclick="toggleTheme()" id="theme-btn" style="padding:11px 14px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,0.07);color:#d1d5db;font-size:.83rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all .2s;width:100%" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+        <span style="display:flex;align-items:center;gap:10px"><i id="theme-icon" class="fa-solid fa-moon" style="width:16px;color:#a78bfa"></i> <span id="theme-label">Dark Mode</span></span>
+        <div id="theme-toggle" style="width:38px;height:20px;border-radius:20px;background:var(--green);position:relative;transition:background .2s"><div style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:white;transition:all .3s"></div></div>
+      </button>
+
+      <!-- API KEY -->
+      <div style="padding:12px 14px;border-radius:12px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.18);margin-top:4px">
+        <div style="font-size:.7rem;color:#d97706;font-weight:700;margin-bottom:7px"><i class="fa-solid fa-key"></i> Claude API Key</div>
+        <div style="display:flex;gap:7px">
+          <input id="sidebar-api-key" type="password" placeholder="sk-ant-..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:7px 10px;color:white;font-size:.72rem;font-family:'JetBrains Mono',monospace;outline:none" value="${localStorage.getItem('yg_api_key')||''}" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='rgba(245,158,11,0.25)'"/>
+          <button onclick="saveSidebarKey()" style="background:#f59e0b;color:#050a05;font-weight:700;font-size:.7rem;padding:7px 10px;border-radius:8px;cursor:pointer;border:none;white-space:nowrap">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGOUT -->
+    <div style="padding:16px;border-top:1px solid var(--border)">
+      <button onclick="logOut()" style="width:100%;padding:12px;border-radius:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#f87171;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+      </button>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <header class="main-header">
-    <div class="tail-container px-5 sm:px-6">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
+    <div class="tail-container px-4 sm:px-6">
+      <div class="flex items-center justify-between gap-4">
+
+        <!-- LOGO -->
+        <div class="flex items-center gap-3 flex-shrink-0">
           <div class="logo-icon">🌾</div>
           <div>
-            <h1 class="font-bold tracking-tight text-white text-xl md:text-2xl">YieldGuard</h1>
+            <h1 class="font-bold tracking-tight text-white text-lg md:text-xl">YieldGuard</h1>
             <p class="text-emerald-400 text-xs font-semibold">AI Agent • Uganda 🇺🇬</p>
           </div>
         </div>
 
-        <div class="desktop-only hidden md:flex items-center gap-6">
-          <div class="flex items-center gap-5 text-sm font-semibold">
-            <a href="#" onclick="switchTab(0)" class="tab-link text-emerald-400 hover:text-emerald-300 transition-colors">Dashboard</a>
-            <a href="#" onclick="switchTab(1)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Farmers</a>
-            <a href="#" onclick="switchTab(2)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Risk Map</a>
-            <a href="#" onclick="switchTab(3)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors">Analytics</a>
-            <a href="#" onclick="switchTab(4)" class="tab-link text-zinc-500 hover:text-zinc-200 transition-colors" style="display:flex;align-items:center;gap:5px">SMS Inbox <span id="sms-badge" style="background:#ef4444;color:white;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:20px">3</span></a>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-900/60 bg-emerald-950/30">
-              <div class="w-2 h-2 bg-emerald-500 rounded-full status-dot"></div>
-              <span class="text-emerald-400 text-xs font-semibold">AI Online</span>
-            </div>
-            <div class="satellite-badge">
-              <div class="relative"><div class="w-2 h-2 bg-sky-400 rounded-full"></div><div class="sat-ping absolute inset-0 w-2 h-2 bg-sky-400 rounded-full"></div></div>
-              Satellite Live
-            </div>
-            <button onclick="openChat()" class="btn-outline text-sm"><i class="fa-solid fa-robot"></i> Ask AI Agent</button>
-            <div style="display:flex;align-items:center;gap:0;border-radius:40px;overflow:hidden;border:1.5px solid var(--green)">
-              <div class="weather-selector" style="border-radius:0">
-                <select id="sms-scenario-select" style="border:none;border-radius:0;padding:9px 32px 9px 14px;background:rgba(16,185,129,0.12);font-size:.8rem;color:#e8f5e9;border-right:1px solid rgba(16,185,129,0.3)">
-                  <option value="0">📱 Sell matooke now or wait?</option>
-                  <option value="1">🌽 Maize has white powder on leaves</option>
-                  <option value="2">🌧️ Rain coming — should I harvest now?</option>
-                  <option value="3">🐛 Caterpillars destroying my beans</option>
-                  <option value="4">💰 Best price for coffee this week?</option>
-                  <option value="5">🥔 Irish potatoes rotting in storage</option>
-                  <option value="6">🌱 When should I plant cassava?</option>
-                  <option value="7">☀️ Drought — my crops are wilting</option>
-                </select>
-              </div>
-              <button onclick="simulateSMS()" style="background:var(--green);color:#050a05;font-weight:700;font-size:.8rem;padding:9px 16px;display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap;border:none">
-                <i class="fa-solid fa-paper-plane"></i> Send
-              </button>
-            </div>
-          </div>
+        <!-- DESKTOP NAV — pages only -->
+        <nav class="hidden md:flex items-center gap-1">
+          <a href="#" onclick="switchTab(0)" class="tab-link" style="padding:8px 14px;border-radius:10px;font-size:.85rem;font-weight:600;color:#4a7c59;transition:all .2s;text-decoration:none" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.color='#34d399'" onmouseout="if(!this.classList.contains('tab-active')){this.style.background='transparent';this.style.color='#4a7c59'}">Dashboard</a>
+          <a href="#" onclick="switchTab(1)" class="tab-link" style="padding:8px 14px;border-radius:10px;font-size:.85rem;font-weight:600;color:#4a7c59;transition:all .2s;text-decoration:none" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.color='#34d399'" onmouseout="if(!this.classList.contains('tab-active')){this.style.background='transparent';this.style.color='#4a7c59'}">Farmers</a>
+          <a href="#" onclick="switchTab(2)" class="tab-link" style="padding:8px 14px;border-radius:10px;font-size:.85rem;font-weight:600;color:#4a7c59;transition:all .2s;text-decoration:none" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.color='#34d399'" onmouseout="if(!this.classList.contains('tab-active')){this.style.background='transparent';this.style.color='#4a7c59'}">Risk Map</a>
+          <a href="#" onclick="switchTab(3)" class="tab-link" style="padding:8px 14px;border-radius:10px;font-size:.85rem;font-weight:600;color:#4a7c59;transition:all .2s;text-decoration:none" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.color='#34d399'" onmouseout="if(!this.classList.contains('tab-active')){this.style.background='transparent';this.style.color='#4a7c59'}">Analytics</a>
+          <a href="#" onclick="switchTab(4)" class="tab-link" style="padding:8px 14px;border-radius:10px;font-size:.85rem;font-weight:600;color:#4a7c59;transition:all .2s;text-decoration:none;display:flex;align-items:center;gap:5px" onmouseover="this.style.background='rgba(16,185,129,0.1)';this.style.color='#34d399'" onmouseout="if(!this.classList.contains('tab-active')){this.style.background='transparent';this.style.color='#4a7c59'}">SMS <span id="sms-badge" style="background:#ef4444;color:white;font-size:.55rem;font-weight:700;padding:1px 6px;border-radius:20px;display:none">0</span></a>
+        </nav>
+
+        <!-- RIGHT: theme + hamburger -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- THEME TOGGLE ICON -->
+          <button onclick="toggleTheme()" id="theme-btn-nav" title="Toggle light/dark mode" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#9ca3af;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <i id="theme-icon-nav" class="fa-solid fa-moon"></i>
+          </button>
+          <!-- HAMBURGER -->
+          <button onclick="openSidebar()" style="width:38px;height:38px;border-radius:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);color:var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .2s" onmouseover="this.style.background='rgba(16,185,129,0.2)'" onmouseout="this.style.background='rgba(16,185,129,0.1)'">
+            <i class="fa-solid fa-bars"></i>
+          </button>
         </div>
 
-        <div class="md:hidden flex items-center gap-2">
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-900/60 bg-emerald-950/30">
-            <div class="w-2 h-2 bg-emerald-500 rounded-full status-dot"></div>
-            <span class="text-emerald-400 text-xs">Online</span>
-          </div>
-          <div style="display:flex;align-items:center;border-radius:30px;overflow:hidden;border:1.5px solid var(--green)">
-            <select id="sms-scenario-select-mobile" style="appearance:none;border:none;background:rgba(16,185,129,0.12);color:#e8f5e9;padding:7px 10px;font-size:.72rem;font-family:inherit;outline:none;max-width:110px">
-              <option value="0">Sell matooke?</option>
-              <option value="1">White powder?</option>
-              <option value="2">Harvest early?</option>
-              <option value="3">Caterpillars!</option>
-              <option value="4">Coffee price?</option>
-              <option value="5">Rotting store</option>
-              <option value="6">Plant cassava?</option>
-              <option value="7">Drought help</option>
-            </select>
-            <button onclick="simulateSMS(true)" style="background:var(--green);color:#050a05;padding:7px 10px;font-size:.75rem;display:flex;align-items:center;cursor:pointer;border:none">
-              <i class="fa-solid fa-paper-plane"></i>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   </header>
@@ -744,7 +801,8 @@
       <button onclick="switchTab(1)" class="nav-item"><i class="fa-solid fa-users text-xl"></i><span class="nav-tooltip">Farmers</span></button>
       <button onclick="switchTab(2)" class="nav-item"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="nav-tooltip">Risk Map</span></button>
       <button onclick="switchTab(3)" class="nav-item"><i class="fa-solid fa-chart-line text-xl"></i><span class="nav-tooltip">Analytics</span></button>
-      <button onclick="switchTab(4)" class="nav-item" style="position:relative"><i class="fa-solid fa-comments text-xl"></i><span id="sms-badge-mob" style="position:absolute;top:2px;right:8px;background:#ef4444;color:white;font-size:.55rem;font-weight:700;padding:1px 5px;border-radius:20px">3</span><span class="nav-tooltip">SMS Inbox</span></button>
+      <button onclick="switchTab(4)" class="nav-item" style="position:relative"><i class="fa-solid fa-comments text-xl"></i><span id="sms-badge-mob" style="position:absolute;top:2px;right:8px;background:#ef4444;color:white;font-size:.55rem;font-weight:700;padding:1px 5px;border-radius:20px;display:none">0</span><span class="nav-tooltip">SMS</span></button>
+      <button onclick="openSidebar()" class="nav-item"><i class="fa-solid fa-bars text-xl"></i><span class="nav-tooltip">Menu</span></button>
     </div>
   </nav>
 
@@ -2356,9 +2414,77 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
   }
 
   // ============================================================
+  // SIDEBAR
+  // ============================================================
+  function openSidebar() {
+    document.getElementById('sidebar').style.right = '0';
+    document.getElementById('sidebar-overlay').style.display = 'block';
+    const ki = document.getElementById('sidebar-api-key');
+    if (ki) ki.value = localStorage.getItem('yg_api_key') || '';
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').style.right = '-320px';
+    document.getElementById('sidebar-overlay').style.display = 'none';
+  }
+  function saveSidebarKey() {
+    const val = document.getElementById('sidebar-api-key').value.trim();
+    if (val && !val.startsWith('sk-ant-')) { showToast('⚠️ Key must start with sk-ant-'); return; }
+    if (val) { localStorage.setItem('yg_api_key', val); apiKey = val; showToast('✅ API key saved — reloading AI features...'); recsLoaded = false; setTimeout(populateRecommendations, 500); }
+    else { localStorage.removeItem('yg_api_key'); apiKey = ''; showToast('🔑 API key cleared'); }
+    closeSidebar();
+  }
+
+  // ============================================================
+  // LIGHT / DARK MODE
+  // ============================================================
+  let isDark = true;
+
+  function applyTheme(dark) {
+    isDark = dark;
+    localStorage.setItem('yg_theme', dark ? 'dark' : 'light');
+    const icons = ['theme-icon','theme-icon-nav'];
+    if (dark) {
+      document.body.style.background = '#050a05';
+      document.body.style.color = '#e8f5e9';
+      icons.forEach(id=>{ const el=document.getElementById(id); if(el){el.className='fa-solid fa-moon';el.style.color='#a78bfa'} });
+      const lb=document.getElementById('theme-label'); if(lb)lb.textContent='Dark Mode';
+      document.querySelectorAll('.glass-card').forEach(el=>{ el.style.background=''; el.style.border=''; el.style.color=''; });
+      document.querySelectorAll('.kpi-card').forEach(el=>{ el.style.background=''; el.style.border=''; });
+      const hdr=document.querySelector('.main-header'); if(hdr){ hdr.style.background='rgba(5,10,5,0.96)'; hdr.style.borderBottom='1px solid var(--border)'; }
+    } else {
+      document.body.style.background = '#f0fdf4';
+      document.body.style.color = '#111827';
+      icons.forEach(id=>{ const el=document.getElementById(id); if(el){el.className='fa-solid fa-sun';el.style.color='#f59e0b'} });
+      const lb=document.getElementById('theme-label'); if(lb)lb.textContent='Light Mode';
+      document.querySelectorAll('.glass-card').forEach(el=>{ el.style.background='#fff'; el.style.border='1px solid #d1fae5'; el.style.color='#111827'; });
+      document.querySelectorAll('.kpi-card').forEach(el=>{ el.style.background='#fff'; el.style.border='1px solid #bbf7d0'; });
+      const hdr=document.querySelector('.main-header'); if(hdr){ hdr.style.background='rgba(240,253,244,0.97)'; hdr.style.borderBottom='1px solid #d1fae5'; }
+    }
+  }
+
+  function toggleTheme() { applyTheme(!isDark); }
+
+  // ============================================================
   // INIT
   // ============================================================
   window.addEventListener('load', () => {
+    // Apply saved theme
+    const savedTheme = localStorage.getItem('yg_theme');
+    if (savedTheme === 'light') applyTheme(false);
+
+    // Update sidebar user info from session
+    try {
+      const session = JSON.parse(localStorage.getItem('yg_session_v1'));
+      if (session) {
+        const av = document.getElementById('sidebar-avatar');
+        const nm = document.getElementById('sidebar-name');
+        const rl = document.getElementById('sidebar-role');
+        if (av) av.textContent = (session.fname?.[0]||'A') + (session.lname?.[0]||'');
+        if (nm) nm.textContent = session.fname + ' ' + (session.lname||'');
+        if (rl) rl.textContent = (session.role||'Administrator') + (session.district?' • '+session.district:'');
+      }
+    } catch(e) {}
+
     showWelcomePopup();
     populateRiskTable();
     populateRecommendations();
@@ -2374,11 +2500,13 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
     buildCropDistribution();
     generateNDVI('Mubende');
     updateSMSStats();
+    // Set first tab as active in nav
+    const firstTab = document.querySelectorAll('.tab-link')[0];
+    if (firstTab) { firstTab.style.color='#34d399'; firstTab.style.background='rgba(16,185,129,0.12)'; firstTab.classList.add('tab-active'); }
     handleScrollReveal();
     setTimeout(handleScrollReveal, 300);
-    // Fetch live prices after 1s (non-blocking)
     setTimeout(fetchLiveMarketPrices, 1000);
-    console.log('✅ YieldGuard AI v5.0 — Live weather, live prices, gestation, PDF reports!');
+    console.log('✅ YieldGuard AI v6.0 — Sidebar, themes, persistent farmers, live AI!');
   });
 
   window.addEventListener('scroll', handleScrollReveal);
