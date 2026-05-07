@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/dashboard.html"
+    },
+    {
       "source": "/dashboard.html",
       "destination": "/dashboard.html"
     },
