@@ -737,10 +737,10 @@ function goToDashboard(user, showWelcome) {
     showToast('success', `Welcome back, ${user.fname}! 👋`, `Signed in as ${user.role} • ${user.district}`);
     setTimeout(() => {
       // Pass user info to dashboard via URL
-      window.location.href = `dashboard.html?user=${encodeURIComponent(user.fname)}&role=${encodeURIComponent(user.role)}&district=${encodeURIComponent(user.district)}`;
+      window.location.href = `/dashboard.html?user=${encodeURIComponent(user.fname)}&role=${encodeURIComponent(user.role)}&district=${encodeURIComponent(user.district)}`;
     }, 1800);
   } else {
-    window.location.href = `dashboard.html?user=${encodeURIComponent(user.fname)}&role=${encodeURIComponent(user.role)}&district=${encodeURIComponent(user.district)}`;
+    window.location.href = `/dashboard.html?user=${encodeURIComponent(user.fname)}&role=${encodeURIComponent(user.role)}&district=${encodeURIComponent(user.district)}`;
   }
 }
 
