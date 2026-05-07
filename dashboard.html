@@ -1799,22 +1799,119 @@ Return ONLY a JSON array, no markdown, no extra text:
   // ============================================================
   // GEMINI API HELPER — central call function
   // ============================================================
+  // ============================================================
+  // GEMINI AI — Core caller (CORS-safe, works on Vercel/GitHub)
+  // ============================================================
   async function callGemini(prompt, maxTokens=600) {
     const ak = localStorage.getItem('yg_gemini_key') || '';
     if (!ak) throw new Error('NO_KEY');
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${ak}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${ak}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 }
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
+          safetySettings: [
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+          ]
         })
       }
     );
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    }
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message || 'Gemini error');    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (data.error) throw new Error(data.error.message || 'Gemini error');
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+
+  // ============================================================
+  // AI CHAT — send message via Gemini
+  // ============================================================
+  async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text || isTyping) return;
+
+    addChatMessage(text, false);
+    input.value = '';
+    isTyping = true;
+    addTypingIndicator();
+
+    const ak = localStorage.getItem('yg_gemini_key') || '';
+    if (!ak) {
+      removeTypingIndicator();
+      addChatMessage("🔑 **Gemini API key not set.**\n\nGet a FREE key at **aistudio.google.com** → 'Get API Key'\n\nThen save it in the ☰ sidebar.", true);
+      isTyping = false;
+      document.getElementById('api-key-banner').style.display = 'flex';
+      return;
+    }
+
+    chatHistory.push({ role: 'user', content: text });
+
+    const systemPrompt = `You are YieldGuard AI Agent, an expert agricultural assistant for Uganda. You help with: Matooke, Maize, Beans, Cassava, Coffee, Rice, Groundnuts, Sweet Potatoes, Irish Potatoes, Sorghum, Tomatoes, Onions. Uganda districts, post-harvest storage, pest management, UGX market prices, weather. Currently ${farmersList.length} farmers registered. Be concise, practical, Uganda-specific. Use simple English.`;
+
+    // Build conversation with system context prepended to first message
+    const contents = chatHistory.map((m, i) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: i === 0 ? `${systemPrompt}\n\n${m.content}` : m.content }]
+    }));
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${ak}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents,
+            generationConfig: { maxOutputTokens: 800, temperature: 0.75 }
+          })
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.error) {
+        removeTypingIndicator();
+        const msg = data.error.message || '';
+        let friendly = '';
+        if (msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('limit')) {
+          friendly = "⏳ **Rate limit reached.**\n\nGemini free tier allows 15 requests/minute. Wait ~60 seconds then try again.";
+        } else if (msg.toLowerCase().includes('api_key') || msg.toLowerCase().includes('invalid') || res.status === 400 || res.status === 403) {
+          friendly = "🔑 **Invalid API key.**\n\nGo to **aistudio.google.com**, create a new key, and save it in ☰ sidebar.";
+        } else {
+          friendly = `⚠️ Gemini error: ${msg}`;
+        }
+        addChatMessage(friendly, true);
+        chatHistory.pop();
+        isTyping = false;
+        return;
+      }
+
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!reply) throw new Error('empty response');
+
+      chatHistory.push({ role: 'assistant', content: reply });
+      removeTypingIndicator();
+      addChatMessage(reply, true);
+
+    } catch (err) {
+      removeTypingIndicator();
+      if (err.message === 'Failed to fetch') {
+        addChatMessage("🌐 **Network error.** Check your internet connection and try again.", true);
+      } else {
+        addChatMessage(`⚠️ Error: ${err.message}. Try again.`, true);
+      }
+      chatHistory.pop();
+    }
+    isTyping = false;
   }
 
   // ============================================================
@@ -2264,57 +2361,6 @@ Return ONLY a JSON array, no markdown, no extra text:
 
   function removeTypingIndicator() { const el=document.getElementById('typing-indicator'); if(el)el.remove(); }
 
-  async function sendChatMessage() {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (!text || isTyping) return;
-    addChatMessage(text, false);
-    input.value = ''; isTyping = true; addTypingIndicator();
-    apiKey = localStorage.getItem('yg_gemini_key') || '';
-
-    if (!apiKey) {
-      removeTypingIndicator();
-      addChatMessage("🔑 **Gemini API key not set.**\n\nGet a FREE key at **aistudio.google.com** → 'Get API Key'\n\nThen paste it in the yellow bar above or save in ☰ sidebar.", true);
-      isTyping = false;
-      document.getElementById('api-key-banner').style.display = 'flex';
-      return;
-    }
-
-    const systemPrompt = `You are YieldGuard AI Agent for Uganda. Expert in: Matooke, Maize, Beans, Cassava, Coffee, Rice, Groundnuts, Sweet Potatoes, Irish Potatoes, Sorghum, Tomatoes, Onions. Uganda districts, post-harvest storage, pest management, UGX market prices, weather impact. ${farmersList.length} farmers registered. Be concise, practical, Uganda-specific.`;
-
-    chatHistory.push({ role:'user', content: text });
-
-    const contents = chatHistory.map((m,i) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: i===0 && m.role==='user' ? `${systemPrompt}\n\nUser: ${m.content}` : m.content }]
-    }));
-
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-        { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ contents, generationConfig:{ maxOutputTokens:900, temperature:0.75 } }) }
-      );
-      const data = await res.json();
-      if (data.error) {
-        removeTypingIndicator();
-        const msg = data.error.message || '';
-        const friendly = msg.toLowerCase().includes('quota')
-          ? "⏳ **Gemini free quota reached.**\n\nThe free tier allows 15 requests/minute. Please wait about 60 seconds and try again.\n\n💡 Tip: Avoid rapid repeated messages to stay within the free limit."
-          : `🔑 **Gemini error:** ${msg}\n\nCheck your key in ☰ sidebar.`;
-        addChatMessage(friendly, true);
-        chatHistory.pop(); isTyping = false; return;
-      }
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, couldn't process that. Try again.";
-      chatHistory.push({ role:'assistant', content: reply });
-      removeTypingIndicator(); addChatMessage(reply, true);
-    } catch(err) {
-      removeTypingIndicator();
-      addChatMessage("⚠️ Connection issue. Check your internet and try again.", true);
-      chatHistory.pop();
-    }
-    isTyping = false;
-  }
   // ============================================================
   // SIMULATE SMS — MULTI-SCENARIO
   // ============================================================
