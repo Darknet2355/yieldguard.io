@@ -533,10 +533,21 @@
 
         <!-- AI RECOMMENDATIONS -->
         <div class="xl:col-span-5 glass-card p-5 md:p-6 scroll-reveal">
-          <div class="font-bold text-lg mb-5 flex items-center gap-2">
-            <i class="fa-solid fa-lightbulb text-amber-400"></i> AI Recommendations
+          <div class="font-bold text-lg mb-4 flex items-center justify-between gap-2">
+            <span><i class="fa-solid fa-lightbulb text-amber-400"></i> AI Recommendations</span>
+            <button onclick="recsLoaded=false;populateRecommendations()" id="recs-refresh-btn" title="Refresh recommendations" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);color:#fbbf24;padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s" onmouseover="this.style.background='rgba(245,158,11,0.2)'" onmouseout="this.style.background='rgba(245,158,11,0.1)'">
+              <i class="fa-solid fa-rotate-right"></i> Load
+            </button>
           </div>
-          <div id="recommendations" class="space-y-4"></div>
+          <div id="recommendations" class="space-y-4">
+            <!-- Placeholder shown until user clicks Load -->
+            <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:14px;padding:16px;text-align:center">
+              <div style="font-size:1.5rem;margin-bottom:8px">🤖</div>
+              <div style="font-size:.82rem;font-weight:600;color:#fbbf24;margin-bottom:4px">AI Recommendations</div>
+              <div style="font-size:.73rem;color:#6b7280;margin-bottom:12px">Click <strong style="color:#fbbf24">Load</strong> to get live AI-powered advice based on your registered farmers and current conditions.</div>
+              <div style="font-size:.68rem;color:#4a7c59">Powered by Gemini AI • Free quota</div>
+            </div>
+          </div>
           <!-- SOIL HEALTH MINI -->
           <div class="mt-6 pt-5 border-t border-white/5">
             <div class="font-semibold text-sm mb-3 flex items-center gap-2 text-zinc-300"><i class="fa-solid fa-seedling text-emerald-400"></i> Soil Health Index</div>
@@ -1004,7 +1015,7 @@
     if (!user) return;
 
     // Clean URL without reload
-    window.history.replaceState({}, '', 'yieldguard.html');
+    window.history.replaceState({}, '', 'dashboard.html');
 
     const popup = document.createElement('div');
     popup.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-120px);z-index:9999;background:linear-gradient(135deg,#0d1a0d,#111f11);border:1px solid rgba(16,185,129,0.4);border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 20px 60px rgba(0,0,0,0.7),0 0 40px rgba(16,185,129,0.15);transition:transform .5s cubic-bezier(.34,1.56,.64,1);min-width:320px;max-width:480px';
@@ -1593,13 +1604,42 @@ Return ONLY a JSON array, no markdown, no extra text:
         div.innerHTML = `<div style="font-size:1.5rem">${rec.emoji}</div><div><div style="font-weight:700;font-size:.875rem">${rec.title}</div><div style="font-size:.75rem;color:#9ca3af;margin-top:3px;line-height:1.5">${rec.text}</div></div>`;
         container.appendChild(div);
       });
+      recsLoaded = true;
+      setTimeout(()=>{ recsLoaded=false; }, 600000); // refresh after 10 min
     } catch(e) {
       if (e.message === 'NO_KEY') {
-        container.innerHTML = `<div style="font-size:.78rem;color:#4a7c59;text-align:center;padding:16px">💡 Save your Gemini API key in the ☰ sidebar to get live AI recommendations.</div>`;
+        showStaticRecs(container, '💡 Save your Gemini API key in the ☰ sidebar to get live AI recommendations.');
+      } else if (e.message && e.message.toLowerCase().includes('quota')) {
+        showStaticRecs(container, '⏳ Gemini free quota reached. Showing smart defaults — try again in a few minutes. <br><span style="font-size:.68rem;color:#6b7280">(Free tier: 15 req/min, resets automatically)</span>');
       } else {
-        container.innerHTML = `<div style="font-size:.78rem;color:#f87171;text-align:center;padding:16px">Could not load recommendations. Check your Gemini API key in the ☰ sidebar.</div>`;
+        showStaticRecs(container, '⚠️ Could not reach Gemini. Showing smart defaults. Check key in ☰ sidebar.');
       }
     }
+  }
+
+  function showStaticRecs(container, note) {
+    const today = new Date();
+    const month = today.getMonth(); // 0-11
+    // Season-aware Uganda recommendations
+    const isRainySeason = (month >= 2 && month <= 4) || (month >= 8 && month <= 10);
+    const staticRecs = isRainySeason ? [
+      { emoji:'🌧️', title:'Rain Season Alert', text:'Move harvested maize and beans into dry storage now. Moisture causes aflatoxin within 48hrs.', urgent:true },
+      { emoji:'🌱', title:'Ideal Planting Window', text:'Rainy season open — plant maize, beans and cassava this week for best germination rates.', urgent:false },
+      { emoji:'🔬', title:'Blight Risk High', text:'Humid conditions favour potato and tomato blight. Apply copper fungicide preventively now.', urgent:true },
+      { emoji:'📦', title:'Market Timing', text:'Sell perishable crops before peak rains. Prices typically rise 10-15% post-rain season.', urgent:false },
+    ] : [
+      { emoji:'☀️', title:'Dry Season Drying Window', text:'Low humidity this week — ideal for sun-drying maize, sorghum and groundnuts. Use today.', urgent:false },
+      { emoji:'💧', title:'Irrigation Advisory', text:'Dry spell extending. Irrigate morning only. Mulch around cassava and sweet potato beds.', urgent:true },
+      { emoji:'📈', title:'Coffee Market Peak', text:'Coffee prices strong in dry season. Good time for Mbale and Kasese farmers to sell Grade A.', urgent:false },
+      { emoji:'🐛', title:'Stalk Borer Watch', text:'Dry conditions increase stalk borer pressure in maize. Scout fields weekly and apply Bt spray.', urgent:true },
+    ];
+    container.innerHTML = `
+      <div style="font-size:.72rem;color:#6b7280;background:rgba(255,255,255,0.04);border-radius:10px;padding:8px 12px;margin-bottom:8px;line-height:1.5">${note}</div>
+      ${staticRecs.map(r=>`<div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;border-left:3px solid ${r.urgent?'#ef4444':'rgba(255,255,255,0.08)'}">
+        <div style="font-size:1.4rem">${r.emoji}</div>
+        <div><div style="font-weight:700;font-size:.875rem">${r.title}</div><div style="font-size:.75rem;color:#9ca3af;margin-top:3px;line-height:1.5">${r.text}</div></div>
+      </div>`).join('')}
+    `;
   }
 
   // ============================================================
@@ -1763,7 +1803,7 @@ Return ONLY a JSON array, no markdown, no extra text:
     const ak = localStorage.getItem('yg_gemini_key') || '';
     if (!ak) throw new Error('NO_KEY');
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${ak}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${ak}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1774,8 +1814,7 @@ Return ONLY a JSON array, no markdown, no extra text:
       }
     );
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message || 'Gemini error');
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (data.error) throw new Error(data.error.message || 'Gemini error');    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
   // ============================================================
@@ -2252,14 +2291,18 @@ Return ONLY a JSON array, no markdown, no extra text:
 
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
         { method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ contents, generationConfig:{ maxOutputTokens:900, temperature:0.75 } }) }
       );
       const data = await res.json();
       if (data.error) {
         removeTypingIndicator();
-        addChatMessage(`🔑 **Gemini error:** ${data.error.message}\n\nCheck your key in ☰ sidebar.`, true);
+        const msg = data.error.message || '';
+        const friendly = msg.toLowerCase().includes('quota')
+          ? "⏳ **Gemini free quota reached.**\n\nThe free tier allows 15 requests/minute. Please wait about 60 seconds and try again.\n\n💡 Tip: Avoid rapid repeated messages to stay within the free limit."
+          : `🔑 **Gemini error:** ${msg}\n\nCheck your key in ☰ sidebar.`;
+        addChatMessage(friendly, true);
         chatHistory.pop(); isTyping = false; return;
       }
       const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, couldn't process that. Try again.";
@@ -2461,7 +2504,6 @@ Return ONLY a JSON array, no markdown, no extra text:
 
     showWelcomePopup();
     populateRiskTable();
-    populateRecommendations();
     populateFarmers();
     populateRiskMap();
     populateRiskFactors();
@@ -2474,13 +2516,15 @@ Return ONLY a JSON array, no markdown, no extra text:
     buildCropDistribution();
     generateNDVI('Mubende');
     updateSMSStats();
+    populateRecommendations(); // loads static first, then AI if key present
     // Set first tab as active in nav
     const firstTab = document.querySelectorAll('.tab-link')[0];
     if (firstTab) { firstTab.style.color='#34d399'; firstTab.style.background='rgba(16,185,129,0.12)'; firstTab.classList.add('tab-active'); }
     handleScrollReveal();
     setTimeout(handleScrollReveal, 300);
-    setTimeout(fetchLiveMarketPrices, 1200);
-    console.log('✅ YieldGuard AI v7.0 — Gemini Free API, sidebar, dark/light mode, persistent farmers!');
+    // Delay market price fetch by 5s to avoid rate limits on first load
+    setTimeout(fetchLiveMarketPrices, 5000);
+    console.log('✅ YieldGuard AI v7.1 — Gemini 1.5-flash-latest, rate-limit safe!');
   });
 
   window.addEventListener('scroll', handleScrollReveal);
