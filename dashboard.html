@@ -404,13 +404,18 @@
         <div id="theme-toggle" style="width:38px;height:20px;border-radius:20px;background:var(--green);position:relative;transition:background .2s"><div style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:white;transition:all .3s"></div></div>
       </button>
 
-      <!-- API KEY -->
-      <div style="padding:12px 14px;border-radius:12px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.18);margin-top:4px">
-        <div style="font-size:.7rem;color:#d97706;font-weight:700;margin-bottom:7px"><i class="fa-solid fa-key"></i> Claude API Key</div>
-        <div style="display:flex;gap:7px">
-          <input id="sidebar-api-key" type="password" placeholder="sk-ant-..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:7px 10px;color:white;font-size:.72rem;font-family:'JetBrains Mono',monospace;outline:none" value="${localStorage.getItem('yg_api_key')||''}" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='rgba(245,158,11,0.25)'"/>
-          <button onclick="saveSidebarKey()" style="background:#f59e0b;color:#050a05;font-weight:700;font-size:.7rem;padding:7px 10px;border-radius:8px;cursor:pointer;border:none;white-space:nowrap">Save</button>
+      <!-- GEMINI API KEY -->
+      <div style="padding:12px 14px;border-radius:12px;background:rgba(66,133,244,0.07);border:1px solid rgba(66,133,244,0.22);margin-top:4px">
+        <div style="font-size:.7rem;color:#4285f4;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+          <img src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg" style="width:13px;height:13px" onerror="this.style.display='none'"/>
+          Gemini API Key <span style="background:rgba(34,197,94,0.15);color:#22c55e;font-size:.58rem;padding:1px 6px;border-radius:20px;font-weight:700">FREE</span>
         </div>
+        <div style="font-size:.65rem;color:#6b7280;margin-bottom:7px">Get free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#4285f4;text-decoration:none">aistudio.google.com ↗</a></div>
+        <div style="display:flex;gap:7px">
+          <input id="sidebar-api-key" type="password" placeholder="AIza..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(66,133,244,0.25);border-radius:8px;padding:7px 10px;color:white;font-size:.72rem;font-family:'JetBrains Mono',monospace;outline:none" onfocus="this.style.borderColor='#4285f4'" onblur="this.style.borderColor='rgba(66,133,244,0.25)'"/>
+          <button onclick="saveSidebarKey()" style="background:#4285f4;color:white;font-weight:700;font-size:.7rem;padding:7px 10px;border-radius:8px;cursor:pointer;border:none;white-space:nowrap">Save</button>
+        </div>
+        <div id="sidebar-key-status" style="font-size:.65rem;margin-top:5px;color:#6b7280"></div>
       </div>
     </div>
 
@@ -814,7 +819,7 @@
           <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--green),var(--green-dark));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px var(--green-glow)">🤖</div>
           <div>
             <div class="font-bold">YieldGuard AI Agent</div>
-            <div class="text-xs text-emerald-400 flex items-center gap-1"><div class="live-dot" style="width:5px;height:5px"></div> Powered by Claude AI • Always learning</div>
+            <div class="text-xs text-emerald-400 flex items-center gap-1"><div class="live-dot" style="width:5px;height:5px"></div> Powered by Gemini AI (Free) • Always learning</div>
           </div>
         </div>
         <button onclick="closeChat()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:18px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">✕</button>
@@ -822,17 +827,17 @@
       <!-- API KEY BANNER -->
       <div id="api-key-banner" style="padding:12px 16px;background:rgba(245,158,11,0.08);border-bottom:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <i class="fa-solid fa-key" style="color:#f59e0b;font-size:.9rem;flex-shrink:0"></i>
-        <span style="font-size:.75rem;color:#d97706;font-weight:600;flex-shrink:0">API Key required:</span>
+        <span style="font-size:.75rem;color:#d97706;font-weight:600;flex-shrink:0">Free Gemini key required:</span>
         <div style="display:flex;flex:1;min-width:200px;gap:8px">
           <input id="api-key-input" type="password"
-            placeholder="Paste your sk-ant-... key here"
+            placeholder="Paste your Gemini API key here"
             style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(245,158,11,0.35);border-radius:10px;padding:7px 12px;color:white;font-family:'JetBrains Mono',monospace;font-size:.75rem;outline:none;transition:border-color .2s"
             onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='rgba(245,158,11,0.35)'"
             onkeypress="if(event.key==='Enter')saveApiKey()"
           />
           <button onclick="saveApiKey()" style="background:#f59e0b;color:#050a05;font-weight:700;font-size:.75rem;padding:7px 14px;border-radius:10px;cursor:pointer;border:none;white-space:nowrap;transition:all .2s" onmouseover="this.style.background='#fbbf24'" onmouseout="this.style.background='#f59e0b'">Save</button>
         </div>
-        <a href="https://console.anthropic.com" target="_blank" style="font-size:.7rem;color:#6b7280;text-decoration:underline;flex-shrink:0">Get key ↗</a>
+        <a href="https://aistudio.google.com/apikey" target="_blank" style="font-size:.7rem;color:#6b7280;text-decoration:underline;flex-shrink:0">Get free key ↗</a>
       </div>
       <div id="chat-window" style="flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;font-size:.875rem"></div>
       <div style="padding:16px;border-top:1px solid var(--border);background:rgba(0,0,0,0.3);display:flex;gap:10px">
@@ -1541,7 +1546,7 @@
     // Show loading state
     container.innerHTML = `<div style="text-align:center;padding:20px;color:#4a7c59"><i class="fa-solid fa-spinner fa-spin"></i><div style="font-size:.75rem;margin-top:8px">AI generating live recommendations...</div></div>`;
 
-    const ak = localStorage.getItem('yg_api_key') || '';
+    const ak = localStorage.getItem('yg_gemini_key') || '';
     if (!ak) {
       // Static fallback when no API key
       container.innerHTML = `
@@ -1569,21 +1574,15 @@
 Registered farmers: ${farmerSummary}
 At-risk farmers: ${highRisk}
 
-Generate exactly 4 SHORT, specific, actionable farming recommendations for the dashboard. Each must be directly relevant to the registered farmers and Uganda's current season (May = second dry season starting in central Uganda).
+Generate exactly 4 SHORT, specific, actionable farming recommendations for the dashboard. Each must be directly relevant to the registered farmers and Uganda's current season.
 
-Return ONLY a JSON array, no other text:
+Return ONLY a JSON array, no markdown, no extra text:
 [
-  {"emoji":"🌾","title":"Short title (max 6 words)","text":"One actionable sentence. Max 20 words.","urgent":true/false},
+  {"emoji":"🌾","title":"Short title (max 6 words)","text":"One actionable sentence. Max 20 words.","urgent":true},
   ...
 ]`;
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':ak,'anthropic-version':'2023-06-01'},
-        body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:500, messages:[{role:'user',content:prompt}] })
-      });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '';
+      const text = await callGemini(prompt, 500);
       const match = text.match(/\[[\s\S]*\]/);
       if (!match) throw new Error('no JSON');
       const recs = JSON.parse(match[0]);
@@ -1595,7 +1594,11 @@ Return ONLY a JSON array, no other text:
         container.appendChild(div);
       });
     } catch(e) {
-      container.innerHTML = `<div style="font-size:.78rem;color:#4a7c59;text-align:center;padding:16px">Could not load live recommendations. Check AI Agent API key.</div>`;
+      if (e.message === 'NO_KEY') {
+        container.innerHTML = `<div style="font-size:.78rem;color:#4a7c59;text-align:center;padding:16px">💡 Save your Gemini API key in the ☰ sidebar to get live AI recommendations.</div>`;
+      } else {
+        container.innerHTML = `<div style="font-size:.78rem;color:#f87171;text-align:center;padding:16px">Could not load recommendations. Check your Gemini API key in the ☰ sidebar.</div>`;
+      }
     }
   }
 
@@ -1754,49 +1757,60 @@ Return ONLY a JSON array, no other text:
   }
 
   // ============================================================
-  // LIVE MARKET PRICES — Claude AI (real Uganda market context)
+  // GEMINI API HELPER — central call function
   // ============================================================
-  let livePrices = {}; // cached per session
+  async function callGemini(prompt, maxTokens=600) {
+    const ak = localStorage.getItem('yg_gemini_key') || '';
+    if (!ak) throw new Error('NO_KEY');
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${ak}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 }
+        })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || 'Gemini error');
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+
+  // ============================================================
+  // LIVE MARKET PRICES — Gemini AI (real Uganda market context)
+  // ============================================================
+  let livePrices = {};
   let pricesLoading = false;
 
   async function fetchLiveMarketPrices() {
     if (pricesLoading || Object.keys(livePrices).length > 0) return;
     pricesLoading = true;
-    const ak = localStorage.getItem('yg_api_key') || '';
+    const ak = localStorage.getItem('yg_gemini_key') || '';
     if (!ak) {
-      // Use realistic UGX baseline prices if no key
       CROPS_CATALOG.forEach(c => { livePrices[c.name] = { price: c.basePrice, change: c.trend, source: 'Baseline' }; });
       updatePriceChart(); pricesLoading = false; return;
     }
 
     try {
       const today = new Date().toLocaleDateString('en-UG');
-      const prompt = `Today is ${today}. You are a Uganda agricultural market analyst. Provide CURRENT realistic Uganda market prices for these crops in UGX per kg as of today. Base on typical Uganda market fluctuations and seasons. Return ONLY valid JSON like: {"Matooke":{"price":1490,"change":"+12%","market":"Owino Kampala"},...} for ALL these crops: Matooke, Maize, Beans, Cassava, Coffee, Rice, Sweet Potatoes, Irish Potatoes, Sorghum, Groundnuts, Tomatoes, Onions. Use realistic UGX prices (Matooke ~1200-2000, Maize ~900-1400, Coffee ~8000-12000, Beans ~2500-3500, Tomatoes ~1500-2500 UGX/kg range). Vary prices realistically. Return ONLY the JSON object, no other text.`;
+      const prompt = `Today is ${today}. You are a Uganda agricultural market analyst. Provide CURRENT realistic Uganda market prices for these crops in UGX per kg as of today. Base on typical Uganda market fluctuations and seasons. Return ONLY valid JSON like: {"Matooke":{"price":1490,"change":"+12%","market":"Owino Kampala"},...} for ALL these crops: Matooke, Maize, Beans, Cassava, Coffee, Rice, Sweet Potatoes, Irish Potatoes, Sorghum, Groundnuts, Tomatoes, Onions. Use realistic UGX prices (Matooke ~1200-2000, Maize ~900-1400, Coffee ~8000-12000, Beans ~2500-3500, Tomatoes ~1500-2500 UGX/kg range). Return ONLY the JSON object, no markdown, no extra text.`;
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':ak,'anthropic-version':'2023-06-01'},
-        body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600, messages:[{role:'user',content:prompt}] })
-      });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '';
+      const text = await callGemini(prompt, 700);
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         livePrices = parsed;
-        // Update CROPS_CATALOG basePrice with live prices
         CROPS_CATALOG.forEach(c => {
-          if (livePrices[c.name]) {
-            c.basePrice = livePrices[c.name].price;
-            c.trend = livePrices[c.name].change;
-          }
+          if (livePrices[c.name]) { c.basePrice = livePrices[c.name].price; c.trend = livePrices[c.name].change; }
         });
         updatePriceChart();
         buildPriceSummaryCards();
-        showToast('📈 Live market prices updated!');
+        showToast('📈 Live market prices updated via Gemini!');
       }
     } catch(e) {
-      console.log('Price fetch failed, using baseline');
+      console.log('Price fetch failed, using baseline:', e.message);
       CROPS_CATALOG.forEach(c => { livePrices[c.name] = { price: c.basePrice, change: c.trend, source: 'Baseline' }; });
     }
     pricesLoading = false;
@@ -2075,29 +2089,18 @@ Return ONLY a JSON array, no other text:
     bar.style.display = 'flex';
     suggestion.textContent = 'Generating reply...';
 
-    if (!apiKey) {
-      suggestion.textContent = '⚠️ API key not set. Open AI Agent chat to add your key.';
-      return;
-    }
-
     const lastFarmerMsg = [...conv.messages].reverse().find(m=>m.from==='farmer');
-    const context = `A Ugandan farmer named ${conv.farmer} from ${conv.district} grows ${conv.crop}. They sent this SMS: "${lastFarmerMsg?lastFarmerMsg.text:'(see conversation)'}". Write a SHORT, clear SMS reply (max 160 characters) with practical farming advice. No greetings. Direct, actionable, simple English.`;
+    const context = `A Ugandan farmer named ${conv.farmer} from ${conv.district} grows ${conv.crop}. They sent this SMS: "${lastFarmerMsg?lastFarmerMsg.text:'(see conversation)'}". Write a SHORT, clear SMS reply (max 160 characters) with practical farming advice. No greetings. Direct, actionable, simple English. Return ONLY the reply text, nothing else.`;
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
-        body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:200,
-          messages:[{ role:'user', content:context }]
-        })
-      });
-      const data = await res.json();
-      const reply = data.content&&data.content[0]&&data.content[0].text ? data.content[0].text.trim() : 'Unable to generate reply.';
-      suggestion.textContent = reply;
+      const reply = await callGemini(context, 200);
+      suggestion.textContent = reply.trim() || 'Unable to generate reply.';
       aiDraftedCount++;
       updateSMSStats();
-    } catch {
-      suggestion.textContent = '⚠️ Could not reach AI. Check connection and API key.';
+    } catch(e) {
+      suggestion.textContent = e.message === 'NO_KEY'
+        ? '⚠️ No Gemini API key. Save your key in the ☰ sidebar.'
+        : '⚠️ Could not reach Gemini. Check your key.';
     }
   }
 
@@ -2169,40 +2172,34 @@ Return ONLY a JSON array, no other text:
   }
 
   // ============================================================
-  // CHAT — REAL AI AGENT VIA ANTHROPIC API
+  // CHAT — AI AGENT VIA GOOGLE GEMINI (FREE)
   // ============================================================
   let isTyping = false;
   let chatHistory = [];
-  let apiKey = localStorage.getItem('yg_api_key') || '';
+  let apiKey = localStorage.getItem('yg_gemini_key') || '';
 
   function saveApiKey() {
     const val = document.getElementById('api-key-input').value.trim();
-    if (!val.startsWith('sk-ant-')) {
-      showToast('⚠️ Key must start with sk-ant-', 'error'); return;
-    }
+    if (!val) { showToast('⚠️ Enter your Gemini API key', 'error'); return; }
     apiKey = val;
-    localStorage.setItem('yg_api_key', apiKey);
+    localStorage.setItem('yg_gemini_key', apiKey);
     document.getElementById('api-key-banner').style.display = 'none';
     document.getElementById('api-key-input').value = '';
-    showToast('✅ API key saved! AI Agent is ready.');
+    showToast('✅ Gemini key saved! AI Agent is ready.');
+    recsLoaded = false;
+    setTimeout(populateRecommendations, 600);
   }
 
   function openChat() {
     document.getElementById('chat-panel').classList.remove('hidden');
-    // Show/hide banner based on whether key is set
+    apiKey = localStorage.getItem('yg_gemini_key') || '';
     const banner = document.getElementById('api-key-banner');
-    if (apiKey) {
-      banner.style.display = 'none';
-    } else {
-      banner.style.display = 'flex';
-      setTimeout(() => document.getElementById('api-key-input').focus(), 100);
-    }
+    if (apiKey) { banner.style.display = 'none'; }
+    else { banner.style.display = 'flex'; setTimeout(() => document.getElementById('api-key-input').focus(), 100); }
     const chatWindow = document.getElementById('chat-window');
     if (chatWindow.children.length === 0) {
-      addChatMessage("👋 **Hello! I'm YieldGuard AI Agent**\n\nI'm here to help you with crop management, weather forecasts, market prices, pest control, and risk assessment for Ugandan farmers.\n\n💡 **Ask me anything:**\n• \"How do I prevent maize aflatoxin?\"\n• \"When is the best time to plant beans in Kapchorwa?\"\n• \"Why are my tomatoes wilting?\"\n• \"Current price forecast for coffee\"\n\nI have real farming intelligence — not just scripted answers!", true);
-    } else {
-      document.getElementById('chat-input').focus();
-    }
+      addChatMessage("👋 **Hello! I'm YieldGuard AI Agent**\n\nPowered by Google Gemini — free & fast!\n\nAsk me anything about:\n• Crop management & pest control\n• Uganda market prices (UGX)\n• Post-harvest storage advice\n• Weather impact on your farms\n• When to plant, spray, harvest", true);
+    } else { document.getElementById('chat-input').focus(); }
   }
 
   function closeChat() { document.getElementById('chat-panel').classList.add('hidden'); }
@@ -2211,7 +2208,7 @@ Return ONLY a JSON array, no other text:
     const chat = document.getElementById('chat-window');
     const msg = document.createElement('div');
     msg.style.cssText = `display:flex;justify-content:${isAI?'flex-start':'flex-end'}`;
-    const formatted = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>').replace(/•/g,'•');
+    const formatted = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
     msg.innerHTML = `<div class="${isAI?'chat-msg-ai':'chat-msg-user'}" style="max-width:88%">${formatted}</div>`;
     chat.appendChild(msg);
     chat.scrollTop = chat.scrollHeight;
@@ -2221,100 +2218,60 @@ Return ONLY a JSON array, no other text:
   function addTypingIndicator() {
     const chat = document.getElementById('chat-window');
     const indicator = document.createElement('div');
-    indicator.className = 'typing-indicator';
-    indicator.id = 'typing-indicator';
+    indicator.className = 'typing-indicator'; indicator.id = 'typing-indicator';
     indicator.innerHTML = '<span></span><span></span><span></span>';
-    chat.appendChild(indicator);
-    chat.scrollTop = chat.scrollHeight;
+    chat.appendChild(indicator); chat.scrollTop = chat.scrollHeight;
   }
 
-  function removeTypingIndicator() {
-    const el = document.getElementById('typing-indicator');
-    if (el) el.remove();
-  }
+  function removeTypingIndicator() { const el=document.getElementById('typing-indicator'); if(el)el.remove(); }
 
   async function sendChatMessage() {
     const input = document.getElementById('chat-input');
     const text = input.value.trim();
     if (!text || isTyping) return;
-
     addChatMessage(text, false);
-    input.value = '';
-    isTyping = true;
-    addTypingIndicator();
+    input.value = ''; isTyping = true; addTypingIndicator();
+    apiKey = localStorage.getItem('yg_gemini_key') || '';
+
+    if (!apiKey) {
+      removeTypingIndicator();
+      addChatMessage("🔑 **Gemini API key not set.**\n\nGet a FREE key at **aistudio.google.com** → 'Get API Key'\n\nThen paste it in the yellow bar above or save in ☰ sidebar.", true);
+      isTyping = false;
+      document.getElementById('api-key-banner').style.display = 'flex';
+      return;
+    }
+
+    const systemPrompt = `You are YieldGuard AI Agent for Uganda. Expert in: Matooke, Maize, Beans, Cassava, Coffee, Rice, Groundnuts, Sweet Potatoes, Irish Potatoes, Sorghum, Tomatoes, Onions. Uganda districts, post-harvest storage, pest management, UGX market prices, weather impact. ${farmersList.length} farmers registered. Be concise, practical, Uganda-specific.`;
 
     chatHistory.push({ role:'user', content: text });
 
-    const systemContext = `You are YieldGuard AI Agent, an expert agricultural assistant for Ugandan farmers. You specialize in:
-- Uganda-specific crops: Matooke (plantain), Maize, Beans, Cassava, Coffee, Rice, Groundnuts, Sweet Potatoes, Irish Potatoes, Sorghum, Millet, Tomatoes, Onions, Cabbage
-- Ugandan districts and their agricultural conditions
-- Post-harvest storage best practices for tropical climates
-- Pest and disease management using affordable/local methods
-- Market prices in Uganda (use UGX currency)
-- Weather impact on farming decisions
-- Soil health and fertilizer advice
-- Food security and smallholder farmer support
-
-Current system data:
-- ${farmersList.length} registered farmers across ${[...new Set(farmersList.map(f=>f.district))].length} districts
-- High risk farms: ${riskData.filter(r=>r.risk==='High').length}
-- Current market highlights: Matooke 1,490 UGX/kg (+12%), Coffee 9,500 UGX/kg (+8%), Tomatoes 1,800 UGX/kg (+15%)
-- Weather: Mubende 28°C, 82% humidity (HIGH RISK); Gulu 31°C dry; Kabale 20°C foggy
-
-Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond in English (or match the user's language). Always give actionable, Uganda-specific advice.`;
+    const contents = chatHistory.map((m,i) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: i===0 && m.role==='user' ? `${systemPrompt}\n\nUser: ${m.content}` : m.content }]
+    }));
 
     try {
-      if (!apiKey) {
-        removeTypingIndicator();
-        addChatMessage("🔑 **API key not set.**\n\nPlease paste your Anthropic API key in the yellow bar at the top of this chat to activate the AI Agent.\n\nGet a free key at **console.anthropic.com**", true);
-        isTyping = false;
-        chatHistory.pop();
-        document.getElementById('api-key-banner').style.display = 'flex';
-        setTimeout(() => document.getElementById('api-key-input').focus(), 100);
-        return;
-      }
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: systemContext,
-          messages: chatHistory
-        })
-      });
-
-      const data = await response.json();
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ contents, generationConfig:{ maxOutputTokens:900, temperature:0.75 } }) }
+      );
+      const data = await res.json();
       if (data.error) {
         removeTypingIndicator();
-        const errMsg = data.error.type === 'authentication_error'
-          ? "🔑 **Invalid API key.** Please check your key and save it again in the yellow bar above."
-          : `⚠️ API error: ${data.error.message}`;
-        addChatMessage(errMsg, true);
-        chatHistory.pop();
-        isTyping = false;
-        return;
+        addChatMessage(`🔑 **Gemini error:** ${data.error.message}\n\nCheck your key in ☰ sidebar.`, true);
+        chatHistory.pop(); isTyping = false; return;
       }
-      const reply = data.content && data.content[0] && data.content[0].text
-        ? data.content[0].text
-        : "Sorry, I had trouble processing your request. Please try again.";
-
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, couldn't process that. Try again.";
       chatHistory.push({ role:'assistant', content: reply });
+      removeTypingIndicator(); addChatMessage(reply, true);
+    } catch(err) {
       removeTypingIndicator();
-      addChatMessage(reply, true);
-    } catch (err) {
-      removeTypingIndicator();
-      addChatMessage("⚠️ Connection issue. Please check your internet and try again.", true);
+      addChatMessage("⚠️ Connection issue. Check your internet and try again.", true);
       chatHistory.pop();
     }
-
     isTyping = false;
   }
-
   // ============================================================
   // SIMULATE SMS — MULTI-SCENARIO
   // ============================================================
@@ -2420,7 +2377,10 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
     document.getElementById('sidebar').style.right = '0';
     document.getElementById('sidebar-overlay').style.display = 'block';
     const ki = document.getElementById('sidebar-api-key');
-    if (ki) ki.value = localStorage.getItem('yg_api_key') || '';
+    if (ki) ki.value = localStorage.getItem('yg_gemini_key') || '';
+    const ks = document.getElementById('sidebar-key-status');
+    if (ks) ks.textContent = localStorage.getItem('yg_gemini_key') ? '✅ Key saved and active' : 'No key saved yet';
+    if (ks) ks.style.color = localStorage.getItem('yg_gemini_key') ? '#22c55e' : '#6b7280';
   }
   function closeSidebar() {
     document.getElementById('sidebar').style.right = '-320px';
@@ -2428,9 +2388,20 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
   }
   function saveSidebarKey() {
     const val = document.getElementById('sidebar-api-key').value.trim();
-    if (val && !val.startsWith('sk-ant-')) { showToast('⚠️ Key must start with sk-ant-'); return; }
-    if (val) { localStorage.setItem('yg_api_key', val); apiKey = val; showToast('✅ API key saved — reloading AI features...'); recsLoaded = false; setTimeout(populateRecommendations, 500); }
-    else { localStorage.removeItem('yg_api_key'); apiKey = ''; showToast('🔑 API key cleared'); }
+    if (val && val.length < 10) { showToast('⚠️ Key looks too short — check it'); return; }
+    if (val) {
+      localStorage.setItem('yg_gemini_key', val);
+      apiKey = val;
+      showToast('✅ Gemini key saved — AI features active!');
+      recsLoaded = false;
+      setTimeout(populateRecommendations, 500);
+      const banner = document.getElementById('api-key-banner');
+      if (banner) banner.style.display = 'none';
+    } else {
+      localStorage.removeItem('yg_gemini_key');
+      apiKey = '';
+      showToast('🔑 Gemini key cleared');
+    }
     closeSidebar();
   }
 
@@ -2472,6 +2443,9 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
     const savedTheme = localStorage.getItem('yg_theme');
     if (savedTheme === 'light') applyTheme(false);
 
+    // Sync apiKey from storage on load
+    apiKey = localStorage.getItem('yg_gemini_key') || '';
+
     // Update sidebar user info from session
     try {
       const session = JSON.parse(localStorage.getItem('yg_session_v1'));
@@ -2505,8 +2479,8 @@ Be concise but helpful. Use emoji sparingly. Format responses clearly. Respond i
     if (firstTab) { firstTab.style.color='#34d399'; firstTab.style.background='rgba(16,185,129,0.12)'; firstTab.classList.add('tab-active'); }
     handleScrollReveal();
     setTimeout(handleScrollReveal, 300);
-    setTimeout(fetchLiveMarketPrices, 1000);
-    console.log('✅ YieldGuard AI v6.0 — Sidebar, themes, persistent farmers, live AI!');
+    setTimeout(fetchLiveMarketPrices, 1200);
+    console.log('✅ YieldGuard AI v7.0 — Gemini Free API, sidebar, dark/light mode, persistent farmers!');
   });
 
   window.addEventListener('scroll', handleScrollReveal);
