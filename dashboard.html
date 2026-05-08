@@ -1800,42 +1800,55 @@ Return ONLY a JSON array, no markdown, no extra text:
   // GEMINI AI — Core caller with model fallback
   // ============================================================
   const GEMINI_MODELS = [
+    'gemini-2.0-flash',
     'gemini-2.0-flash-exp',
+    'gemini-1.5-flash',
     'gemini-1.5-flash-latest',
-    'gemini-1.5-pro-latest',
+    'gemini-1.5-pro',
     'gemini-1.0-pro',
   ];
+
+  // Try both v1 and v1beta for each model
+  const GEMINI_VERSIONS = ['v1', 'v1beta'];
 
   async function callGemini(prompt, maxTokens = 600) {
     const ak = localStorage.getItem('yg_gemini_key') || '';
     if (!ak) throw new Error('NO_KEY');
-    for (const model of GEMINI_MODELS) {
-      try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${ak}`,
-          {
+    let lastErr = '';
+    for (const ver of GEMINI_VERSIONS) {
+      for (const model of GEMINI_MODELS) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/${ver}/models/${model}:generateContent?key=${ak}`;
+          const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{ role: 'user', parts: [{ text: prompt }] }],
               generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 }
             })
+          });
+          const data = await res.json();
+          if (data.error) {
+            const msg = data.error.message || '';
+            lastErr = msg;
+            // Skip to next model if not found
+            if (msg.includes('not found') || msg.includes('not supported') || msg.includes('deprecated') || msg.includes('404')) continue;
+            // Hard stop for auth/quota errors
+            throw new Error(msg);
           }
-        );
-        const data = await res.json();
-        if (data.error) {
-          const msg = data.error.message || '';
-          if (msg.includes('not found') || msg.includes('not supported') || msg.includes('deprecated')) continue;
-          throw new Error(msg);
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            localStorage.setItem('yg_gemini_model', `${ver}/${model}`);
+            return text;
+          }
+        } catch(e) {
+          lastErr = e.message || '';
+          if (lastErr.includes('not found') || lastErr.includes('not supported') || lastErr.includes('404')) continue;
+          throw e;
         }
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) { localStorage.setItem('yg_gemini_model', model); return text; }
-      } catch(e) {
-        if (e.message.includes('not found') || e.message.includes('not supported')) continue;
-        throw e;
       }
     }
-    throw new Error('No working Gemini model found. Check your API key at aistudio.google.com');
+    throw new Error(lastErr || 'All Gemini models unavailable');
   }
 
   // ============================================================
@@ -1875,7 +1888,7 @@ Return ONLY a JSON array, no markdown, no extra text:
       try {
         const res = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${ak}`,
-          { method:'POST', headers:{'Content-Type':'application/json'},
+          { method:'POST', headers:{'Content-Type':'application/json','x-goog-api-client':'genai-js/0.21.0'},
             body: JSON.stringify({ contents, generationConfig:{ maxOutputTokens:800, temperature:0.75 } }) }
         );
         const data = await res.json();
