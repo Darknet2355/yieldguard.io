@@ -587,6 +587,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
             <div class="font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-400"></i> Market Prices</div>
             <div class="crop-tabs" id="crop-tabs"></div>
+            <button onclick="livePrices={};fetchLiveMarketPrices()" title="Fetch live AI market prices" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);color:#34d399;padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap" onmouseover="this.style.background='rgba(16,185,129,0.2)'" onmouseout="this.style.background='rgba(16,185,129,0.1)'"><i class="fa-solid fa-bolt"></i> Live Prices</button>
           </div>
           <canvas id="priceChart" height="160"></canvas>
           <!-- PRICE SUMMARY -->
@@ -1550,7 +1551,35 @@
     });
   }
 
-  async function populateRecommendations() {
+  function showStaticRecsOnLoad() {
+    const container = document.getElementById('recommendations');
+    if (!container) return;
+    const month = new Date().getMonth();
+    const isRainy = (month >= 2 && month <= 4) || (month >= 8 && month <= 10);
+    const recs = isRainy ? [
+      { emoji:'🌧️', title:'Rain Season — Dry Your Harvest', text:'Move harvested maize and beans into dry storage now. Moisture causes aflatoxin within 48hrs.', urgent:true },
+      { emoji:'🌱', title:'Ideal Planting Window Open', text:'Good time to plant maize, beans and cassava. Ensure soil has enough moisture before sowing.', urgent:false },
+      { emoji:'🔬', title:'Blight Risk Elevated', text:'Humid conditions favour potato and tomato blight. Apply copper fungicide as a preventive measure.', urgent:true },
+      { emoji:'📦', title:'Sell Before Peak Rains', text:'Prices typically rise 10–15% post-rain season. Sell perishables early to avoid losses.', urgent:false },
+    ] : [
+      { emoji:'☀️', title:'Dry Season Drying Window', text:'Low humidity this week — ideal for sun-drying maize, sorghum and groundnuts. Use today.', urgent:false },
+      { emoji:'💧', title:'Irrigation Advisory', text:'Dry spell conditions. Irrigate in the morning only. Mulch around cassava and sweet potato beds.', urgent:true },
+      { emoji:'📈', title:'Coffee Market Peak', text:'Coffee prices are strong in dry season. Good time for farmers to sell Grade A stock now.', urgent:false },
+      { emoji:'🐛', title:'Stalk Borer Watch', text:'Dry conditions increase stalk borer pressure in maize. Scout fields weekly and apply Bt spray.', urgent:true },
+    ];
+    container.innerHTML = `
+      <div style="font-size:.72rem;color:#4a7c59;background:rgba(16,185,129,0.06);border-radius:10px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <i class="fa-solid fa-circle-info"></i>
+        Smart seasonal recommendations. Click <b style="color:#fbbf24">↻</b> above for live AI analysis.
+      </div>
+      ${recs.map(r=>`<div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;border-left:3px solid ${r.urgent?'#ef4444':'rgba(255,255,255,0.08)'}">
+        <div style="font-size:1.4rem">${r.emoji}</div>
+        <div><div style="font-weight:700;font-size:.875rem">${r.title}</div><div style="font-size:.75rem;color:#9ca3af;margin-top:3px;line-height:1.5">${r.text}</div></div>
+      </div>`).join('')}
+    `;
+  }
+
+    async function populateRecommendations() {
     const container = document.getElementById('recommendations');
     if (!container) return;
 
@@ -2010,7 +2039,7 @@ Return ONLY a JSON array, no markdown, no extra text:
     });
     if (tabIndex===1) { populateFarmers(); buildFilterChips(); }
     if (tabIndex===2) { populateRiskMap(); populateRiskFactors(); }
-    if (tabIndex===3) { populateReportsTable(); buildGestationTab(); fetchLiveMarketPrices(); }
+    if (tabIndex===3) { populateReportsTable(); buildGestationTab(); }
     if (tabIndex===4) { buildSMSInbox(); }
     window.scrollTo({ top:0, behavior:'smooth' });
   }
@@ -2492,9 +2521,7 @@ Return ONLY a JSON array, no markdown, no extra text:
     if (val) {
       localStorage.setItem('yg_gemini_key', val);
       apiKey = val;
-      showToast('✅ Gemini key saved — AI features active!');
-      recsLoaded = false;
-      setTimeout(populateRecommendations, 500);
+      showToast('✅ Gemini key saved! Click ↻ on dashboard for live AI recs.');
       const banner = document.getElementById('api-key-banner');
       if (banner) banner.style.display = 'none';
     } else {
@@ -2573,14 +2600,15 @@ Return ONLY a JSON array, no markdown, no extra text:
     buildCropDistribution();
     generateNDVI('Mubende');
     updateSMSStats();
-    populateRecommendations(); // loads static first, then AI if key present
+    showStaticRecsOnLoad(); // show smart static recs instantly, no API call
     // Set first tab as active in nav
     const firstTab = document.querySelectorAll('.tab-link')[0];
     if (firstTab) { firstTab.style.color='#34d399'; firstTab.style.background='rgba(16,185,129,0.12)'; firstTab.classList.add('tab-active'); }
     handleScrollReveal();
     setTimeout(handleScrollReveal, 300);
     // Delay market price fetch by 5s to avoid rate limits on first load
-    setTimeout(fetchLiveMarketPrices, 5000);
+    // Market prices load on demand only (saves API quota)
+    updatePriceChart(); buildPriceSummaryCards();
     console.log('✅ YieldGuard AI v7.1 — Gemini 1.5-flash-latest, rate-limit safe!');
   });
 
