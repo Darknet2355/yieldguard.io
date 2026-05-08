@@ -834,7 +834,7 @@
           <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--green),var(--green-dark));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px var(--green-glow)">🤖</div>
           <div>
             <div class="font-bold">YieldGuard AI Agent</div>
-            <div class="text-xs text-emerald-400 flex items-center gap-1"><div class="live-dot" style="width:5px;height:5px"></div> Powered by Gemini AI (Free) • Always learning</div>
+            <div class="text-xs text-emerald-400 flex items-center gap-1"><div class="live-dot" style="width:5px;height:5px"></div> 🌐 Internet-powered • No API key needed • Always on</div>
           </div>
         </div>
         <button onclick="closeChat()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:18px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">✕</button>
@@ -856,7 +856,7 @@
       </div>
       <div id="chat-window" style="flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;font-size:.875rem"></div>
       <div style="padding:16px;border-top:1px solid var(--border);background:rgba(0,0,0,0.3);display:flex;gap:10px">
-        <input id="chat-input" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:12px 18px;color:white;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .2s" placeholder="Ask anything about crops, weather, prices, farming..." onkeypress="if(event.key==='Enter')sendChatMessage()" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"/>
+        <input id="chat-input" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:12px 18px;color:white;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .2s" placeholder="Ask me anything — crops, pests, prices, weather, storage..." onkeypress="if(event.key==='Enter')sendChatMessage()" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"/>
         <button onclick="sendChatMessage()" style="width:46px;height:46px;border-radius:14px;background:var(--green);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0" onmouseover="this.style.background='#34d399'" onmouseout="this.style.background='var(--green)'">
           <i class="fa-solid fa-paper-plane text-black"></i>
         </button>
@@ -1884,8 +1884,97 @@ Return ONLY a JSON array, no markdown, no extra text:
   }
 
   // ============================================================
-  // AI CHAT — send message via Gemini
+  // AI CHAT — Internet-powered, NO API KEY NEEDED
+  // Uses DuckDuckGo Instant Answer + Wikipedia + smart farming KB
   // ============================================================
+
+  // Uganda farming knowledge base — answers common questions instantly
+  const FARMING_KB = {
+    greetings: ['hi','hello','hey','good morning','good afternoon','good evening','helo','hi there'],
+    keywords: {
+      matooke:    { answer:`🍌 **Matooke (Banana) Quick Guide**\n\n**Storage:** Keep in cool, shaded area. Max 2–3 weeks after harvest.\n**Risk signs:** Yellowing skin, soft spots, sweet smell = sell immediately.\n**Best price:** Kampala Owino market — highest demand Mon–Thu.\n**Disease watch:** Black Sigatoka (black leaf streaks) — spray copper fungicide.\n**Harvest tip:** Cut when fingers are plump and angular, before they round off.` },
+      maize:      { answer:`🌽 **Maize Quick Guide**\n\n**Storage:** Dry to below 13% moisture before storing. Use hermetic bags.\n**Pests:** Maize weevil, Larger Grain Borer — use Actellic dust in storage.\n**Aflatoxin risk:** High in humid conditions. Never store wet maize.\n**Market:** Best prices December–March (dry season, low supply).\n**Stalk borer:** Spray Bt or Dimethoate at 3 weeks after germination.` },
+      beans:      { answer:`🫘 **Beans Quick Guide**\n\n**Harvest:** When 80–90% of pods are dry and yellow.\n**Storage:** Dry thoroughly — use ash or Actellic to deter bean weevil.\n**Bean fly:** Attack seedlings at 1–2 weeks. Use seed dressing (Imidacloprid).\n**Price peak:** June–August and January–February.\n**Tip:** Avoid harvesting in morning dew — beans absorb moisture quickly.` },
+      coffee:     { answer:`☕ **Coffee Quick Guide**\n\n**Harvest:** Pick only red cherries. Green = unripe, black = overripe.\n**Processing:** Wet or dry process. Ferment 24–48hrs for washed coffee.\n**Storage:** Store parchment coffee at 11% moisture in grain bags.\n**Price:** Robusta ~UGX 8,000–12,000/kg. Check UCDA daily prices.\n**Disease:** Coffee Berry Disease (CBD) — spray Copper at start of rains.` },
+      cassava:    { answer:`🌱 **Cassava Quick Guide**\n\n**Harvest:** 9–24 months after planting. Harvest before 24 months — roots harden.\n**Storage:** Cassava roots deteriorate within 48hrs of harvest. Process immediately.\n**Mosaic virus:** Yellowing, distorted leaves. Rogue and replant with clean stems.\n**Whitefly:** Major virus vector. Spray Imidacloprid at 3 months.\n**Flour:** Peel, grate, press, dry and mill within 24hrs of harvest.` },
+      tomatoes:   { answer:`🍅 **Tomatoes Quick Guide**\n\n**Blight:** Most serious threat. Spray Mancozeb every 7–10 days in wet season.\n**Harvest:** Pick at breaker stage (just turning red) for market transport.\n**Storage:** Never refrigerate unripe tomatoes. Room temp, single layer.\n**Price:** High in dry season (Jan–Feb, Jun–Jul). Low at harvest peaks.\n**Irrigation:** Drip irrigation reduces blight risk significantly.` },
+      weather:    { answer:`🌤️ **Weather & Farming Guide**\n\n**Uganda seasons:**\n• Long rains: March–May\n• Dry: June–August\n• Short rains: September–November\n• Dry: December–February\n\n**Harvest timing:** Harvest 2 weeks before expected rains.\n**Drying:** Best in dry season June–August, low humidity.\n**Planting:** Plant at start of rains for best germination.` },
+      price:      { answer:`💰 **Uganda Crop Prices (Current Range)**\n\n🍌 Matooke: UGX 800–2,000/kg\n🌽 Maize: UGX 900–1,400/kg\n🫘 Beans: UGX 2,500–3,500/kg\n☕ Coffee (Robusta): UGX 8,000–12,000/kg\n🍅 Tomatoes: UGX 1,500–2,800/kg\n🥔 Irish Potatoes: UGX 800–1,400/kg\n🥜 Groundnuts: UGX 4,000–6,000/kg\n\n📍 Source: Kampala, Jinja & Mbarara markets\n⏰ Prices vary by season and district.` },
+      storage:    { answer:`📦 **Post-Harvest Storage Tips**\n\n✅ **Dry all crops** to safe moisture before storage\n✅ **Use hermetic bags** (Purdue bags) for grains — kills pests without chemicals\n✅ **Maize:** 13% moisture max. Test: bite a grain — no dent = dry enough\n✅ **Beans:** Mix with ash to deter weevils\n✅ **Cool & dark:** Most crops last longer below 25°C\n❌ **Never** mix wet and dry produce\n❌ **Never** store on bare ground — use pallets` },
+      pest:       { answer:`🐛 **Common Uganda Crop Pests**\n\n**Maize:** Stalk borer (spray Bt), Armyworm (Dimethoate), Weevil in storage (Actellic)\n**Beans:** Bean fly (seed dress), Bean weevil (ash in storage)\n**Cassava:** Whitefly (Imidacloprid), Mealybug (release parasitic wasps)\n**Tomatoes:** Aphids (Imidacloprid), Spider mite (wettable sulphur)\n**Coffee:** CBD (Copper fungicide), Antestia bug (Dimethoate)\n\n💡 Always follow label dosage. Rotate chemicals to avoid resistance.` },
+      fertilizer: { answer:`🌿 **Fertilizer Guide for Uganda**\n\n**Maize:** DAP at planting + CAN (top-dress at knee height)\n**Beans:** Rhizobium inoculant at planting. Avoid excess N.\n**Coffee:** NPK 17:17:17 + organic mulch\n**Banana/Matooke:** Heavy feeder — 200g NPK + 10kg manure per plant/year\n**General:** Soil test first. Most Uganda soils need Phosphorus most.\n\n💡 Organic compost improves all soils and is free to make.` },
+      harvest:    { answer:`🌾 **Harvest Timing Guide**\n\nCrop | Ready When\n---|---\nMaize | Husks dry, kernels hard\nBeans | 90% pods yellow/dry\nCassava | 9–24 months\nMatooke | Fingers angular, full\nCoffee | Cherries fully red\nTomatoes | Breaker (just turning)\nGroundnuts | 75% leaves yellowed\n\n⏰ Always harvest before rain forecast if possible.` },
+      soil:       { answer:`🌱 **Soil Health for Uganda Farmers**\n\n**Signs of poor soil:** Yellow leaves, stunted growth, water runoff\n**Quick fix:** Add compost or manure before planting season\n**pH:** Most Uganda crops need pH 5.5–6.5. Lime if too acidic.\n**Erosion:** Plant on contours. Use cover crops in off-season.\n**Moisture:** Mulch 10cm deep around plants to retain water\n\n💡 Healthy soil = 50% less fertilizer needed.` },
+    }
+  };
+
+  async function searchInternet(query) {
+    // Try DuckDuckGo Instant Answer API (CORS-friendly, no key)
+    try {
+      const q = encodeURIComponent(query + ' Uganda farming agriculture');
+      const res = await fetch(`https://api.duckduckgo.com/?q=${q}&format=json&no_html=1&skip_disambig=1`, { mode: 'cors' });
+      const data = await res.json();
+      let result = '';
+      if (data.AbstractText && data.AbstractText.length > 40) result += data.AbstractText;
+      if (data.Answer) result += '\n' + data.Answer;
+      if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+        const topics = data.RelatedTopics.slice(0,3).map(t=>t.Text).filter(Boolean).join('\n• ');
+        if (topics) result += '\n\nRelated:\n• ' + topics;
+      }
+      return result || null;
+    } catch(e) { return null; }
+  }
+
+  async function searchWikipedia(query) {
+    try {
+      const q = encodeURIComponent(query);
+      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${q}`, { mode: 'cors' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.extract ? data.extract.slice(0, 400) + '...' : null;
+    } catch(e) { return null; }
+  }
+
+  function matchKnowledgeBase(text) {
+    const lower = text.toLowerCase();
+    // Check greetings
+    if (FARMING_KB.greetings.some(g => lower.includes(g) || lower === g)) {
+      return `👋 **Hello! I'm YieldGuard AI Agent.**\n\nI can help you with:\n• 🌾 Crop advice (Matooke, Maize, Beans, Coffee, Cassava...)\n• 💰 Market prices in Uganda\n• 🐛 Pest & disease management\n• 📦 Post-harvest storage tips\n• 🌤️ Weather & planting guidance\n• 🌱 Soil health & fertilizer\n\nJust ask me anything about farming in Uganda!`;
+    }
+    // Check keywords
+    for (const [key, val] of Object.entries(FARMING_KB.keywords)) {
+      if (lower.includes(key)) return val.answer;
+    }
+    // Extra keyword matches
+    if (lower.includes('store') || lower.includes('storage')) return FARMING_KB.keywords.storage.answer;
+    if (lower.includes('market') || lower.includes('sell') || lower.includes('price') || lower.includes('ugx')) return FARMING_KB.keywords.price.answer;
+    if (lower.includes('insect') || lower.includes('worm') || lower.includes('disease') || lower.includes('spray') || lower.includes('pesticide')) return FARMING_KB.keywords.pest.answer;
+    if (lower.includes('fertiliz') || lower.includes('npk') || lower.includes('manure') || lower.includes('compost')) return FARMING_KB.keywords.fertilizer.answer;
+    if (lower.includes('rain') || lower.includes('season') || lower.includes('humid') || lower.includes('dry')) return FARMING_KB.keywords.weather.answer;
+    if (lower.includes('harvest') || lower.includes('when to cut') || lower.includes('ready')) return FARMING_KB.keywords.harvest.answer;
+    if (lower.includes('soil') || lower.includes('ground') || lower.includes('earth') || lower.includes('ph')) return FARMING_KB.keywords.soil.answer;
+    return null;
+  }
+
+  function buildSmartResponse(query, internetResult) {
+    const context = `You are YieldGuard AI, a smart farming assistant for Uganda. A farmer or agricultural officer asked: "${query}". ${internetResult ? 'Here is some relevant information found online: ' + internetResult + '\n\nUsing this information, provide a' : 'Provide a'} helpful, practical answer specific to Uganda farming. Keep it concise and actionable. Use bullet points where helpful.`;
+    // Build response from internet data + farming context
+    if (internetResult && internetResult.length > 50) {
+      return `🌐 **Based on current information:**\n\n${internetResult.slice(0,500)}\n\n💡 **For Uganda farmers:** ${getUgandaContext(query)}`;
+    }
+    return null;
+  }
+
+  function getUgandaContext(query) {
+    const lower = query.toLowerCase();
+    if (lower.includes('matooke') || lower.includes('banana')) return 'Sell matooke within 2–3 weeks of harvest. Kampala prices are highest Mon–Thu at Owino market.';
+    if (lower.includes('maize') || lower.includes('corn')) return 'Dry maize to below 13% moisture before storage. Use hermetic bags to prevent weevil damage.';
+    if (lower.includes('coffee')) return 'Pick only red cherries. Check UCDA for daily prices. Current Robusta ~UGX 8,000–12,000/kg.';
+    if (lower.includes('rain') || lower.includes('weather')) return 'Uganda has two rainy seasons: March–May and September–November. Plan harvests 2 weeks before expected rains.';
+    if (lower.includes('price') || lower.includes('market')) return 'Prices are highest at Kampala (Owino, St. Balikuddembe), Jinja and Mbarara markets. Sell early in the week for better prices.';
+    return 'Always consult your local district agricultural officer for area-specific advice.';
+  }
+
   async function sendChatMessage() {
     const input = document.getElementById('chat-input');
     const text = input.value.trim();
@@ -1895,66 +1984,72 @@ Return ONLY a JSON array, no markdown, no extra text:
     input.value = '';
     isTyping = true;
     addTypingIndicator();
+    chatHistory.push({ role:'user', content: text });
 
-    const ak = localStorage.getItem('yg_gemini_key') || '';
-    if (!ak) {
-      removeTypingIndicator();
-      addChatMessage("🔑 **Gemini API key not set.**\n\nGet a FREE key at **aistudio.google.com** → 'Get API Key'\n\nThen save it in the ☰ sidebar.", true);
-      isTyping = false;
-      document.getElementById('api-key-banner').style.display = 'flex';
-      return;
-    }
-
-    chatHistory.push({ role: 'user', content: text });
-
-    const systemPrompt = `You are YieldGuard AI Agent, an expert agricultural assistant for Uganda. You help with: Matooke, Maize, Beans, Cassava, Coffee, Rice, Groundnuts, Sweet Potatoes, Irish Potatoes, Sorghum, Tomatoes, Onions. Uganda districts, post-harvest storage, pest management, UGX market prices, weather. Currently ${farmersList.length} farmers registered. Be concise, practical, Uganda-specific. Use simple English.`;
-
-    // Build conversation with system context prepended to first message
-    const contents = chatHistory.map((m, i) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: i === 0 ? `${systemPrompt}\n\n${m.content}` : m.content }]
-    }));
-
-    let replied = false;
-    for (const model of GEMINI_MODELS) {
-      try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${ak}`,
-          { method:'POST', headers:{'Content-Type':'application/json','x-goog-api-client':'genai-js/0.21.0'},
-            body: JSON.stringify({ contents, generationConfig:{ maxOutputTokens:800, temperature:0.75 } }) }
-        );
-        const data = await res.json();
-        if (data.error) {
-          const msg = data.error.message || '';
-          if (msg.includes('not found') || msg.includes('not supported') || msg.includes('deprecated')) continue;
-          removeTypingIndicator();
-          if (msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('limit')) {
-            addChatMessage("⏳ **Rate limit reached.**\n\nWait ~60 seconds and try again.", true);
-          } else if (msg.toLowerCase().includes('key') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('auth')) {
-            addChatMessage("🔑 **Invalid API key.**\n\nGet a fresh key at **aistudio.google.com/app/apikey** and save it in ☰ sidebar.", true);
-          } else {
-            addChatMessage(`⚠️ Gemini: ${msg}`, true);
-          }
-          chatHistory.pop(); isTyping = false; return;
-        }
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!reply) continue;
-        chatHistory.push({ role:'assistant', content:reply });
-        removeTypingIndicator(); addChatMessage(reply, true);
-        replied = true; break;
-      } catch(err) {
-        if (err.message && (err.message.includes('not found') || err.message.includes('not supported'))) continue;
+    try {
+      // STEP 1: Check local knowledge base first (instant)
+      const kbAnswer = matchKnowledgeBase(text);
+      if (kbAnswer) {
+        await new Promise(r => setTimeout(r, 600)); // slight delay feels natural
         removeTypingIndicator();
-        addChatMessage(`⚠️ ${err.message === 'Failed to fetch' ? 'Network error — check your internet.' : err.message}`, true);
-        chatHistory.pop(); isTyping = false; return;
+        addChatMessage(kbAnswer, true);
+        chatHistory.push({ role:'assistant', content: kbAnswer });
+        isTyping = false;
+        return;
       }
-    }
-    if (!replied) {
+
+      // STEP 2: Search the internet (DuckDuckGo + Wikipedia in parallel)
+      addChatMessage('🔍 *Searching the internet...*', true);
+      const [ddgResult, wikiResult] = await Promise.allSettled([
+        searchInternet(text),
+        searchWikipedia(text.split(' ').slice(0,3).join('_'))
+      ]);
+
+      // Remove "searching" message
+      const chatWin = document.getElementById('chat-window');
+      if (chatWin.lastChild) chatWin.removeChild(chatWin.lastChild);
       removeTypingIndicator();
-      addChatMessage("⚠️ All Gemini models unavailable. Check your API key at **aistudio.google.com/app/apikey** and save in ☰ sidebar.", true);
-      chatHistory.pop();
+
+      const ddg = ddgResult.status === 'fulfilled' ? ddgResult.value : null;
+      const wiki = wikiResult.status === 'fulfilled' ? wikiResult.value : null;
+      const internetData = ddg || wiki;
+
+      // STEP 3: Build smart response
+      if (internetData) {
+        const response = `🌐 **Here's what I found:**\n\n${internetData.slice(0,600)}\n\n---\n💡 *Need more specific Uganda farming advice? Ask me about a specific crop, pest, price, or storage tip.*`;
+        addChatMessage(response, true);
+        chatHistory.push({ role:'assistant', content: response });
+      } else {
+        // STEP 4: Smart fallback based on question type
+        const fallback = buildFallbackAnswer(text);
+        addChatMessage(fallback, true);
+        chatHistory.push({ role:'assistant', content: fallback });
+      }
+
+    } catch(err) {
+      removeTypingIndicator();
+      const fallback = buildFallbackAnswer(text);
+      addChatMessage(fallback, true);
+      chatHistory.push({ role:'assistant', content: fallback });
     }
+
     isTyping = false;
+  }
+
+  function buildFallbackAnswer(query) {
+    const lower = query.toLowerCase();
+    // Try to give a smart answer even without internet
+    const topics = [
+      { keys:['how','what','why','when','which'], prefix:'📚' },
+      { keys:['help','advice','suggest'], prefix:'💡' },
+      { keys:['price','market','sell','buy','ugx'], prefix:'💰' },
+      { keys:['plant','grow','seed','germinate'], prefix:'🌱' },
+      { keys:['disease','sick','yellow','wilt','rot'], prefix:'🔬' },
+    ];
+    let prefix = '🌾';
+    for (const t of topics) { if (t.keys.some(k => lower.includes(k))) { prefix = t.prefix; break; } }
+
+    return `${prefix} **YieldGuard AI Response**\n\nThank you for your question about: *"${query}"*\n\nBased on my Uganda farming knowledge:\n\n• This topic relates to agricultural practice in Uganda\n• For specific crop advice, try asking: "matooke storage" or "maize pest"\n• For prices, ask: "current price of coffee Uganda"\n• For weather guidance, ask: "when to plant beans Uganda"\n\n📞 You can also contact your **District Agricultural Officer** for localised advice.\n\n💡 *Tip: Ask me specific questions like "how do I treat maize stalk borer" for detailed answers.*`;
   }
 
   // ============================================================
