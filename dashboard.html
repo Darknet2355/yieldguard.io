@@ -2544,65 +2544,81 @@ Just type your question naturally — I understand English and can help with any
     addChatMessage(text, false);
     input.value = '';
     isTyping = true;
+    chatHistory.push({ role:'user', content: text });
 
-    // Show searching indicator immediately
+    // ── STEP 1: KB always fires first — if it matches, return immediately, no internet needed ──
+    const kbAnswer = matchKnowledgeBase(text);
+    if (kbAnswer) {
+      addTypingIndicator();
+      await new Promise(r => setTimeout(r, 500));
+      removeTypingIndicator();
+      const reply = kbAnswer;
+      addChatMessage(reply, true);
+      chatHistory.push({ role:'assistant', content: reply });
+      isTyping = false;
+      return;
+    }
+
+    // ── STEP 2: Not in KB — search Wikipedia for genuine research questions ──
+    // Only search if the question looks like a real research query (more than 2 words, not a greeting)
+    const wordCount = text.trim().split(/\s+/).length;
+    const looksResearchable = wordCount >= 2 || text.length > 15;
+
     const searching = document.createElement('div');
     searching.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:.78rem;color:#4a7c59;padding:10px 14px;background:rgba(16,185,129,0.06);border-radius:12px';
-    searching.innerHTML = '<i class="fa-solid fa-globe fa-spin"></i> Searching online + local knowledge...';
+    searching.innerHTML = '<i class="fa-solid fa-globe fa-spin"></i> Searching online...';
     document.getElementById('chat-window').appendChild(searching);
     document.getElementById('chat-window').scrollTop = 99999;
 
-    chatHistory.push({ role:'user', content: text });
-
-    // ── Run KB lookup AND internet search IN PARALLEL ──────────
-    const kbAnswer = matchKnowledgeBase(text);
-
     let internetResult = null;
-    try {
-      // Wikipedia search API — always try regardless of KB match
-      const r1 = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(text + ' agriculture farming Uganda')}&format=json&origin=*&srlimit=1`,
-        { mode:'cors', signal: AbortSignal.timeout(4000) }
-      );
-      if (r1.ok) {
-        const d1 = await r1.json();
-        const title = d1?.query?.search?.[0]?.title;
-        if (title) {
-          const r2 = await fetch(
-            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
-            { mode:'cors', signal: AbortSignal.timeout(4000) }
-          );
-          if (r2.ok) {
-            const d2 = await r2.json();
-            if (d2.extract && d2.extract.length > 60 && !d2.extract.includes('may refer to')) {
-              internetResult = {
-                text: d2.extract.slice(0, 500),
-                title,
-                url: d2.content_urls?.desktop?.page
-              };
+    if (looksResearchable) {
+      try {
+        // Search Wikipedia with farming context to get relevant results
+        const searchTerm = text + ' farming agriculture crop';
+        const r1 = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*&srlimit=3`,
+          { mode:'cors', signal: AbortSignal.timeout(4000) }
+        );
+        if (r1.ok) {
+          const d1 = await r1.json();
+          const results = d1?.query?.search || [];
+          // Pick the most relevant result — must contain farming-related words
+          const farmingWords = ['farm','crop','plant','soil','pest','disease','harvest','seed','agriculture','grain','fruit','vegetable','banana','maize','coffee','bean','cassava'];
+          let bestTitle = null;
+          for (const result of results) {
+            const snippet = (result.title + ' ' + result.snippet).toLowerCase();
+            if (farmingWords.some(w => snippet.includes(w))) {
+              bestTitle = result.title;
+              break;
+            }
+          }
+          if (bestTitle) {
+            const r2 = await fetch(
+              `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle)}`,
+              { mode:'cors', signal: AbortSignal.timeout(4000) }
+            );
+            if (r2.ok) {
+              const d2 = await r2.json();
+              if (d2.extract && d2.extract.length > 80 && !d2.extract.includes('may refer to')) {
+                internetResult = {
+                  text: d2.extract.slice(0, 500),
+                  title: bestTitle,
+                  url: d2.content_urls?.desktop?.page
+                };
+              }
             }
           }
         }
-      }
-    } catch(e) { /* timeout or no internet */ }
+      } catch(e) { /* timeout or offline */ }
+    }
 
     searching.remove();
-    removeTypingIndicator();
 
-    // ── Build combined response ─────────────────────────────────
+    // ── STEP 3: Build response ──────────────────────────────────
     let reply = '';
-
-    if (internetResult && kbAnswer) {
-      // BEST: both online + offline
-      reply = `🌐 **Online (Wikipedia — ${internetResult.title}):**\n${internetResult.text}${internetResult.url ? `\n🔗 [Full article](${internetResult.url})` : ''}\n\n---\n\n${kbAnswer}`;
-    } else if (internetResult) {
-      // Online only
-      reply = `🌐 **Online result (${internetResult.title}):**\n\n${internetResult.text}${internetResult.url ? `\n\n🔗 [Full article](${internetResult.url})` : ''}\n\n---\n🌾 **Uganda farming tip:** ${getUgandaContext(text)}`;
-    } else if (kbAnswer) {
-      // Offline KB only
-      reply = `📚 **YieldGuard Knowledge Base:**\n\n${kbAnswer}\n\n---\n⚡ *Live internet search unavailable — showing built-in knowledge.*`;
+    if (internetResult) {
+      reply = `🌐 **Online result — ${internetResult.title}:**\n\n${internetResult.text}${internetResult.url ? `\n\n🔗 [Read more on Wikipedia](${internetResult.url})` : ''}\n\n---\n🌾 **Uganda farming note:** ${getUgandaContext(text)}`;
     } else {
-      // Nothing matched — give guided fallback
       reply = buildFallbackAnswer(text);
     }
 
