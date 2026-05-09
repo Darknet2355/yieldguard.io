@@ -1908,71 +1908,632 @@ Return ONLY a JSON array, no markdown, no extra text:
     }
   };
 
-  async function searchInternet(query) {
-    // Try DuckDuckGo Instant Answer API (CORS-friendly, no key)
+  async function searchWikipedia(query) {
+    // Wikipedia REST API — genuinely CORS-friendly, no key needed
     try {
-      const q = encodeURIComponent(query + ' Uganda farming agriculture');
-      const res = await fetch(`https://api.duckduckgo.com/?q=${q}&format=json&no_html=1&skip_disambig=1`, { mode: 'cors' });
-      const data = await res.json();
-      let result = '';
-      if (data.AbstractText && data.AbstractText.length > 40) result += data.AbstractText;
-      if (data.Answer) result += '\n' + data.Answer;
-      if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-        const topics = data.RelatedTopics.slice(0,3).map(t=>t.Text).filter(Boolean).join('\n• ');
-        if (topics) result += '\n\nRelated:\n• ' + topics;
+      // First try exact title
+      const titleQ = encodeURIComponent(query.trim().replace(/\s+/g,'_'));
+      const r1 = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${titleQ}`, { mode:'cors' });
+      if (r1.ok) {
+        const d = await r1.json();
+        if (d.extract && d.extract.length > 60) return { text: d.extract.slice(0,500), source:'Wikipedia', url: d.content_urls?.desktop?.page };
       }
-      return result || null;
-    } catch(e) { return null; }
+      // Fallback: search endpoint
+      const searchQ = encodeURIComponent(query);
+      const r2 = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${searchQ}&format=json&origin=*&srlimit=1`, { mode:'cors' });
+      if (r2.ok) {
+        const d2 = await r2.json();
+        const title = d2?.query?.search?.[0]?.title;
+        if (title) {
+          const r3 = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, { mode:'cors' });
+          if (r3.ok) {
+            const d3 = await r3.json();
+            if (d3.extract && d3.extract.length > 60) return { text: d3.extract.slice(0,500), source:'Wikipedia', url: d3.content_urls?.desktop?.page };
+          }
+        }
+      }
+    } catch(e) {}
+    return null;
   }
 
-  async function searchWikipedia(query) {
+  async function searchRestCountries(query) {
+    // For Uganda-specific climate/geography queries
+    if (!query.toLowerCase().includes('uganda')) return null;
     try {
-      const q = encodeURIComponent(query);
-      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${q}`, { mode: 'cors' });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.extract ? data.extract.slice(0, 400) + '...' : null;
-    } catch(e) { return null; }
+      const r = await fetch('https://restcountries.com/v3.1/name/uganda?fields=name,capital,region,subregion,population,area,timezones,languages', { mode:'cors' });
+      if (!r.ok) return null;
+      const d = await r.json();
+      if (d?.[0]) {
+        const c = d[0];
+        return { text:`Uganda: Capital ${c.capital?.[0]}, Population ${c.population?.toLocaleString()}, Area ${c.area?.toLocaleString()} km². Located in East Africa, sub-Saharan region. Tropical climate with two rainy seasons.`, source:'RestCountries' };
+      }
+    } catch(e) {}
+    return null;
   }
+
+  // ─── COMPREHENSIVE OFFLINE KNOWLEDGE BASE ───────────────────
+  const FULL_KB = {
+
+    greetings: ['hi','hello','hey','helo','hi there','good morning','good afternoon','good evening','howdy','greetings','sup','whats up','what\'s up','how are you','how r u'],
+
+    // Every question gets a thorough answer
+    qa: [
+      // MATOOKE
+      { keys:['matooke','banana','matoke','matooki','matoke'],
+        answer:`🍌 **Matooke (Plantain Banana) — Complete Guide**
+
+**Harvesting:**
+• Harvest when fingers are full, angular, and tightly packed — before they round off
+• Cut the bunch with a sharp knife, leave 30cm of stalk
+• Handle gently — bruises cause rapid ripening and loss
+
+**Storage:**
+• Keep in cool, shaded, well-ventilated area
+• Do NOT wrap tightly — needs airflow
+• Maximum 2–3 weeks after harvest before quality drops
+• High humidity (>80%) causes rotting — ventilate daily
+
+**When to sell:**
+• Sell if stored more than 15 days OR humidity is above 80%
+• Best prices: Kampala Owino & St. Balikuddembe markets
+• Market peaks: Monday–Thursday (weekends have lower demand)
+• Current price range: UGX 800–2,000/kg depending on size and ripeness
+
+**Diseases to watch:**
+• 🦠 **Black Sigatoka** — black/brown streaks on leaves. Spray copper fungicide
+• 🍌 **Banana Xanthomonas Wilt (BXW)** — internal rot, no cure. Uproot and burn infected plants
+• 🐛 **Banana weevil** — treat with Furadan at planting
+
+**Nutrition tip:** Matooke is high in resistant starch, potassium, and vitamin B6` },
+
+      // MAIZE
+      { keys:['maize','corn','posho','ugali'],
+        answer:`🌽 **Maize — Complete Guide**
+
+**Planting:**
+• Best planted at start of rains (March or September)
+• Spacing: 75cm between rows, 25–30cm within rows
+• Apply DAP at planting: 50kg/acre
+• Top-dress with CAN (50kg/acre) at knee height (4–5 weeks)
+
+**Pest management:**
+• 🐛 **Stalk borer:** Spray Bt (Bacillus thuringiensis) or Dimethoate at 3 weeks
+• 🪲 **Armyworm:** Use Emamectin or Chlorpyrifos. Act immediately when spotted
+• 🌽 **Smut:** Remove and burn galls before they burst
+
+**Harvesting:**
+• Harvest when husks are dry and kernels are hard (90–120 days)
+• Harvest before rains to avoid aflatoxin
+
+**Storage — CRITICAL:**
+• ⚠️ Dry to below 13% moisture BEFORE storage
+• Test: bite a grain — leaves no dent = safe to store
+• Use **hermetic bags** (Purdue Improved Crop Storage) — kills weevils without chemicals
+• Alternatively: mix with Actellic Super dust
+• **Aflatoxin warning:** Wet maize stored in humid conditions produces aflatoxin — toxic and unsellable
+
+**Market:**
+• Best prices: December–March (dry season, low supply)
+• Current range: UGX 900–1,400/kg` },
+
+      // BEANS
+      { keys:['beans','bean','njama','njaama','legume'],
+        answer:`🫘 **Beans — Complete Guide**
+
+**Planting:**
+• Plant at start of rains. Depth: 3–5cm, spacing: 40cm × 10cm
+• Inoculate seeds with Rhizobium before planting — fixes nitrogen, reduces fertilizer need
+• Avoid excess nitrogen fertilizer — causes leafy growth, fewer pods
+
+**Key pests:**
+• 🪲 **Bean fly:** Attacks at 1–2 weeks. Use seed dressing (Imidacloprid/Gaucho)
+• 🐛 **Pod borer:** Spray Deltamethrin at flowering
+• 🦟 **Aphids:** Spray Dimethoate. They spread Bean Common Mosaic Virus
+• **Angular Leaf Spot:** Brown angular spots. Spray Mancozeb every 10 days
+
+**Harvesting:**
+• Harvest when 80–90% of pods are yellow/dry
+• Harvest in the morning (afternoon pods may shatter)
+• Pull whole plants and dry in shade for 3–5 days
+
+**Storage:**
+• Dry well — moisture causes rapid weevil explosion
+• Mix with wood ash or dried chilli to deter bean weevil
+• Or use Actellic dust. Hermetic bags also excellent.
+
+**Market peaks:** June–August and January–February
+**Price range:** UGX 2,500–3,500/kg` },
+
+      // COFFEE
+      { keys:['coffee','robusta','arabica','cafe','kawa'],
+        answer:`☕ **Coffee — Complete Guide**
+
+**Uganda produces:**
+• **Robusta** (80% of Uganda's coffee) — grown below 1,500m altitude
+• **Arabica** — grown in highland areas (Elgon, Rwenzori, Mt. Muhavura)
+
+**Harvesting:**
+• Pick ONLY red/dark red cherries — green = unripe, black = overripe
+• Strip picking (all at once) reduces quality — selective picking is better
+• One tree produces ~2–3 kg cherries per season
+
+**Processing:**
+• **Wet (washed):** Pulp → ferment 24–48hrs → wash → dry on raised beds
+• **Dry (natural):** Dry whole cherry 3–4 weeks on raised beds
+
+**Storage:**
+• Store as parchment (not green bean) at 11% moisture
+• Use grain bags or jute sacks. Avoid plastic — traps moisture
+• Keep away from strong odours — coffee absorbs smells
+
+**Diseases:**
+• ☁️ **Coffee Berry Disease (CBD):** Black lesions on berries. Spray Copper-based fungicide at start of rains
+• 🍃 **Leaf Rust:** Orange pustules. Spray Triadimefon
+• 🐛 **Antestia bug:** Green/brown bugs. Spray Dimethoate
+
+**Market:**
+• Current Robusta: UGX 8,000–12,000/kg (parchment)
+• Check **UCDA** (Uganda Coffee Development Authority) for daily prices
+• Best selling months: October–January` },
+
+      // CASSAVA
+      { keys:['cassava','manioc','tapioca','muhogo'],
+        answer:`🌿 **Cassava — Complete Guide**
+
+**Planting:**
+• Use healthy stem cuttings: 25–30cm long, 3–5 nodes
+• Plant at 45° angle, 2 nodes underground
+• Spacing: 1m × 1m. Plant at start of rains
+• Weed 3 times in first 3 months — critical period
+
+**Key pests:**
+• 🦟 **Cassava Whitefly:** Spreads viruses. Spray Imidacloprid
+• 🕷️ **Cassava Green Mite:** Yellowing, distorted leaves. Use Abamectin
+• 🦠 **Cassava Mosaic Virus:** Yellow mosaic pattern — NO cure. Uproot, burn, replant clean stems
+• 🦠 **Cassava Brown Streak:** Brown streaks in roots — devastating. Use virus-tested cuttings
+
+**Harvesting:**
+• Harvest 9–24 months after planting
+• ⚠️ Do NOT delay beyond 24 months — roots become fibrous and woody
+• Harvest dry season for easier digging and better quality
+
+**Post-harvest:**
+• Roots deteriorate within **24–48 hours** of harvest — process immediately
+• Options: dry chips, flour, starch, or cook fresh
+• For chips: peel, slice, dry in sun 3–5 days
+
+**Uses:** Flour, chips, starch, animal feed, alcohol` },
+
+      // GROUNDNUTS
+      { keys:['groundnut','peanut','nuts','simsim','groundnuts'],
+        answer:`🥜 **Groundnuts — Complete Guide**
+
+**Planting:**
+• Plant when rains are well established
+• Spacing: 45cm × 15cm. Depth: 4–5cm
+• Inoculate with Rhizobium for better yields
+• Apply single superphosphate at planting (50kg/acre)
+
+**Critical growth stages:**
+• **Pegging stage** (6–8 weeks): Pods develop underground — avoid soil disturbance
+• **Earth up** at pegging to give more room for pods
+
+**Pests/Diseases:**
+• 🍃 **Leaf spot (Early & Late):** Brown circular spots. Spray Mancozeb every 2 weeks
+• 🦠 **Rosette virus:** Yellow, stunted plants. Control aphid vectors
+• 🪲 **Groundnut aphid:** Spray Dimethoate at first sign
+
+**Harvesting:**
+• Harvest when 75% of leaves have yellowed
+• Pull plants, shake off soil, dry in windrows 3–5 days
+• Strip pods, dry further to below 8% moisture
+
+**Storage — CRITICAL:**
+• Aflatoxin risk is HIGH in groundnuts
+• Dry thoroughly and store in cool dry place
+• Test moisture before storage
+
+**Market:** UGX 4,000–6,000/kg. Best: January–March` },
+
+      // TOMATOES
+      { keys:['tomato','tomatoes','nyanya'],
+        answer:`🍅 **Tomatoes — Complete Guide**
+
+**Nursery:**
+• Sow seeds in nursery bed. Transplant at 3–4 weeks (15cm tall)
+• Harden seedlings 1 week before transplanting
+
+**Field management:**
+• Stake plants at 30cm height. Train to 2 stems maximum
+• Mulch to reduce soil splash (reduces blight)
+• Drip irrigation is best — avoids wet foliage
+
+**Major threats:**
+• 🦠 **Late Blight (Phytophthora):** Water-soaked lesions. Spray Mancozeb/Metalaxyl every 7 days in wet season — this is the #1 killer
+• 🦠 **Bacterial Wilt:** Sudden wilting. No cure — remove plant, solarize soil
+• 🪲 **Tuta absoluta (Tomato Leaf Miner):** Mines in leaves. Spray Spinosad or Emamectin
+• 🦟 **Whitefly:** Spreads viruses. Yellow sticky traps + Imidacloprid
+
+**Harvesting:**
+• Harvest at **breaker stage** (just turning red) for long transport
+• Harvest fully red for local/roadside sale
+
+**Storage:**
+• Single layer, room temperature, out of direct sun
+• **Never refrigerate unripe tomatoes** — causes chilling injury
+
+**Market:** UGX 1,500–2,800/kg. High prices: January–February and June–July` },
+
+      // IRISH POTATOES
+      { keys:['irish potato','potato','potatoes','irish','spuds'],
+        answer:`🥔 **Irish Potatoes — Complete Guide**
+
+**Planting:**
+• Use certified seed potatoes — not eating potatoes
+• Plant in furrows 75cm apart, 30cm within row, 10cm deep
+• Apply DAP (100kg/acre) + CAN at earthing up
+
+**Earth up** at 3 weeks AND 6 weeks — critical for yield
+
+**Major disease — BLIGHT:**
+• 🦠 **Late Blight (Phytophthora infestans):** Grey-green water-soaked patches → brown rot
+• Prevention: Spray Mancozeb every 7 days from 3 weeks after emergence
+• Use Metalaxyl + Mancozeb (Ridomil Gold) in wet weather
+• **Kabale farmers:** Blight is most severe — spray every 5 days in long rains
+
+**Harvesting:**
+• Cut haulms (tops) 2 weeks before harvest — skin sets, reduces damage
+• Harvest when foliage yellows (70–120 days depending on variety)
+• Handle gently — cuts and bruises cause rapid rotting
+
+**Storage:**
+• Cool, dark, ventilated store (4–10°C ideal)
+• Do NOT store in light — causes greening (solanine — toxic)
+• Remove any rotting tubers immediately
+
+**Market:** UGX 800–1,400/kg. Best season: June–August` },
+
+      // SWEET POTATOES
+      { keys:['sweet potato','sweetpotato','sweet potatoes','camote'],
+        answer:`🍠 **Sweet Potatoes — Complete Guide**
+
+**Planting:**
+• Use healthy vine cuttings: 30cm long
+• Plant in mounds or ridges. Vine tips downward at 45°
+• Spacing: 90cm between ridges × 30cm within
+
+**Management:**
+• Lift vines occasionally to prevent rooting at nodes (reduces yield)
+• Weed at 2 weeks and 6 weeks — keep clean
+
+**Pest — Sweet Potato Weevil:**
+• Most serious pest. Tunnels through roots — causes complete loss
+• Use clean planting material. Destroy infested crops
+• Crop rotation essential — don't plant same field 2 seasons running
+• Spray Chlorpyrifos at base of plants if weevil spotted
+
+**Harvesting:**
+• Harvest at 3–5 months (when vines start to yellow)
+• Harvest in cool morning hours to reduce field heat
+• **Curing:** After harvest, hold at 30°C, 90% humidity for 4 days — heals cuts, improves sweetness and storage life
+
+**Storage:**
+• Store in cool, dry, ventilated place
+• Do not refrigerate uncured roots
+
+**Price:** UGX 500–900/kg` },
+
+      // SORGHUM / MILLET
+      { keys:['sorghum','millet','finger millet','eleusine','busera'],
+        answer:`🌾 **Sorghum & Millet Guide**
+
+**Planting:**
+• Sorghum: 75cm × 25cm spacing. Thin to 1 plant at 3 weeks
+• Finger Millet: Broadcast or drill at 1–2cm depth
+• Both: Plant at start of rains. Minimal fertilizer needed (drought tolerant)
+
+**Key advantages:**
+• Drought-tolerant — good for Lira, Soroti, Gulu areas
+• Suitable for poor soils where maize fails
+• Sorghum can ratoon (regrow after cutting)
+
+**Pests:**
+• 🐦 **Birds:** Major threat at grain-filling stage. Use bird scarers or nets
+• 🦟 **Shoot fly (Sorghum):** Deadheart in seedlings. Use Dimethoate early
+• 🦠 **Head smut:** Black powder on grain heads. Use resistant varieties
+
+**Harvesting:**
+• Sorghum: 90–130 days. Heads droop when ripe
+• Finger Millet: 90–120 days. Harvest before fully dry to avoid shattering
+
+**Uses:**
+• Sorghum: Local brew (Malwa), flour, animal feed
+• Millet: Porridge, bread (atap), fermented drink` },
+
+      // ONIONS
+      { keys:['onion','onions','kitunguu'],
+        answer:`🧅 **Onions — Complete Guide**
+
+**Nursery to field:**
+• Sow seeds in nursery. Transplant at 6–8 weeks (pencil-thick)
+• Field spacing: 30cm × 10cm in raised beds
+• Apply NPK 17:17:17 at transplanting, then top-dress with CAN
+
+**Irrigation:**
+• Drip or furrow irrigation. Avoid overhead — causes leaf diseases
+• Reduce water 2 weeks before harvest — allows bulb to set and skin to dry
+
+**Pests/Disease:**
+• 🦟 **Thrips:** Silvery streaks on leaves. Spray Dimethoate or Spinosad
+• 🦠 **Purple Blotch:** Purple lesions. Spray Iprodione
+• 🦠 **Downy Mildew:** Grey fuzzy growth. Spray Metalaxyl
+
+**Harvesting:**
+• Harvest when 50–70% of tops have fallen over
+• Pull by hand, shake off soil, leave in field 2–3 days to cure in sun
+• Then braid or bag and move to dry store
+
+**Storage:**
+• Hang in nets in well-ventilated shade
+• Remove any soft or sprouting bulbs immediately
+• Last 2–3 months if properly cured and stored dry
+
+**Market:** UGX 1,500–2,500/kg` },
+
+      // RICE
+      { keys:['rice','paddy','mpunga'],
+        answer:`🌾 **Rice — Complete Guide**
+
+**Uganda main growing areas:**
+• Eastern (Bugiri, Iganga, Tororo), Kibimba scheme, Doho, Olweny
+
+**Planting:**
+• Transplant seedlings at 3–4 weeks
+• Maintain 5–8cm water depth during vegetative stage
+• Apply NPK at planting + Urea top-dress at tillering
+
+**Water management:**
+• Drain field 2 weeks before harvest — allows combine or hand harvesting
+
+**Key disease:**
+• 🦠 **Rice Blast:** Brown lesions with grey center. Spray Tricyclazole
+• 🐌 **Golden Apple Snail:** Destroys seedlings. Hand-pick or use Niclosamide
+
+**Harvesting:**
+• 80% of grains should be golden-yellow
+• Harvest in morning to reduce shattering losses
+• Dry on tarpaulin — target moisture: 14%
+
+**Milling:** 
+• Dehulling → whitening → grading
+• 1 bag paddy (100kg) → ~65kg white rice
+
+**Market:** UGX 2,800–3,800/kg (milled)` },
+
+      // WEATHER & SEASONS
+      { keys:['weather','rain','season','climate','dry','wet','rains','forecast','humid','temperature'],
+        answer:`🌤️ **Uganda Climate & Farming Calendar**
+
+**Uganda's 4 seasons:**
+
+| Season | Months | Action |
+|---|---|---|
+| Long Rains | March–May | Plant Maize, Beans, Cassava |
+| Dry Season 1 | June–August | Harvest, Dry, Sell |
+| Short Rains | Sept–November | Plant, Fertilize |
+| Dry Season 2 | Dec–February | Harvest Maize, Dry Coffee |
+
+**By region:**
+• 🌧️ **Central/South:** Reliable 2 seasons (Kampala, Masaka, Mubende)
+• ☀️ **North (Gulu, Lira):** 1 main season (April–September), more drought risk
+• 🌧️ **East (Mbale, Jinja):** Good rains around Mt. Elgon
+• 🌫️ **SW Highlands (Kabale):** Cool, highland climate year-round
+
+**Key farming rules:**
+• Plant within 2 weeks of first rains
+• Harvest 2 weeks BEFORE expected rain season ends
+• Dry all crops before rainy season storage
+• High humidity (>80%) = danger zone for stored crops` },
+
+      // PRICES / MARKET
+      { keys:['price','prices','market','sell','selling','buy','cost','ugx','shilling','money','income','profit'],
+        answer:`💰 **Uganda Crop Market Prices**
+
+**Current price ranges (UGX/kg):**
+
+| Crop | Farm Gate | Kampala Market |
+|---|---|---|
+| 🍌 Matooke | 400–800 | 800–2,000 |
+| 🌽 Maize | 700–900 | 900–1,400 |
+| 🫘 Beans | 1,800–2,500 | 2,500–3,500 |
+| ☕ Coffee (Robusta) | 7,000–9,000 | 8,000–12,000 |
+| 🍅 Tomatoes | 1,000–1,500 | 1,500–2,800 |
+| 🥔 Irish Potatoes | 600–900 | 800–1,400 |
+| 🥜 Groundnuts | 3,000–4,000 | 4,000–6,000 |
+| 🌾 Rice (milled) | 2,500–3,000 | 2,800–3,800 |
+| 🧅 Onions | 1,200–1,800 | 1,500–2,500 |
+
+**Best markets:**
+• Kampala: Owino, St. Balikuddembe, Nakawa
+• Jinja: Main market, Nalufenya
+• Mbarara: Ruti market
+• Gulu: Gulu market
+
+**Timing tips:**
+• Sell early in the week (Mon–Wed) — prices higher
+• Avoid selling immediately after harvest peak (everyone sells → prices drop)
+• Dry season = higher prices for most crops` },
+
+      // STORAGE
+      { keys:['store','storage','storing','store','keep','preserve','spoil','rot','post harvest','postharvest'],
+        answer:`📦 **Post-Harvest Storage — Complete Guide**
+
+**The golden rules:**
+1. ✅ **Dry thoroughly** before any storage
+2. ✅ **Clean the store** — remove old crop residues, pests
+3. ✅ **Use pallets** — never store on bare ground (absorbs moisture)
+4. ✅ **Ventilate** — airflow prevents mould
+
+**By crop:**
+| Crop | Safe Moisture | Method | Duration |
+|---|---|---|---|
+| Maize | <13% | Hermetic bag + Actellic | 6–12 months |
+| Beans | <13% | Ash or hermetic bag | 6 months |
+| Groundnuts | <8% | Mesh bags, cool/dry | 3–4 months |
+| Coffee (parchment) | 11% | Grain bags | 6–12 months |
+| Matooke | N/A | Cool shade, ventilated | 2–3 weeks |
+| Cassava | N/A | Process immediately | 24–48 hrs max |
+| Irish Potatoes | N/A | Dark, cool, ventilated | 3–6 months |
+
+**Hermetic bags:** Best investment for grain farmers. Kills weevils by oxygen deprivation without chemicals. Brands: Purdue Improved Crop Storage (PICS), GrainSafe.
+
+**Moisture meter:** Buy a digital grain moisture meter (~UGX 50,000). Pays for itself many times over.` },
+
+      // PESTS
+      { keys:['pest','insect','worm','caterpillar','bug','weevil','aphid','armyworm','stalkborer','borer','fungus','disease','blight','mold','mould'],
+        answer:`🐛 **Uganda Crop Pest & Disease Guide**
+
+**Top 10 most damaging:**
+
+1. 🌽 **Fall Armyworm** (maize) — Dimethoate, Emamectin. Act within 48hrs
+2. 🌽 **Maize Stalk Borer** — Spray Bt at 3 weeks. Whorl application
+3. 🍌 **Banana Xanthomonas Wilt** — No cure. Uproot and burn all infected plants
+4. 🍅 **Tomato Late Blight** — Mancozeb every 7 days. Most profitable disease to prevent
+5. 🥔 **Potato Blight** — Ridomil Gold. Especially Kabale and Mbale highlands
+6. ☕ **Coffee Berry Disease** — Copper fungicide at start of rains
+7. 🫘 **Bean Fly** — Imidacloprid seed treatment
+8. 🌿 **Cassava Mosaic Virus** — Use virus-free cuttings. Rogue infected plants
+9. 🥜 **Groundnut Rosette Virus** — Control aphid vectors
+10. 🌾 **Grain Weevil** (storage) — Hermetic bags or Actellic dust
+
+**General IPM approach:**
+• Scout fields weekly
+• Use resistant varieties where available
+• Rotate crops each season
+• Never use same chemical class twice in a row` },
+
+      // FERTILIZER / SOIL
+      { keys:['fertilizer','fertiliser','npk','manure','compost','soil','ph','lime','dap','can','urea','soil health'],
+        answer:`🌿 **Fertilizer & Soil Health Guide**
+
+**Uganda soil facts:**
+• Most Uganda soils are **acidic** (pH 4.5–5.5)
+• Deficient in **Phosphorus** (most limiting nutrient)
+• Organic matter is often low — add compost!
+
+**Fertilizer by crop:**
+| Crop | At Planting | Top-dress |
+|---|---|---|
+| Maize | DAP 50kg/acre | CAN 50kg/acre at 4 weeks |
+| Beans | Rhizobium only | None (fixes own N) |
+| Coffee | NPK 17:17:17 | Urea twice yearly |
+| Matooke | NPK + manure | Urea every 4 months |
+| Potatoes | DAP 100kg/acre | CAN at earthing up |
+| Tomatoes | NPK 17:17:17 | CAN at flowering |
+
+**Lime:** Apply if pH below 5.5. Agricultural lime: 1–2 tonnes/acre
+**Manure:** Excellent for all crops. Apply 5–10 tonnes/acre, incorporate 2 weeks before planting
+
+**Organic options:**
+• Compost: mix crop residues, manure, ash — ready in 6–8 weeks
+• Mulch: reduces erosion, adds organic matter, retains moisture
+• Intercrop with legumes (beans/groundnuts) to fix nitrogen` },
+
+      // IRRIGATION
+      { keys:['irrigation','water','irrigate','watering','drought','dry spell'],
+        answer:`💧 **Irrigation & Water Management**
+
+**When to irrigate:**
+• When topsoil (0–15cm) is dry to touch
+• When plants show early stress (slight wilting in morning)
+• Dry spells exceeding 2 weeks during growing season
+
+**Methods:**
+| Method | Best for | Cost |
+|---|---|---|
+| Drip irrigation | Tomatoes, onions, capsicum | High but saves 60% water |
+| Furrow irrigation | Maize, beans, potatoes | Low cost |
+| Overhead sprinkler | Nurseries, leafy veg | Medium |
+| Watering can | Small gardens | Free |
+
+**Rules:**
+• Irrigate in **early morning** (6–9am) — reduces evaporation & disease
+• Avoid evening watering — wet foliage overnight increases fungal disease
+• Maize needs most water at **silking and tasselling** stage
+• Beans: DO NOT waterlog — roots rot in 24hrs
+
+**Mulching saves water:**
+• 10cm mulch layer = 50% less irrigation needed
+• Use crop residues, banana leaves, dry grass
+
+**Drought crops (need least water):**
+Sorghum > Millet > Cassava > Groundnuts > Beans > Maize` },
+
+      // YIELDGUARD SYSTEM
+      { keys:['yieldguard','system','dashboard','this system','how does','what does','software'],
+        answer:`🌾 **About YieldGuard AI**
+
+YieldGuard is a smart agricultural monitoring system designed for Uganda.
+
+**What it does:**
+• 📊 Monitors registered farmers across Uganda districts
+• 🌤️ Provides live weather data from Open-Meteo (real forecasts)
+• 📱 Sends SMS alerts to farmers with basic phones
+• 🤖 AI agent answers farming questions 24/7
+• 📈 Tracks crop market prices across Uganda
+• ⚠️ Identifies high-risk farms and triggers alerts
+• 🛰️ Shows satellite-based NDVI crop health index
+• 📋 Generates weekly performance and analytics reports
+
+**How farmers use it:**
+• Agricultural officers register farmers on the dashboard
+• Farmers receive SMS alerts on any basic phone
+• Farmers can reply by SMS and get AI responses
+• No smartphone or internet needed on the farmer's side
+
+**Built for Uganda's reality:**
+• Works with 2G/SMS — no smartphone required
+• Covers all major Uganda districts
+• Supports all major Uganda crops
+• Integrates with local market price data` },
+
+      // HELLO / WHAT CAN YOU DO
+      { keys:['what can you do','what do you know','help','capabilities','features','tell me about yourself','who are you'],
+        answer:`👋 **YieldGuard AI Agent — What I Can Help With**
+
+I'm your agricultural AI assistant for Uganda. Here's what you can ask me:
+
+🌾 **Crops:** Detailed guides for Matooke, Maize, Beans, Coffee, Cassava, Tomatoes, Potatoes, Groundnuts, Rice, Onions, Sorghum, Millet
+
+🐛 **Pests & Diseases:** Identification, treatment, prevention for all major Uganda crop threats
+
+💰 **Market Prices:** Current UGX price ranges for all crops, best markets, timing advice
+
+📦 **Storage:** Post-harvest handling, moisture levels, hermetic bags, pest prevention in store
+
+🌤️ **Weather:** Uganda seasons, planting calendars, harvest timing by district
+
+🌿 **Soil & Fertilizer:** NPK recommendations, soil pH, organic options, liming
+
+💧 **Irrigation:** When and how to water, drought management
+
+🏥 **General Farming:** Good Agricultural Practice (GAP), crop rotation, intercropping
+
+Just type your question naturally — I understand English and can help with any farming challenge!` },
+    ]
+  };
 
   function matchKnowledgeBase(text) {
-    const lower = text.toLowerCase();
+    const lower = text.toLowerCase().trim();
     // Check greetings
-    if (FARMING_KB.greetings.some(g => lower.includes(g) || lower === g)) {
-      return `👋 **Hello! I'm YieldGuard AI Agent.**\n\nI can help you with:\n• 🌾 Crop advice (Matooke, Maize, Beans, Coffee, Cassava...)\n• 💰 Market prices in Uganda\n• 🐛 Pest & disease management\n• 📦 Post-harvest storage tips\n• 🌤️ Weather & planting guidance\n• 🌱 Soil health & fertilizer\n\nJust ask me anything about farming in Uganda!`;
+    if (FULL_KB.greetings.some(g => lower === g || lower.startsWith(g + ' ') || lower.endsWith(' ' + g))) {
+      return `👋 **Hello! Welcome to YieldGuard AI Agent.**\n\nI can help you with anything about farming in Uganda — crops, pests, prices, storage, weather, soil, fertilizer and more.\n\nJust ask me a question like:\n• *"How do I store maize safely?"*\n• *"What is the price of coffee in Uganda?"*\n• *"My tomatoes are wilting — what's wrong?"*\n• *"When should I plant beans in Uganda?"*`;
     }
-    // Check keywords
-    for (const [key, val] of Object.entries(FARMING_KB.keywords)) {
-      if (lower.includes(key)) return val.answer;
-    }
-    // Extra keyword matches
-    if (lower.includes('store') || lower.includes('storage')) return FARMING_KB.keywords.storage.answer;
-    if (lower.includes('market') || lower.includes('sell') || lower.includes('price') || lower.includes('ugx')) return FARMING_KB.keywords.price.answer;
-    if (lower.includes('insect') || lower.includes('worm') || lower.includes('disease') || lower.includes('spray') || lower.includes('pesticide')) return FARMING_KB.keywords.pest.answer;
-    if (lower.includes('fertiliz') || lower.includes('npk') || lower.includes('manure') || lower.includes('compost')) return FARMING_KB.keywords.fertilizer.answer;
-    if (lower.includes('rain') || lower.includes('season') || lower.includes('humid') || lower.includes('dry')) return FARMING_KB.keywords.weather.answer;
-    if (lower.includes('harvest') || lower.includes('when to cut') || lower.includes('ready')) return FARMING_KB.keywords.harvest.answer;
-    if (lower.includes('soil') || lower.includes('ground') || lower.includes('earth') || lower.includes('ph')) return FARMING_KB.keywords.soil.answer;
-    return null;
-  }
-
-  function buildSmartResponse(query, internetResult) {
-    const context = `You are YieldGuard AI, a smart farming assistant for Uganda. A farmer or agricultural officer asked: "${query}". ${internetResult ? 'Here is some relevant information found online: ' + internetResult + '\n\nUsing this information, provide a' : 'Provide a'} helpful, practical answer specific to Uganda farming. Keep it concise and actionable. Use bullet points where helpful.`;
-    // Build response from internet data + farming context
-    if (internetResult && internetResult.length > 50) {
-      return `🌐 **Based on current information:**\n\n${internetResult.slice(0,500)}\n\n💡 **For Uganda farmers:** ${getUgandaContext(query)}`;
+    // Match QA entries
+    for (const qa of FULL_KB.qa) {
+      if (qa.keys.some(k => lower.includes(k))) return qa.answer;
     }
     return null;
-  }
-
-  function getUgandaContext(query) {
-    const lower = query.toLowerCase();
-    if (lower.includes('matooke') || lower.includes('banana')) return 'Sell matooke within 2–3 weeks of harvest. Kampala prices are highest Mon–Thu at Owino market.';
-    if (lower.includes('maize') || lower.includes('corn')) return 'Dry maize to below 13% moisture before storage. Use hermetic bags to prevent weevil damage.';
-    if (lower.includes('coffee')) return 'Pick only red cherries. Check UCDA for daily prices. Current Robusta ~UGX 8,000–12,000/kg.';
-    if (lower.includes('rain') || lower.includes('weather')) return 'Uganda has two rainy seasons: March–May and September–November. Plan harvests 2 weeks before expected rains.';
-    if (lower.includes('price') || lower.includes('market')) return 'Prices are highest at Kampala (Owino, St. Balikuddembe), Jinja and Mbarara markets. Sell early in the week for better prices.';
-    return 'Always consult your local district agricultural officer for area-specific advice.';
   }
 
   async function sendChatMessage() {
@@ -1983,73 +2544,98 @@ Return ONLY a JSON array, no markdown, no extra text:
     addChatMessage(text, false);
     input.value = '';
     isTyping = true;
-    addTypingIndicator();
+
+    // Show searching indicator immediately
+    const searching = document.createElement('div');
+    searching.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:.78rem;color:#4a7c59;padding:10px 14px;background:rgba(16,185,129,0.06);border-radius:12px';
+    searching.innerHTML = '<i class="fa-solid fa-globe fa-spin"></i> Searching online + local knowledge...';
+    document.getElementById('chat-window').appendChild(searching);
+    document.getElementById('chat-window').scrollTop = 99999;
+
     chatHistory.push({ role:'user', content: text });
 
+    // ── Run KB lookup AND internet search IN PARALLEL ──────────
+    const kbAnswer = matchKnowledgeBase(text);
+
+    let internetResult = null;
     try {
-      // STEP 1: Check local knowledge base first (instant)
-      const kbAnswer = matchKnowledgeBase(text);
-      if (kbAnswer) {
-        await new Promise(r => setTimeout(r, 600)); // slight delay feels natural
-        removeTypingIndicator();
-        addChatMessage(kbAnswer, true);
-        chatHistory.push({ role:'assistant', content: kbAnswer });
-        isTyping = false;
-        return;
+      // Wikipedia search API — always try regardless of KB match
+      const r1 = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(text + ' agriculture farming Uganda')}&format=json&origin=*&srlimit=1`,
+        { mode:'cors', signal: AbortSignal.timeout(4000) }
+      );
+      if (r1.ok) {
+        const d1 = await r1.json();
+        const title = d1?.query?.search?.[0]?.title;
+        if (title) {
+          const r2 = await fetch(
+            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+            { mode:'cors', signal: AbortSignal.timeout(4000) }
+          );
+          if (r2.ok) {
+            const d2 = await r2.json();
+            if (d2.extract && d2.extract.length > 60 && !d2.extract.includes('may refer to')) {
+              internetResult = {
+                text: d2.extract.slice(0, 500),
+                title,
+                url: d2.content_urls?.desktop?.page
+              };
+            }
+          }
+        }
       }
+    } catch(e) { /* timeout or no internet */ }
 
-      // STEP 2: Search the internet (DuckDuckGo + Wikipedia in parallel)
-      addChatMessage('🔍 *Searching the internet...*', true);
-      const [ddgResult, wikiResult] = await Promise.allSettled([
-        searchInternet(text),
-        searchWikipedia(text.split(' ').slice(0,3).join('_'))
-      ]);
+    searching.remove();
+    removeTypingIndicator();
 
-      // Remove "searching" message
-      const chatWin = document.getElementById('chat-window');
-      if (chatWin.lastChild) chatWin.removeChild(chatWin.lastChild);
-      removeTypingIndicator();
+    // ── Build combined response ─────────────────────────────────
+    let reply = '';
 
-      const ddg = ddgResult.status === 'fulfilled' ? ddgResult.value : null;
-      const wiki = wikiResult.status === 'fulfilled' ? wikiResult.value : null;
-      const internetData = ddg || wiki;
-
-      // STEP 3: Build smart response
-      if (internetData) {
-        const response = `🌐 **Here's what I found:**\n\n${internetData.slice(0,600)}\n\n---\n💡 *Need more specific Uganda farming advice? Ask me about a specific crop, pest, price, or storage tip.*`;
-        addChatMessage(response, true);
-        chatHistory.push({ role:'assistant', content: response });
-      } else {
-        // STEP 4: Smart fallback based on question type
-        const fallback = buildFallbackAnswer(text);
-        addChatMessage(fallback, true);
-        chatHistory.push({ role:'assistant', content: fallback });
-      }
-
-    } catch(err) {
-      removeTypingIndicator();
-      const fallback = buildFallbackAnswer(text);
-      addChatMessage(fallback, true);
-      chatHistory.push({ role:'assistant', content: fallback });
+    if (internetResult && kbAnswer) {
+      // BEST: both online + offline
+      reply = `🌐 **Online (Wikipedia — ${internetResult.title}):**\n${internetResult.text}${internetResult.url ? `\n🔗 [Full article](${internetResult.url})` : ''}\n\n---\n\n${kbAnswer}`;
+    } else if (internetResult) {
+      // Online only
+      reply = `🌐 **Online result (${internetResult.title}):**\n\n${internetResult.text}${internetResult.url ? `\n\n🔗 [Full article](${internetResult.url})` : ''}\n\n---\n🌾 **Uganda farming tip:** ${getUgandaContext(text)}`;
+    } else if (kbAnswer) {
+      // Offline KB only
+      reply = `📚 **YieldGuard Knowledge Base:**\n\n${kbAnswer}\n\n---\n⚡ *Live internet search unavailable — showing built-in knowledge.*`;
+    } else {
+      // Nothing matched — give guided fallback
+      reply = buildFallbackAnswer(text);
     }
 
+    addChatMessage(reply, true);
+    chatHistory.push({ role:'assistant', content: reply });
     isTyping = false;
   }
 
-  function buildFallbackAnswer(query) {
-    const lower = query.toLowerCase();
-    // Try to give a smart answer even without internet
-    const topics = [
-      { keys:['how','what','why','when','which'], prefix:'📚' },
-      { keys:['help','advice','suggest'], prefix:'💡' },
-      { keys:['price','market','sell','buy','ugx'], prefix:'💰' },
-      { keys:['plant','grow','seed','germinate'], prefix:'🌱' },
-      { keys:['disease','sick','yellow','wilt','rot'], prefix:'🔬' },
-    ];
-    let prefix = '🌾';
-    for (const t of topics) { if (t.keys.some(k => lower.includes(k))) { prefix = t.prefix; break; } }
+  function getUgandaContext(query) {
+    const l = query.toLowerCase();
+    if (l.includes('matooke')||l.includes('banana')) return 'Sell matooke within 2–3 weeks of harvest. Best prices at Owino Market, Kampala (Mon–Thu).';
+    if (l.includes('maize')||l.includes('corn')) return 'Dry maize to below 13% moisture before storage. Use hermetic bags to prevent weevil and aflatoxin.';
+    if (l.includes('coffee')) return 'Current Robusta price: UGX 8,000–12,000/kg. Check UCDA for daily rates. Pick only red cherries.';
+    if (l.includes('bean')) return 'Peak bean prices: June–August and January–February. Dry well and use ash or hermetic bags in storage.';
+    if (l.includes('tomato')) return 'Spray Mancozeb every 7 days during wet season to prevent late blight — #1 tomato killer in Uganda.';
+    if (l.includes('rain')||l.includes('weather')||l.includes('season')) return 'Uganda long rains: March–May. Short rains: September–November. Plant within 2 weeks of first rains.';
+    if (l.includes('price')||l.includes('market')||l.includes('sell')) return 'Best markets: Owino Kampala, Nakawa, Jinja main market, Ruti Mbarara. Sell Mon–Wed for better prices.';
+    if (l.includes('pest')||l.includes('disease')||l.includes('insect')) return 'Always rotate chemicals each season to prevent resistance. Scout weekly — early action saves the crop.';
+    if (l.includes('soil')||l.includes('fertilizer')||l.includes('fertiliser')) return 'Most Uganda soils need phosphorus most. Apply DAP at planting. Add lime if pH below 5.5.';
+    return 'For district-specific advice, contact your local District Agricultural Officer (DAO) or NAADS extension worker.';
+  }
 
-    return `${prefix} **YieldGuard AI Response**\n\nThank you for your question about: *"${query}"*\n\nBased on my Uganda farming knowledge:\n\n• This topic relates to agricultural practice in Uganda\n• For specific crop advice, try asking: "matooke storage" or "maize pest"\n• For prices, ask: "current price of coffee Uganda"\n• For weather guidance, ask: "when to plant beans Uganda"\n\n📞 You can also contact your **District Agricultural Officer** for localised advice.\n\n💡 *Tip: Ask me specific questions like "how do I treat maize stalk borer" for detailed answers.*`;
+  function buildFallbackAnswer(query) {
+    const l = query.toLowerCase();
+    let icon = '🌾';
+    if (l.includes('price')||l.includes('market')||l.includes('sell')) icon = '💰';
+    else if (l.includes('pest')||l.includes('disease')||l.includes('wilt')||l.includes('rot')||l.includes('yellow')) icon = '🔬';
+    else if (l.includes('plant')||l.includes('grow')||l.includes('seed')) icon = '🌱';
+    else if (l.includes('water')||l.includes('irrig')||l.includes('rain')) icon = '💧';
+    else if (l.includes('store')||l.includes('harvest')||l.includes('postharvest')) icon = '📦';
+    else if (l.includes('how')||l.includes('what')||l.includes('why')||l.includes('when')) icon = '📚';
+
+    return `${icon} **YieldGuard AI — Offline Response**\n\n*No internet connection detected. Using built-in knowledge.*\n\nYour question: *"${query}"*\n\nI have detailed built-in guides for:\n🍌 Matooke • 🌽 Maize • 🫘 Beans • ☕ Coffee • 🌿 Cassava\n🍅 Tomatoes • 🥔 Irish Potatoes • 🥜 Groundnuts • 🧅 Onions\n\n**Try asking specifically:**\n• *"matooke storage tips"*\n• *"maize stalk borer treatment"*\n• *"coffee prices Uganda"*\n• *"when to harvest beans"*\n• *"tomato blight spray"*\n• *"soil fertilizer for maize"*\n\n📞 For urgent issues: Contact your **District Agricultural Officer (DAO)** or call **NAADS: 0800 100 066** (toll-free).`;
   }
 
   // ============================================================
